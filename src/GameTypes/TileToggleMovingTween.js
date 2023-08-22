@@ -48,8 +48,6 @@ TileToggleMovingTween.prototype.nextStep = function(stepCount, timestamp) {
 	this.target.x = (new Types.Coord(this.target.x))[this.type](this.spriteTransform.x.value * stepCount * this.spriteTransformSpeed);
 	this.target.y = (new Types.Coord(this.target.y))[this.type](this.spriteTransform.y.value * stepCount * this.spriteTransformSpeed);
 	
-//	console.log(this.target.y, this.spriteTransform.y.value, stepCount, this.spriteTransformSpeed, this.spriteTransform.y.value * stepCount * this.spriteTransformSpeed);
-	
 	this.lastStepTimestamp = timestamp;
 }
 

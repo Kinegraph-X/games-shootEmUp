@@ -210,9 +210,6 @@ var classConstructor = function() {
 			
 			
 			
-			
-			
-			
 			// KEYBOARD HANDLING
 			keyboardListener.addEventListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if (keyCode === KeyboardEvents.indexOf('LEFT')) {
