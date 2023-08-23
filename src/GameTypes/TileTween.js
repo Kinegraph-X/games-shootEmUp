@@ -7,7 +7,7 @@ const Tween = require('src/GameTypes/Tween');
  * @constructor Tween
  * @param {Transform} transform
  */
-const TileTween = function(target, type, transform, speed, oneShot) {
+const TileTween = function(windowSize, target, type, transform, speed, oneShot) {
 	Tween.apply(this, arguments);
 }
 TileTween.prototype = Object.create(Tween.prototype);

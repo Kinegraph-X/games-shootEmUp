@@ -10,6 +10,7 @@ const CoreTypes = require('src/GameTypes/CoreTypes');
 		return;
 	}
 	this.spriteObj = PIXI.TilingSprite.from(texture, {width : dimensions.x.value, height : dimensions.y.value});
+	this.spriteObj.enteredScreen = false;
 	
 	this.spriteObj.rotation = rotation * Math.PI / 180 || 0;
 	this.spriteObj.tileTransform.scale.x = zoom || 1;

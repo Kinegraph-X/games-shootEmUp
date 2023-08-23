@@ -10,7 +10,9 @@ const CoreTypes = require('src/GameTypes/CoreTypes');
 		return;
 	}
 	
+	
 	this.spriteObj = PIXI.Sprite.from(texture);
+	this.spriteObj.enteredScreen = false;
 	 
 	position = position || new CoreTypes.Point()
 	
@@ -21,6 +23,7 @@ const CoreTypes = require('src/GameTypes/CoreTypes');
 	this.spriteObj.height = dimensions.y.value;
 }
 Sprite.prototype = {};
+
  
  
  

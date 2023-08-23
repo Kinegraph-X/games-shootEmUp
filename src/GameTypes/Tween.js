@@ -7,7 +7,8 @@ const Types = require('src/GameTypes/CoreTypes');
  * @constructor Tween
  * @param {Transform} transform
  */
-const Tween = function(target, type, transform, speed, oneShot) {
+const Tween = function(windowSize, target, type, transform, speed, oneShot) {
+	this.windowSize = windowSize;
 	this.target = target;
 	this.type = type;										// UNION{add, mult, div}
 	this.oneShot = oneShot;
@@ -18,6 +19,7 @@ const Tween = function(target, type, transform, speed, oneShot) {
 	this.speed = speed || 1; 										// px.s-1
 	this.currentStep = 0;
 	this.lastStepTimestamp = 0;
+	this.collisionTestsRegister = [];
 }
 Tween.prototype = {};
 
@@ -28,9 +30,32 @@ Tween.prototype.nextStep = function(stepCount, timestamp) {
 	this.lastStepTimestamp = timestamp;
 }
 
+Tween.prototype.testOutOfScreen = function() {
+	if (this.target.name.match(/bgLayer/) || this.target.name.match(/flame/))
+		return false;
+	
+	if (!this.target.enteredScreen && this.target.y - this.target.height / 2 > 0) {
+		this.target.enteredScreen = true;
+	}
+	
+	
+	if (this.target.name === 'fireballSprite') {
+		if (this.target.y - this.target.height / 2 > this.windowSize.y.value
+			|| (this.target.enteredScreen && this.target.y + this.target.height < 0)) {
+			return true;
+		}
+	}
+	else if (this.target.y - this.target.height / 2 > this.windowSize.y.value
+		|| (this.target.enteredScreen && this.target.y - this.target.height / 2 < 0)) {
+		return true;
+	}
+		
+	return false;
+}
 
-
-
+Tween.prototype.handleBoundaries = function() {
+	
+}
 
 
 

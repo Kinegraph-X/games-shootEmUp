@@ -8,7 +8,7 @@ const TileToggleTween = require('src/GameTypes/TileToggleTween');
  * @param {CoreTypes.Transform} transform
  * @param {CoreTypes.Transform} spriteTransform
  */
-const TileToggleMovingTween = function(target, type, transform, speed, oneShot, positionCount, startPosition, spriteTransform, spriteTransformSpeed, invert) {
+const TileToggleMovingTween = function(windowSize, target, type, transform, speed, oneShot, positionCount, startPosition, spriteTransform, spriteTransformSpeed, invert) {
 	TileToggleTween.apply(this, arguments);
 	this.positionCount = positionCount;
 	this.offsetWidth = this.target.width;
