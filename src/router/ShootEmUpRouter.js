@@ -3,6 +3,8 @@
  */
 
 const CoreTypes = require('src/GameTypes/CoreTypes');
+const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell, getRandomFoe} = require('src/GameTypes/gridManager');
+const {levels, lifePoints, weapons} = require('src/GameTypes/gameNumbers');
 const KeyboardEvents = require('src/events/JSKeyboardMap');
 const KeyboardListener = require('src/events/KeyboardListener');
 const Sprite = require('src/GameTypes/Sprite');
@@ -12,6 +14,10 @@ const Tween = require('src/GameTypes/Tween');
 const TileTween = require('src/GameTypes/TileTween');
 const TileToggleTween = require('src/GameTypes/TileToggleTween');
 const TileToggleMovingTween = require('src/GameTypes/TileToggleMovingTween');
+
+const MainSpaceShip = require('src/GameTypes/MainSpaceShip');
+const FoeSpaceShip = require('src/GameTypes/FoeSpaceShip');
+const Projectile = require('src/GameTypes/Projectile');
 
 const spaceShipCollisionTester = require('src/GameTypes/spaceShipCollisionTester');
 const fireBallCollisionTester = require('src/GameTypes/fireBallCollisionTester');
@@ -24,66 +30,10 @@ var classConstructor = function() {
 		let  gameState = {
 			currentLevel : 1
 		}
-		const windowSize = new CoreTypes.Dimension(950, 950);
+		
 		const keyboardListener = new KeyboardListener();
 		
-		
-		
-		// GRID CELLS UTILITIES FOR FOE SPACESHIPS
-		const gridCells = new CoreTypes.Dimension(8, 4);
-		const cellSize = windowSize.x.value / gridCells.x.value;
-		let occupiedCells = Array(gridCells.x.value);
-		for (let c = 0, l = gridCells.x.value; c < l; c++) {
-				occupiedCells[c] = Array(gridCells.y.value);
-		}
-		
-		let gridCoords = {
-			x : [],
-			y : []
-		};
-		
-		(function getCellCoords() {
-			for (let i = 0, l = gridCells.x.value; i < l; i++) {
-				gridCoords.x.push(i * cellSize);
-			}
-			for (let i = 0, l = gridCells.y.value; i < l; i++) {
-				gridCoords.y.push(i * cellSize);
-			}
-		})();
-		
-		function getRandomCell() {
-			const x = Math.floor(Math.random() * gridCells.x.value);
-			const y = Math.floor(Math.random() * gridCells.y.value);
-			return {
-				x : x,
-				y : y
-			}
-		}
-		
-		function isOccupiedCell(x, y) {
-			return occupiedCells[x][y] === true;
-		}
-		
-		function getFoeCell() {
-			let foeCell = getRandomCell();
-			if (isOccupiedCell(foeCell.x, foeCell.y)) {
-				while (isOccupiedCell(foeCell.x, foeCell.y)) {
-					foeCell = getRandomCell();
-				}
-			}
-			else {
-				occupiedCells[foeCell.x][foeCell.y] = true;
-				return foeCell;
-			}
-			occupiedCells[foeCell.x][foeCell.y] = true;
-			return foeCell;
-		}
-		
-		function getRandomFoe(count) {
-			return Math.floor(Math.random() * count) + 1;
-		}
-		
-		
+
 		
 		// ASSETS PRELOADING
 		const manifest = {
@@ -122,18 +72,6 @@ var classConstructor = function() {
 		
 		
 		
-		// DRAFT FOR FUTURE LEVELS
-		const levels = {
-			1 : 6,
-			2 : 8,
-			3 : 10,
-			4 : 14,
-			5 : 20,
-			6 : 28
-		}
-		
-		
-		
 		// ONLOADED => GAME INIT
 		function onLoaded(loaded) {
 			const gameLoop = new GameLoop(windowSize);
@@ -156,40 +94,35 @@ var classConstructor = function() {
 			
 			
 			// MAIN SPACESHIP
-			const mainSpaceShipContainer = new PIXI.Container();
-			mainSpaceShipContainer.name = 'mainSpaceShipSprite';
 			const mainSpaceShipDimensions = new CoreTypes.Dimension(200, 200);
-			const mainSpaceShipSprite = new Sprite(
-				new CoreTypes.Point(0, 0),
-				mainSpaceShipDimensions,
-				loaded[1].mainSpaceShip
+			const mainSpaceShipStartPosition = new CoreTypes.Point(
+				windowSize.x.value / 2 - mainSpaceShipDimensions.x.value / 2,
+				windowSize.y.value - mainSpaceShipDimensions.y.value
 			);
-			mainSpaceShipContainer.addChild(mainSpaceShipSprite.spriteObj);
-			const flameTileDimensions = new CoreTypes.Dimension(34, 83);
-			const flameTileSprite = new TilingSprite(
-				new CoreTypes.Point(0, 0),
-				flameTileDimensions,
+			const mainSpaceShipSprite = new MainSpaceShip(
+				mainSpaceShipStartPosition,
+				mainSpaceShipDimensions,
+				loaded[1].mainSpaceShip,
 				loaded[2].flamesTilemap
 			);
-			flameTileSprite.spriteObj.x = mainSpaceShipDimensions.x.value / 2 - flameTileDimensions.x.value / 2;
-			flameTileSprite.spriteObj.y = mainSpaceShipDimensions.y.value - flameTileDimensions.y.value / 2;
-			flameTileSprite.spriteObj.name = 'flameSprite';
-			const flameTween = new TileToggleTween(windowSize, flameTileSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 0), .1, false, 2);
+			const flameTween = new TileToggleTween(
+				windowSize,
+				mainSpaceShipSprite.flameTileSprite.spriteObj,
+				CoreTypes.TweenTypes.add,
+				new CoreTypes.Point(0, 0),
+				.1,
+				false,
+				2
+			);
 			gameLoop.pushTween(flameTween);
-			
-			mainSpaceShipContainer.addChild(flameTileSprite.spriteObj);
-			mainSpaceShipContainer.x = windowSize.x.value / 2 - mainSpaceShipDimensions.x.value / 2;
-			mainSpaceShipContainer.y = windowSize.y.value - mainSpaceShipDimensions.y.value;
-			gameLoop.stage.addChild(mainSpaceShipContainer);
+			gameLoop.stage.addChild(mainSpaceShipSprite.spriteObj);
 			
 			
 			
 			// FOE SPACESHIPS
 			let foeSpaceShipsRegister = [], foeSpaceShipsTweensRegister = [];
-			const foeSpaceShipDimensions = new CoreTypes.Dimension(120, 120);
 			function addFoeSpaceShips() {
-				let foeCount = 0, foeCell, foePosition;
-				console.log(gameState.currentLevel, levels[gameState.currentLevel]);
+				let foeSpaceShip, foeCount = 0, foeCell, foePosition, randomFoeSeed, randomFoe, foeSpaceShipTween;
 				while (foeCount < levels[gameState.currentLevel]) {
 					foeCell = getFoeCell();
 					foePosition = new CoreTypes.Point(
@@ -197,25 +130,23 @@ var classConstructor = function() {
 						parseInt(gridCoords.y[foeCell.y] - cellSize * 2)
 					);
 					
-					const randomFoeSeed = gameState.currentLevel < 3 ? Object.keys(loaded[1]).length - 2 : Object.keys(loaded[1]).length - 1;
-					const randomFoe = getRandomFoe(randomFoeSeed).toString();
+					randomFoeSeed = gameState.currentLevel < 3 ? Object.keys(loaded[1]).length - 2 : Object.keys(loaded[1]).length - 1;
+					randomFoe = getRandomFoe(randomFoeSeed).toString();
 					
-					const foeSpaceShipSprite = new Sprite(
+					foeSpaceShip = new FoeSpaceShip(
 						foePosition,
-						foeSpaceShipDimensions,
+						foeCell,
 						loaded[1]['foeSpaceShip0' + randomFoe],
-						180
+						lifePoints[randomFoe]
 					);
-					foeSpaceShipSprite.spriteObj.anchor.set(0.5);
-					foeSpaceShipSprite.spriteObj.name = 'foeSpaceShipSprite';
-					foeSpaceShipSprite.spriteObj.cell = foeCell;
-					foeSpaceShipsRegister.push(foeSpaceShipSprite.spriteObj);
 					
-					const foeSpaceShipTween = new Tween(windowSize, foeSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
+					foeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
+					
+					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
 					foeSpaceShipsTweensRegister.push(foeSpaceShipTween);
 					
 					gameLoop.pushTween(foeSpaceShipTween);
-					gameLoop.stage.addChild(foeSpaceShipSprite.spriteObj);
+					gameLoop.stage.addChild(foeSpaceShip.spriteObj);
 					foeCount++;
 				}
 			}
@@ -227,28 +158,27 @@ var classConstructor = function() {
 			function launchFireball() {
 				const fireballDimensions = new CoreTypes.Dimension(125, 125);
 				const startPosition = new CoreTypes.Point(
-					mainSpaceShipContainer.x + mainSpaceShipDimensions.x.value / 2 - fireballDimensions.x.value / 2,
-					mainSpaceShipContainer.y - fireballDimensions.y.value + 38		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
+					mainSpaceShipSprite.spriteObj.x + mainSpaceShipDimensions.x.value / 2 - fireballDimensions.x.value / 2,
+					mainSpaceShipSprite.spriteObj.y + 18		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
 				);
-				const fireballSprite = new TilingSprite(
-					new CoreTypes.Point(0, 0),
-					fireballDimensions,
-					loaded[2].fireballsTilemap
-				);
-				fireballSprite.spriteObj.name = 'fireballSprite';
-				fireballSprite.spriteObj.x = startPosition.x.value;
-				fireballSprite.spriteObj.y = startPosition.y.value;
-				fireballsRegister.push(fireballSprite.spriteObj);
 				
-				const fireballTween = new TileToggleMovingTween(windowSize, fireballSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -125), 1, false, 12, startPosition, new CoreTypes.Point(0, -25), .2, 'invert');
+				const fireball = new Projectile(
+					startPosition,
+					fireballDimensions,
+					loaded[2].fireballsTilemap,
+					1
+				)
+				fireballsRegister.push(fireball.spriteObj);
+				
+				const fireballTween = new TileToggleMovingTween(windowSize, fireball.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -25), .2, false, 12, startPosition, new CoreTypes.Point(0, -125), 1, 'invert');
 				fireballsTweensRegister.push(fireballTween);
 				
 				gameLoop.pushTween(fireballTween);
-				gameLoop.stage.addChild(fireballSprite.spriteObj);
+				gameLoop.stage.addChild(fireball.spriteObj);
 				
 				let fireBallCollisionTest;
 				foeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
-					fireBallCollisionTest = new fireBallCollisionTester(fireballSprite.spriteObj, foeSpaceShipSpriteObj);
+					fireBallCollisionTest = new fireBallCollisionTester(fireball.spriteObj, foeSpaceShipSpriteObj);
 					gameLoop.pushCollisionTest(fireBallCollisionTest);
 					fireballTween.collisionTestsRegister.push(fireBallCollisionTest);
 				});
@@ -260,22 +190,22 @@ var classConstructor = function() {
 			// KEYBOARD HANDLING
 			keyboardListener.addEventListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if (keyCode === KeyboardEvents.indexOf('LEFT')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipContainer, CoreTypes.TweenTypes.add, new CoreTypes.Point(-30, 0), 1, true);
+					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(-30, 0), 1, true);
 					gameLoop.pushTween(mainSpaceShipeTween);
 
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipContainer, CoreTypes.TweenTypes.add, new CoreTypes.Point(30, 0), 1, true);
+					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(30, 0), 1, true);
 					gameLoop.pushTween(mainSpaceShipeTween);
 
 				}
 				else if (keyCode === KeyboardEvents.indexOf('UP')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipContainer, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -30), 1, true);
+					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -30), 1, true);
 					gameLoop.pushTween(mainSpaceShipeTween);
 
 				}
 				else if (keyCode === KeyboardEvents.indexOf('DOWN')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipContainer, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 30), 1, true);
+					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 30), 1, true);
 					gameLoop.pushTween(mainSpaceShipeTween);
 
 				}
@@ -298,7 +228,6 @@ var classConstructor = function() {
 				gameLoop.stage.children.splice(spritePos, 1);
 			});
 			gameLoop.addEventListener('foeSpaceShipDestroyed', function(e) {
-				console.log('foeSpaceShipDestroyed');
 				const destroyedFoeSpaceShip = e.data[1];
 				const explodedFireball = e.data[0];
 				
@@ -344,7 +273,6 @@ var classConstructor = function() {
 				if (foeSpaceShipsRegister.length === 1 && gameState.currentLevel < 6) {
 					gameState.currentLevel++
 					addFoeSpaceShips();
-					console.log(foeSpaceShipsRegister.length)
 				}
 			}
 			

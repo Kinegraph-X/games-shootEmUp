@@ -7,7 +7,18 @@ const TileTween = require('src/GameTypes/TileTween');
  * @constructor TileToggleTween
  * @param {CoreTypes.Transform} transform
  */
-const TileToggleTween = function(windowSize, target, type, transform, speed, oneShot, positionCount) {	// FIXME: the "invert"" mode isn't available on this type
+const TileToggleTween = function(
+		windowSize,
+		target,
+		type,
+		transform,
+		speed,
+		oneShot,
+		positionCount,
+		invert
+	) {
+		
+	// FIXME: the "invert"" mode isn't available on this type
 	TileTween.apply(this, arguments);
 	this.positionCount = positionCount;
 	this.offsetWidth = this.target.width;
