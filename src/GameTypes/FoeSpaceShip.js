@@ -11,8 +11,8 @@ const Sprite = require('src/GameTypes/Sprite');
  const FoeSpaceShip = function(position, foeCell, texture, lifePoints, lootChance) {
 	 this.dimensions = new CoreTypes.Dimension(120, 120);
 	 this.spriteObj = this.getSprite(position, texture, foeCell);
-	 this.lifePoints = lifePoints;
-	 this.lootChance = lootChance;
+	 this.spriteObj.lifePoints = lifePoints;
+	 this.spriteObj.lootChance = lootChance;
  }
  FoeSpaceShip.prototype = {};
  

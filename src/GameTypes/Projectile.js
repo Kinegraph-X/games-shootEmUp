@@ -9,7 +9,7 @@ const TilingSprite = require('src/GameTypes/TilingSprite');
 const Projectile = function(position, dimensions, texture, damage) {
 	this.dimensions = dimensions;
 	this.spriteObj = this.getSprite(position, texture);
-	this.damage = damage;
+	this.spriteObj.damage = damage;
 }
 Projectile.prototype = {};
 

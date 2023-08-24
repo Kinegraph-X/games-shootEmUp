@@ -15,28 +15,58 @@ const TileToggleTween = function(
 		speed,
 		oneShot,
 		positionCount,
-		invert
+		tileTransformInterval,
+		invert,
+		endAfterTileLoop
 	) {
-		
+	
 	// FIXME: the "invert"" mode isn't available on this type
 	TileTween.apply(this, arguments);
+	
+	
 	this.positionCount = positionCount;
-	this.offsetWidth = this.target.width;
-	this.offsetHeight = this.target.height;		// only height for now
+	this.tileTransformInterval = tileTransformInterval;
+	this.invert = invert;
+	this.endAfterTileLoop = endAfterTileLoop;
+	
 	this.currentOffsetPos = 0;
+	
+	this.initialTilePosition = new Types.Point(0, 0);
+	this.target.tilePosition.x = 1;
+	this.target.tilePosition.y = 1;
+	
+	this.currentPartialStep = 0;
+	
+	if (this.invert) {
+		this.initialTilePosition.x = new Types.Coord(this.target.tilePosition.x = this.target.height * this.positionCount + this.target.width) + 1;
+		this.initialTilePosition.y = new Types.Coord(this.target.tilePosition.y = this.target.height * this.positionCount + this.target.height) + 1;
+	}
 }
 TileToggleTween.prototype = Object.create(TileTween.prototype);
 
 TileToggleTween.prototype.nextStep = function(stepCount, timestamp) {
-	// FIXME: this doesn't implement the stepCount => we're loosing frames
-	if (this.currentOffsetPos < this.positionCount)
-		this.currentOffsetPos++;
-	else
-		this.currentOffsetPos = 0;
+	this.currentPartialStep += stepCount;
 	
-	this.currentStep++;
-	this.target.tilePosition.x  = (new Types.Coord(this.target.tilePosition.x))[this.type](this.transform.x.value * stepCount * this.speed);
-	this.target.tilePosition.y  = (new Types.Coord(this.target.tilePosition.y + this.currentOffsetPos * this.offsetHeight))[this.type](this.transform.y.value * stepCount * this.speed);
+	if (this.currentPartialStep >= this.tileTransformInterval) {
+		if (this.currentOffsetPos < this.positionCount)
+			this.currentOffsetPos++;
+		else {
+			if (this.endAfterTileLoop) {
+				this.ended = true;
+				return;
+			}
+			this.currentOffsetPos = 0;
+			this.target.tilePosition.x = this.initialTilePosition.x.value;
+			this.target.tilePosition.y = this.initialTilePosition.y.value;
+		}
+		this.currentPartialStep = 0;
+	}
+	else
+		return;
+	
+	// + this.currentOffsetPos * this.offsetHeight
+	this.target.tilePosition.x  = (new Types.Coord(this.target.tilePosition.x))[this.type](this.transform.x.value);
+	this.target.tilePosition.y  = (new Types.Coord(this.target.tilePosition.y))[this.type](this.transform.y.value);
 	this.lastStepTimestamp = timestamp;
 }
 

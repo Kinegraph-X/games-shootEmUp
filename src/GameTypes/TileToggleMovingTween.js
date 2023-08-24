@@ -15,64 +15,62 @@ const TileToggleMovingTween = function(
 		startPosition,
 		spriteTransform,
 		spriteTransfomSpeed,
+		oneShot,
 		positionCount,
 		tileTransform,
-		tileTransfomInterval,
-		invert
+		tileTransformInterval,
+		invert,
+		endAfterTileLoop
 	) {
-		
+	
 	TileToggleTween.call(
 		this, 
 		windowSize,
 		target,
 		type,
-		startPosition,
 		spriteTransform,
 		spriteTransfomSpeed,
-		false,
+		oneShot,
 		positionCount,
-		invert
+		tileTransformInterval,
+		invert,
+		endAfterTileLoop
 	);
 	this.positionCount = positionCount;
 	this.offsetWidth = this.target.width;
 	this.offsetHeight = this.target.height;		// only height for now
-	this.currentOffsetPos = 0;
 
 	this.tileTransform = tileTransform;
-	this.tileTransfomInterval = tileTransfomInterval;
+	this.tileTransformInterval = tileTransformInterval;
 	this.invert = invert;
-	
-	if (this.invert) {
-		this.target.tilePosition.y = this.target.height - this.transform.y.value;		// only y for now
-	}
 }
 TileToggleMovingTween.prototype = Object.create(TileToggleTween.prototype);
 
 TileToggleMovingTween.prototype.nextStep = function(stepCount, timestamp) {
-//	this.nextStepForTiles(stepCount, timestamp);
+	this.nextStepForTiles(stepCount, timestamp);
 	this.nextStepForSprite(stepCount, timestamp);
 
 	this.lastStepTimestamp = timestamp;
 }
 
 TileToggleMovingTween.prototype.nextStepForTiles = function(stepCount, timestamp) {
-	// FIXME: this doesn't implement the stepCount => we're loosing frames
-	if (this.invert) {
-		if (this.currentOffsetPos > 0)
-			this.currentOffsetPos--;
-		else
-			this.currentOffsetPos = this.positionCount;
-	}
-	else {
+	this.currentPartialStep += stepCount;
+	
+	if (this.currentPartialStep >= this.tileTransformInterval) {
 		if (this.currentOffsetPos < this.positionCount)
 			this.currentOffsetPos++;
-		else
+		else {
 			this.currentOffsetPos = 0;
+			this.target.tilePosition.x = this.initialTilePosition.x.value;
+			this.target.tilePosition.y = this.initialTilePosition.y.value;
+		}
+		this.currentPartialStep = 0;
 	}
+	else
+		return;
 	
-	this.currentStep++;
-	this.target.tilePosition.x  = (new Types.Coord(this.target.tilePosition.x))[this.type](this.tileTransform.x.value * stepCount);
-	this.target.tilePosition.y  = (new Types.Coord(this.target.tilePosition.y + this.currentOffsetPos * this.offsetHeight))[this.type](this.tileTransform.y.value * stepCount);
+	this.target.tilePosition.x  = (new Types.Coord(this.target.tilePosition.x))[this.type](this.tileTransform.x.value);
+	this.target.tilePosition.y  = (new Types.Coord(this.target.tilePosition.y))[this.type](this.tileTransform.y.value);
 }
 
 TileToggleMovingTween.prototype.nextStepForSprite = function(stepCount, timestamp) {

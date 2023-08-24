@@ -254,7 +254,8 @@ const Types = {
 	Transform : Transform,
 	StepDuration : StepDuration,
 	TweenTypes : TweenTypes,
-	EventEmitter : EventEmitter
+	EventEmitter : EventEmitter,
+	disposableSpritesRegister : []
 };
 
 

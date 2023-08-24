@@ -12,6 +12,7 @@ const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 	this.target = target;
 	this.type = type;										// UNION{add, mult, div}
 	this.oneShot = oneShot;
+	this.ended = false;
 	
 	this.transform = transform;
 	this.duration = 0;

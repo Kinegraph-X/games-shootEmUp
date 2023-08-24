@@ -1,5 +1,5 @@
 const CoreTypes = require('src/GameTypes/CoreTypes');
-const gameLogic = require('src/GameTypes/GameLogic');
+const {ruleSet} = require('src/GameTypes/GameLogic');
 
 /**
  * @constructor GameLoop
@@ -12,9 +12,11 @@ const GameLoop = function(windowSize) {
 	}
 	CoreTypes.EventEmitter.call(this);
 	this.createEvent('mainSpaceShipOutOfScreen');
+	this.createEvent('foeSpaceShipDamaged');
 	this.createEvent('foeSpaceShipDestroyed');
 	this.createEvent('foeSpaceShipOutOfScreen');
 	this.createEvent('fireballOutOfScreen');
+	this.createEvent('disposableSpriteAnimationEnded');
 	
 	this.loopStarted = false;
 	this.loopStartedTime = 0;
@@ -42,6 +44,7 @@ GameLoop.prototype.start = function() {
 		 
 		self.currentTime = timestamp - self.loopStartedTime;
 		
+//		performance.mark('benchmark');
 		// Tweens handling
 		for (let i = self.tweens.length - 1; i >= 0; i--) {
 			let tween = self.tweens[i];
@@ -66,27 +69,29 @@ GameLoop.prototype.start = function() {
 					});
 					
 					// trigger an event for the app router to be able to clean the registers
-					if (typeof gameLogic.testOutOfScreen !== 'undefined') {
-						gameLogic.testOutOfScreen.forEach(function(rule) {
-//							console.log(rule.targetName, tween.target.name);
+//					if (typeof ruleSet.testOutOfScreen !== 'undefined') {
+						ruleSet.testOutOfScreen.forEach(function(rule) {
 							if (rule.targetName === tween.target.name) {
 								self[rule.action](rule.params[0], tween[rule.params[1]]);
 							}
 						})
-					}
+//					}
+				}
+				
+				if (tween.ended) {
+					self.removeTween(tween);
+					self.trigger('disposableSpriteAnimationEnded', tween.target);
 				}
 			}
 		}
 		
-		self.recursiveCollisionTest(self);
+		// Collision Handling
+		self.recursivelyTestCollisions(self);
 		
-		// Clean all the collision tests concerning th fireball that made a shot
-		// FIXME: try to find a way to abstract away the named "fireballSprite" prop 
-//		let test;
-//		testsToRemove.forEach(function(sprite) {
-			
-//			
-//		})
+//		performance.measure('bench_measure', 'benchmark');
+//		let perf = performance.getEntriesByName('bench_measure')[performance.getEntriesByName('bench_measure').length - 1].duration;
+//		if (perf > 16)
+//			console.log(perf);
 		 
 		self.renderer.render(self.stage);
 		requestAnimationFrame(loop);
@@ -126,36 +131,40 @@ GameLoop.prototype.removeCollisionTest = function(test) {
 		this.collisionTests.splice(testPos, 1);
 }
 
-GameLoop.prototype.recursiveCollisionTest = function(self) {
+GameLoop.prototype.recursivelyTestCollisions = function(self) {
 	// Collision tests
 	let collisionTest, shouldBreak = false;
 	for (let i = self.collisionTests.length - 1; i >= 0; i--) {
 		collisionTest = self.collisionTests[i];
 		if (collisionTest.testCollision()) {
-			if (typeof gameLogic.foeSpaceShipTestCollision !== 'undefined') {
-				gameLogic.foeSpaceShipTestCollision.forEach(function(rule) {
+//			if (typeof ruleSet.foeSpaceShipTestCollision !== 'undefined') {
+				ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
 					if (rule.targetName === collisionTest.referenceObj.name) {
 						self[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
 						shouldBreak = true;
-						self.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]]);
+						self.cleanCollisionTests(i, collisionTest[rule.params[1]], collisionTest[rule.params[2]]);
 					}
 				});
-			}
+//			}
 		}
 		if (shouldBreak) {
 			break;
-			self.recursiveCollisionTest(self);
+			self.recursivelyTestCollisions(self);
 		}
 	}
 }
 
-GameLoop.prototype.cleanCollisionTests = function(firebBallSprite, foeSpaceShipSprite) {
+GameLoop.prototype.cleanCollisionTests = function(damagingCollisionIdx, firebBallSprite, foeSpaceShipSprite) {
 	let test;
 	for (let i = this.collisionTests.length - 1; i >= 0; i--) {
 		test = this.collisionTests[i];
-		if (test.fireballSprite === firebBallSprite || test.referenceObj === foeSpaceShipSprite) {
+		if (test.fireballSprite === firebBallSprite) {
 			this.collisionTests.splice(i, 1);
 		}
+		else if (test.referenceObj === foeSpaceShipSprite && foeSpaceShipSprite.hasShield)
+			this.collisionTests.splice(i, 1);
+		else if (test.referenceObj === foeSpaceShipSprite && foeSpaceShipSprite.lifePoints === 0)
+			this.collisionTests.splice(i, 1);
 	}
 }
  

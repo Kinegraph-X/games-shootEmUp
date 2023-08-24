@@ -28,7 +28,7 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 	
 	mainSpaceShipContainer.addChild(this.mainSpaceShipSprite.spriteObj);
 	
-	const flameTileDimensions = new CoreTypes.Dimension(34, 83);
+	const flameTileDimensions = new CoreTypes.Dimension(34, 82);
 	this.flameTileSprite = new TilingSprite(
 		new CoreTypes.Point(0, 0),
 		flameTileDimensions,
