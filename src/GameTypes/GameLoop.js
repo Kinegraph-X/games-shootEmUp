@@ -69,13 +69,11 @@ GameLoop.prototype.start = function() {
 					});
 					
 					// trigger an event for the app router to be able to clean the registers
-//					if (typeof ruleSet.testOutOfScreen !== 'undefined') {
-						ruleSet.testOutOfScreen.forEach(function(rule) {
-							if (rule.targetName === tween.target.name) {
-								self[rule.action](rule.params[0], tween[rule.params[1]]);
-							}
-						})
-//					}
+					ruleSet.testOutOfScreen.forEach(function(rule) {
+						if (rule.targetName === tween.target.name) {
+							self[rule.action](rule.params[0], tween[rule.params[1]]);
+						}
+					})
 				}
 				
 				if (tween.ended) {
@@ -137,24 +135,22 @@ GameLoop.prototype.recursivelyTestCollisions = function(self) {
 	for (let i = self.collisionTests.length - 1; i >= 0; i--) {
 		collisionTest = self.collisionTests[i];
 		if (collisionTest.testCollision()) {
-//			if (typeof ruleSet.foeSpaceShipTestCollision !== 'undefined') {
-				ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
-					if (rule.targetName === collisionTest.referenceObj.name) {
-						self[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
-						shouldBreak = true;
-						self.cleanCollisionTests(i, collisionTest[rule.params[1]], collisionTest[rule.params[2]]);
-					}
-				});
-//			}
+			ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
+				if (rule.targetName === collisionTest.referenceObj.name) {
+					self[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
+					shouldBreak = true;
+					self.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]]);
+				}
+			});
 		}
 		if (shouldBreak) {
-			break;
 			self.recursivelyTestCollisions(self);
+			break;
 		}
 	}
 }
 
-GameLoop.prototype.cleanCollisionTests = function(damagingCollisionIdx, firebBallSprite, foeSpaceShipSprite) {
+GameLoop.prototype.cleanCollisionTests = function(firebBallSprite, foeSpaceShipSprite) {
 	let test;
 	for (let i = this.collisionTests.length - 1; i >= 0; i--) {
 		test = this.collisionTests[i];
