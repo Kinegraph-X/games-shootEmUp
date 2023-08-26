@@ -5,20 +5,20 @@ const Sprite = require('src/GameTypes/Sprite');
 
 
 /**
- * @constructor FoeSpaceShip
+ * @constructor ShieldedFoeSpaceShip
  * 
  */
- const FoeSpaceShip = function(position, foeCell, type, texture, lifePoints, lootChance) {
+ const ShieldedFoeSpaceShip = function(position, foeCell, type, texture, lifePoints, lootChance) {
 	 this.dimensions = new CoreTypes.Dimension(120, 120);
 	 this.spriteObj = this.getSprite(position, texture, foeCell);
 	 this.spriteObj.lifePoints = lifePoints;
 	 this.spriteObj.lootChance = lootChance;
-	 this.spriteObj.hasShield = false;
+	 this.spriteObj.hasShield = true;
 	 this.spriteObj.foeType = type;
  }
- FoeSpaceShip.prototype = {};
+ ShieldedFoeSpaceShip.prototype = {};
  
- FoeSpaceShip.prototype.getSprite = function(position, texture, foeCell) {
+ ShieldedFoeSpaceShip.prototype.getSprite = function(position, texture, foeCell) {
 	const sprite = new Sprite(
 		position,
 		this.dimensions,
@@ -37,4 +37,4 @@ const Sprite = require('src/GameTypes/Sprite');
  
  
  
- module.exports = FoeSpaceShip;
+ module.exports = ShieldedFoeSpaceShip;

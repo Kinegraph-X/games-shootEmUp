@@ -12,7 +12,7 @@ const TilingSprite = require('src/GameTypes/TilingSprite');
 const MainSpaceShip = function(position, spaceShipDimensions,  texture, flameTexture, lifePoints) {
 	this.spaceShipDimensions = spaceShipDimensions;
 	this.spriteObj = this.getSprite(position, texture, flameTexture);
-	this.lifePoints = lifePoints;
+	this.spriteObj.lifePoints = lifePoints;
 }
 MainSpaceShip.prototype = {};
 
@@ -25,7 +25,6 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 		this.spaceShipDimensions,
 		texture
 	);
-	
 	mainSpaceShipContainer.addChild(this.mainSpaceShipSprite.spriteObj);
 	
 	const flameTileDimensions = new CoreTypes.Dimension(34, 82);

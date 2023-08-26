@@ -1,5 +1,5 @@
 const CoreTypes = require('src/GameTypes/CoreTypes');
-const {ruleSet} = require('src/GameTypes/GameLogic');
+const {ruleSet} = require('src/GameTypes/gameLogic');
 
 /**
  * @constructor GameLoop
@@ -12,6 +12,8 @@ const GameLoop = function(windowSize) {
 	}
 	CoreTypes.EventEmitter.call(this);
 	this.createEvent('mainSpaceShipOutOfScreen');
+	this.createEvent('mainSpaceShipDamaged');
+	this.createEvent('mainSpaceShipPowerUp');
 	this.createEvent('foeSpaceShipDamaged');
 	this.createEvent('foeSpaceShipDestroyed');
 	this.createEvent('foeSpaceShipOutOfScreen');
@@ -57,6 +59,11 @@ GameLoop.prototype.start = function() {
 				if (!tween.lastStepTimestamp)
 					tween.lastStepTimestamp = self.currentTime;
 				
+				if (tween.ended) {
+					self.removeTween(tween);
+					self.trigger('disposableSpriteAnimationEnded', tween.target);
+				}
+				
 				stepCount = Math.round((self.currentTime - tween.lastStepTimestamp) / (1000 / 60));
 				tween.nextStep(stepCount, self.currentTime);
 				
@@ -74,11 +81,6 @@ GameLoop.prototype.start = function() {
 							self[rule.action](rule.params[0], tween[rule.params[1]]);
 						}
 					})
-				}
-				
-				if (tween.ended) {
-					self.removeTween(tween);
-					self.trigger('disposableSpriteAnimationEnded', tween.target);
 				}
 			}
 		}
@@ -135,13 +137,23 @@ GameLoop.prototype.recursivelyTestCollisions = function(self) {
 	for (let i = self.collisionTests.length - 1; i >= 0; i--) {
 		collisionTest = self.collisionTests[i];
 		if (collisionTest.testCollision()) {
-			ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
-				if (rule.targetName === collisionTest.referenceObj.name) {
-					self[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
-					shouldBreak = true;
-					self.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]]);
-				}
-			});
+			if (collisionTest.objectType === 'fireballCollisionTest') {
+				ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
+					if (rule.targetName === collisionTest.referenceObj.name) {
+						self[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
+						self.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]]);
+					}
+				});
+			}
+			else if (collisionTest.objectType === 'mainSpaceShipCollisionTest') {
+				ruleSet.mainSpaceShipTestCollision.forEach(function(rule) {
+					if (collisionTest.type === rule.type) {
+						self[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
+						self.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]]);
+					}
+				});
+			}
+			shouldBreak = true;
 		}
 		if (shouldBreak) {
 			self.recursivelyTestCollisions(self);
@@ -150,16 +162,19 @@ GameLoop.prototype.recursivelyTestCollisions = function(self) {
 	}
 }
 
-GameLoop.prototype.cleanCollisionTests = function(firebBallSprite, foeSpaceShipSprite) {
+GameLoop.prototype.cleanCollisionTests = function(collidedSprite, foeSpaceShipSprite) {
 	let test;
 	for (let i = this.collisionTests.length - 1; i >= 0; i--) {
 		test = this.collisionTests[i];
-		if (test.fireballSprite === firebBallSprite) {
+		if (test.fireballSprite === collidedSprite) {
 			this.collisionTests.splice(i, 1);
 		}
-		else if (test.referenceObj === foeSpaceShipSprite && foeSpaceShipSprite.hasShield)
+		else if (test.referenceObj === foeSpaceShipSprite && foeSpaceShipSprite.hasShield) {
 			this.collisionTests.splice(i, 1);
+		}	
 		else if (test.referenceObj === foeSpaceShipSprite && foeSpaceShipSprite.lifePoints === 0)
+			this.collisionTests.splice(i, 1);
+		else if (test.referenceObj === foeSpaceShipSprite && collidedSprite.name === 'mainSpaceShipSprite')
 			this.collisionTests.splice(i, 1);
 	}
 }

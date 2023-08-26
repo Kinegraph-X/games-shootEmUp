@@ -2,6 +2,8 @@
  * CoreTypes
  */
 
+require('src/extendedNative/array');
+
 /**
  * @constructor Coord 
  */
@@ -255,7 +257,8 @@ const Types = {
 	StepDuration : StepDuration,
 	TweenTypes : TweenTypes,
 	EventEmitter : EventEmitter,
-	disposableSpritesRegister : []
+	disposableSpritesRegister : [],
+	disposableTweensRegister : []
 };
 
 

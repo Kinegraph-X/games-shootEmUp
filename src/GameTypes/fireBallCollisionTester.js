@@ -11,6 +11,7 @@ const fireballCollisionTester = function(fireballSprite, referenceObj) {
 	this.referenceObj = referenceObj;
 }
 fireballCollisionTester.prototype = {};
+fireballCollisionTester.prototype.objectType = 'fireballCollisionTest';
 
 fireballCollisionTester.prototype.testCollision = function() {						// Fireball sprites go way beyond the visible image
 //	console.log(this.referenceObj.x + this.referenceObj.width / 2, this.fireballSprite.x  + this.fireballSprite.width * 6 / 12);

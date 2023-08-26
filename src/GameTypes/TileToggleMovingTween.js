@@ -57,7 +57,7 @@ TileToggleMovingTween.prototype.nextStepForTiles = function(stepCount, timestamp
 	this.currentPartialStep += stepCount;
 	
 	if (this.currentPartialStep >= this.tileTransformInterval) {
-		if (this.currentOffsetPos < this.positionCount)
+		if (this.currentOffsetPos < this.positionCount - 1)
 			this.currentOffsetPos++;
 		else {
 			this.currentOffsetPos = 0;

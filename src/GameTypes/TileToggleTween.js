@@ -31,7 +31,7 @@ const TileToggleTween = function(
 	
 	this.currentOffsetPos = 0;
 	
-	this.initialTilePosition = new Types.Point(0, 0);
+	this.initialTilePosition = new Types.Point(1, 1);
 	this.target.tilePosition.x = 1;
 	this.target.tilePosition.y = 1;
 	
@@ -48,7 +48,7 @@ TileToggleTween.prototype.nextStep = function(stepCount, timestamp) {
 	this.currentPartialStep += stepCount;
 	
 	if (this.currentPartialStep >= this.tileTransformInterval) {
-		if (this.currentOffsetPos < this.positionCount)
+		if (this.currentOffsetPos < this.positionCount - 1)
 			this.currentOffsetPos++;
 		else {
 			if (this.endAfterTileLoop) {
@@ -64,7 +64,6 @@ TileToggleTween.prototype.nextStep = function(stepCount, timestamp) {
 	else
 		return;
 	
-	// + this.currentOffsetPos * this.offsetHeight
 	this.target.tilePosition.x  = (new Types.Coord(this.target.tilePosition.x))[this.type](this.transform.x.value);
 	this.target.tilePosition.y  = (new Types.Coord(this.target.tilePosition.y))[this.type](this.transform.y.value);
 	this.lastStepTimestamp = timestamp;
