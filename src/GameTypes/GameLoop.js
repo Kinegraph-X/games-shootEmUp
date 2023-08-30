@@ -70,15 +70,15 @@ GameLoop.prototype.start = function() {
 		
 		frameDuration = timestamp - previousTimeStamp;
 		if (!(stdFrameDuration = self.getFrameDuration(frameDuration))) {
-			console.log(frameDuration, stdFrameDuration, self.firstFramesDuration);
+//			console.log(frameDuration, stdFrameDuration, self.firstFramesDuration);
 			previousTimeStamp = timestamp;
 			requestAnimationFrame(loop);
 			return;
 		}
-		else {
-			console.log(stdFrameDuration);
+//		else {
+//			console.log(stdFrameDuration);
 //			return;
-		}
+//		}
 		previousTimeStamp = timestamp;
 		
 //		performance.mark('benchmark');
