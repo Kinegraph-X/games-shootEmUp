@@ -23,6 +23,10 @@ const GameLoop = function(windowSize) {
 	
 	this.loopStarted = false;
 	this.loopStartedTime = 0;
+	this.firstFramesDuration = {
+		chosen : 0,
+		groups : []
+	};
 	this.currentTime = 0;
 	this.tweens = [];
 	this.collisionTests = [];
@@ -31,10 +35,21 @@ const GameLoop = function(windowSize) {
 }
 GameLoop.prototype = Object.create(EventEmitter.prototype);
 
+/**
+ * @static FrameGroup
+ */
+GameLoop.prototype.FrameGroup = function(initialVal) {
+	this.rounded = Math.round(initialVal);
+	this.values = [];
+	this.values.average(initialVal);
+}
  
 GameLoop.prototype.start = function() {
 	var self= this,
-		stepCount = 0;
+		stepCount = 0,
+		previousTimeStamp = 0,
+		frameDuration = 0,
+		stdFrameDuration = 0;
 	this.loopStarted = true;
 //	let loopLastTimestamp = 0;
 	
@@ -48,9 +63,23 @@ GameLoop.prototype.start = function() {
 		 	return;
 		else if (!self.loopStartedTime) {
 		 	self.loopStartedTime = timestamp;
+		 	previousTimeStamp = timestamp;
 		}
 		 
 		self.currentTime = timestamp - self.loopStartedTime;
+		
+		frameDuration = timestamp - previousTimeStamp;
+		if (!(stdFrameDuration = self.getFrameDuration(frameDuration))) {
+			console.log(frameDuration, stdFrameDuration, self.firstFramesDuration);
+			previousTimeStamp = timestamp;
+			requestAnimationFrame(loop);
+			return;
+		}
+		else {
+			console.log(stdFrameDuration);
+//			return;
+		}
+		previousTimeStamp = timestamp;
 		
 //		performance.mark('benchmark');
 
@@ -72,10 +101,10 @@ GameLoop.prototype.start = function() {
 					self.trigger('disposableSpriteAnimationEnded', tween.target);
 				}
 				
-				stepCount = Math.round((self.currentTime - tween.lastStepTimestamp) / (1000 / 60));
+				stepCount = Math.round((self.currentTime - tween.lastStepTimestamp) / stdFrameDuration);
 				if (!stepCount)
 					continue;
-				tween.nextStep(stepCount, self.currentTime);
+				tween.nextStep(stepCount, stdFrameDuration, self.currentTime);
 				
 				if (tween.testOutOfScreen()) {
 					self.removeTween(tween);
@@ -104,8 +133,8 @@ GameLoop.prototype.start = function() {
 //			console.log('last frame interval : ' + (self.currentTime - loopLastTimestamp).toString());
 //			console.log('frame compute duration : ' + perf.toString());
 //		}
-		
 //		loopLastTimestamp = self.currentTime;
+
 		// Finally render the stage
 		self.renderer.render(self.stage);
 		requestAnimationFrame(loop);
@@ -122,6 +151,39 @@ GameLoop.prototype.stop = function() {
 	this.loopStartedTime = 0;
 	
 	console.log("stop : this.loopStarted", this.loopStarted);
+}
+
+
+GameLoop.prototype.getFrameDuration = function(duration) {
+	if (this.firstFramesDuration.chosen)
+		return this.firstFramesDuration.chosen;
+	else {
+		if (!this.firstFramesDuration.groups.length)
+			this.firstFramesDuration.groups.push(new this.FrameGroup(duration));
+		else {
+			const roundedDuration = Math.round(duration);
+			let found = false;
+			this.firstFramesDuration.groups.forEach(function(group) {
+				if (!found) {
+					if (group.rounded === roundedDuration) {
+						found = true;
+						group.values.average(duration);
+					}
+					if (group.values.length === 5) {
+						found = true;
+						this.firstFramesDuration.chosen = group.values.avg;
+					}
+				}
+			}, this);
+			if (!found) {
+				this.firstFramesDuration.groups.push(new this.FrameGroup(duration));
+			}
+		}
+		
+		if (this.firstFramesDuration.chosen)
+			return this.firstFramesDuration.chosen;
+	}
+	return null;
 }
 
 /**
@@ -360,10 +422,8 @@ GameLoop.prototype.updateDeletedTests = function(deletedTests, clearedTests) {
  */
 GameLoop.prototype.effectivelySpliceDeletedTests = function(clearedTests) {
 	let testIdx = 0, setAsArray = Array.from(clearedTests).sort(this.sortingFunction);
-	let debugArray = [];
 	for (let i = setAsArray.length - 1; i >= 0; i--) {
 		testIdx = setAsArray[i];
-		debugArray.push(this.collisionTests[testIdx].referenceObj._UID)
 		this.collisionTests.splice(testIdx, 1);
 	}
 }

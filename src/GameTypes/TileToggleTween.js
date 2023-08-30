@@ -44,7 +44,7 @@ const TileToggleTween = function(
 }
 TileToggleTween.prototype = Object.create(TileTween.prototype);
 
-TileToggleTween.prototype.nextStep = function(stepCount, timestamp) {
+TileToggleTween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
 	this.currentPartialStep += stepCount;
 	
 	if (this.currentPartialStep >= this.tileTransformInterval) {

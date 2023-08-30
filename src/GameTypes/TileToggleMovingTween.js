@@ -53,7 +53,7 @@ TileToggleMovingTween.prototype.nextStep = function(stepCount, timestamp) {
 	this.lastStepTimestamp = timestamp;
 }
 
-TileToggleMovingTween.prototype.nextStepForTiles = function(stepCount, timestamp) {
+TileToggleMovingTween.prototype.nextStepForTiles = function(stepCount, frameDuration, timestamp) {
 	this.currentPartialStep += stepCount;
 	
 	if (this.currentPartialStep >= this.tileTransformInterval) {

@@ -26,7 +26,7 @@ const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 }
 Tween.prototype = {};
 
-Tween.prototype.nextStep = function(stepCount, timestamp) {
+Tween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
 	this.currentStep++;
 	this.target.x  = (new Types.Coord(this.target.x))[this.type](this.transform.x.value * stepCount * this.speed);
 	this.target.y  = (new Types.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed);
