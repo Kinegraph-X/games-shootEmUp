@@ -366,8 +366,6 @@ GameLoop.prototype.effectivelySpliceDeletedTests = function(clearedTests) {
 		debugArray.push(this.collisionTests[testIdx].referenceObj._UID)
 		this.collisionTests.splice(testIdx, 1);
 	}
-	if (debugArray.length)
-		console.log('UID\'s for cleared tests  :', debugArray.join(',  '));
 }
 
 /**

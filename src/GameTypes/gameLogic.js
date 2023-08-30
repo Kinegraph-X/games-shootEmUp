@@ -254,6 +254,9 @@ const handlePowerUp = function(
 				statusBarSprite.tilePosition.x += 470;
 			}
 			break;
+		case 'weapon':
+			if (typeof gameConstants.weapons[(++gameState.currentWeapon).toString()] === 'undefined')
+				gameState.currentWeapon--;
 		default:
 			break;
 	}
