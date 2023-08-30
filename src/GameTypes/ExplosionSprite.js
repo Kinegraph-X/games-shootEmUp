@@ -1,6 +1,7 @@
 
 
 const CoreTypes = require('src/GameTypes/CoreTypes');
+const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const Sprite = require('src/GameTypes/Sprite');
 const TilingSprite = require('src/GameTypes/TilingSprite');
 
@@ -10,6 +11,7 @@ const TilingSprite = require('src/GameTypes/TilingSprite');
  * 
  */
  const ExplosionSprite = function(position, dimensions, texture) {
+	 this._UID = UIDGenerator.newUID();
 	 this.dimensions = dimensions;
 	 this.spriteObj = this.getSprite(position, texture);
  }
@@ -17,6 +19,7 @@ const TilingSprite = require('src/GameTypes/TilingSprite');
  
  ExplosionSprite.prototype.getSprite = function(position, texture) {
 	const sprite = new TilingSprite(
+		this._UID,
 		new CoreTypes.Point(0, 0),
 		this.dimensions,
 		texture

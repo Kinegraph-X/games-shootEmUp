@@ -1,6 +1,7 @@
 
 
 const CoreTypes = require('src/GameTypes/CoreTypes');
+const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const Sprite = require('src/GameTypes/Sprite');
 const TilingSprite = require('src/GameTypes/TilingSprite');
 
@@ -10,6 +11,7 @@ const TilingSprite = require('src/GameTypes/TilingSprite');
  * 
  */
 const MainSpaceShip = function(position, spaceShipDimensions,  texture, flameTexture, lifePoints) {
+	this._UID = UIDGenerator.newUID();
 	this.spaceShipDimensions = spaceShipDimensions;
 	this.spriteObj = this.getSprite(position, texture, flameTexture);
 	this.spriteObj.lifePoints = lifePoints;
@@ -21,6 +23,7 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 	mainSpaceShipContainer.name = 'mainSpaceShipSprite';
 	
 	this.mainSpaceShipSprite = new Sprite(
+		this._UID,
 		new CoreTypes.Point(0, 0),
 		this.spaceShipDimensions,
 		texture
@@ -29,6 +32,7 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 	
 	const flameTileDimensions = new CoreTypes.Dimension(34, 82);
 	this.flameTileSprite = new TilingSprite(
+		'-1',						// the flame shouldn't need to be referenced in a register, let's give it a fake  UID 
 		new CoreTypes.Point(0, 0),
 		flameTileDimensions,
 		flameTexture

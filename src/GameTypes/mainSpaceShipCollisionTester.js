@@ -14,12 +14,16 @@ const mainSpaceShipCollisionTester = function(mainSpaceShipSprite, referenceObj,
 mainSpaceShipCollisionTester.prototype = {};
 mainSpaceShipCollisionTester.prototype.objectType = 'mainSpaceShipCollisionTest';
 
-mainSpaceShipCollisionTester.prototype.testCollision = function() {						// Fireball sprites go way beyond the visible image
-//	console.log(this.referenceObj.x + this.referenceObj.width / 2, this.mainSpaceShipSprite.x  + this.mainSpaceShipSprite.width * 6 / 12);
-//	console.log(this.referenceObj.x - this.referenceObj.width / 2, this.mainSpaceShipSprite.x + this.mainSpaceShipSprite.width * 6 / 12);	
+mainSpaceShipCollisionTester.prototype.testCollision = function() {
+//	console.log(this.referenceObj.x + this.referenceObj.width / 2, this.mainSpaceShipSprite.x, this.mainSpaceShipSprite.width * 3 / 12);
+//	console.log(this.referenceObj.x - this.referenceObj.width / 2, this.mainSpaceShipSprite.x, this.mainSpaceShipSprite.width * 9 / 12);	
 	if (this.referenceObj.y + this.referenceObj.height / 2 > this.mainSpaceShipSprite.y + 38
-		&& this.referenceObj.x + this.referenceObj.width / 2 > this.mainSpaceShipSprite.x  + this.mainSpaceShipSprite.width * 3 / 12
-			&& this.referenceObj.x - this.referenceObj.width / 2 < this.mainSpaceShipSprite.x + this.mainSpaceShipSprite.width * 9 / 12
+		&& this.referenceObj.y - this.referenceObj.height / 2 < this.mainSpaceShipSprite.y + this.mainSpaceShipSprite.height 
+		&& ((this.referenceObj.x + this.referenceObj.width / 2 > this.mainSpaceShipSprite.x  + this.mainSpaceShipSprite.width * 3 / 12
+				&& this.referenceObj.x - this.referenceObj.width / 2 < this.mainSpaceShipSprite.x + this.mainSpaceShipSprite.width * 9 / 12)
+			|| (this.referenceObj.x - this.referenceObj.width / 2 < this.mainSpaceShipSprite.x + this.mainSpaceShipSprite.width * 9 / 12
+				&& this.referenceObj.x + this.referenceObj.width / 2 > this.mainSpaceShipSprite.x + this.mainSpaceShipSprite.width * 3 / 12)
+			)
 		)
 		return true;
 	

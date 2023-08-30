@@ -3,6 +3,8 @@
  */
 
 const CoreTypes = require('src/GameTypes/CoreTypes');
+const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
+let gameState = require('src/GameTypes/GameState');
 const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell, getRandomFoe} = require('src/GameTypes/gridManager');
 const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons} = require('src/GameTypes/gameConstants');
 const KeyboardEvents = require('src/events/JSKeyboardMap');
@@ -18,7 +20,9 @@ const TileToggleMovingTween = require('src/GameTypes/TileToggleMovingTween');
 const MainSpaceShip = require('src/GameTypes/MainSpaceShip');
 const FoeSpaceShip = require('src/GameTypes/FoeSpaceShip');
 const ShieldedFoeSpaceShip = require('src/GameTypes/ShieldedFoeSpaceShip');
+const StatusBarSprite = require('src/GameTypes/StatusBarSprite');
 const Projectile = require('src/GameTypes/Projectile');
+const ProjectileFactory = require('src/GameTypes/ProjectileFactory');
 
 const spaceShipCollisionTester = require('src/GameTypes/spaceShipCollisionTester');
 const fireBallCollisionTester = require('src/GameTypes/fireBallCollisionTester');
@@ -29,11 +33,6 @@ const gameLogic = require('src/GameTypes/gameLogic');
  
 var classConstructor = function() {
 	function init(rootNodeSelector) {
-		
-		let  gameState = {
-			currentLevel : 1
-		}
-		
 		const keyboardListener = new KeyboardListener();
 		
 
@@ -63,12 +62,13 @@ var classConstructor = function() {
 					name : 'flames',
 					assets : [
 						{name : 'flamesTilemap', srcs : 'plugins/ShootEmUp/assets/ships/Flames_tilemap.png'},
-						{name : 'fireballsTilemap', srcs : 'plugins/ShootEmUp/assets/Fireball_sprite.png'},
+						{name : 'fireballsTilemap', srcs : 'plugins/ShootEmUp/assets/Fireball_sprite_v2.png'},
 						{name : 'impactTilemap', srcs : 'plugins/ShootEmUp/assets/Impact_sprite.png'},
 						{name : 'greenExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Explosion_Sprite.png'},
 						{name : 'yellowExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Yellow_Explosion_Sprite.png'},
 						{name : 'shieldTilemap', srcs : 'plugins/ShootEmUp/assets/Shield_Sprite.png'},
-						{name : 'medikitTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Medikit_Sprite.png'}
+						{name : 'medikitTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Medikit_Sprite.png'},
+						{name : 'weaponTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Weapon_Sprite.png'}
 					]
 				}
 			]
@@ -85,6 +85,7 @@ var classConstructor = function() {
 		
 		// ONLOADED => GAME INIT
 		function onLoaded(loadedAssets) {
+			console.log('Ctrl + Q to stop the game loop');
 			const gameLoop = new GameLoop(windowSize);
 			
 			
@@ -92,6 +93,7 @@ var classConstructor = function() {
 			// BACKGROUND
 			const bgZoom = 1.8;
 			const worldMap = new TilingSprite(
+				UIDGenerator.newUID(),
 				new CoreTypes.Point(-(windowSize.x.value * bgZoom - windowSize.x.value) / 2, 0),
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
 				loadedAssets[0].bgBack,
@@ -115,7 +117,7 @@ var classConstructor = function() {
 				mainSpaceShipDimensions,
 				loadedAssets[1].mainSpaceShip,
 				loadedAssets[2].flamesTilemap,
-				mainSpaceShipLifePoints[1]
+				mainSpaceShipLifePoints['1']
 			);
 			const flameTween = new TileToggleTween(
 				windowSize,
@@ -133,9 +135,8 @@ var classConstructor = function() {
 			
 			
 			// FOE SPACESHIPS
-			let foeSpaceShipsRegister = [], foeSpaceShipsTweensRegister = [];
 			function addFoeSpaceShips() {
-				let partialFoeSpaceShipsRegister = []
+				let partialFoeSpaceShipsRegister = [];
 				let foeSpaceShip, foeCount = 0, shieldedFoeCount = 0, foeCell, foePosition, randomFoeSeed, randomFoe, foeSpaceShipTween;
 				while (foeCount < levels[gameState.currentLevel].foeCount) {
 					
@@ -147,19 +148,20 @@ var classConstructor = function() {
 					
 					randomFoeSeed = gameState.currentLevel < 3 ? Object.keys(loadedAssets[1]).length - 4 : Object.keys(loadedAssets[1]).length - 3;
 					randomFoe = getRandomFoe(randomFoeSeed).toString();
+					randomFoe = '2';
 					
-					if (randomFoe > 1 && shieldedFoeCount <= levels[gameState.currentLevel].shieldedFoeCount - 1) {
-						foeSpaceShip = new ShieldedFoeSpaceShip(
-							foePosition,
-							foeCell,
-							randomFoe,
-							loadedAssets[1]['foeSpaceShip0' + randomFoe + 'Shielded'],
-							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
-							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
-						);
-						shieldedFoeCount++;
-					}
-					else {
+//					if (parseInt(randomFoe) > 1 && shieldedFoeCount <= levels[gameState.currentLevel].shieldedFoeCount - 1) {
+//						foeSpaceShip = new ShieldedFoeSpaceShip(
+//							foePosition,
+//							foeCell,
+//							randomFoe,
+//							loadedAssets[1]['foeSpaceShip0' + randomFoe + 'Shielded'],
+//							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
+//							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
+//						);
+//						shieldedFoeCount++;
+//					}
+//					else {
 						foeSpaceShip = new FoeSpaceShip(
 							foePosition,
 							foeCell,
@@ -168,58 +170,75 @@ var classConstructor = function() {
 							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
 							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
 						);
-					}
+//					}
 					
 					partialFoeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
-					foeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
+					CoreTypes.foeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
 					
 					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
-					foeSpaceShipsTweensRegister.push(foeSpaceShipTween);
+					CoreTypes.foeSpaceShipsTweensRegister.push(foeSpaceShipTween);
 					
 					gameLoop.pushTween(foeSpaceShipTween);
 					gameLoop.stage.addChild(foeSpaceShip.spriteObj);
 					foeCount++;
-					
-					let mainSpaceShipCollisionTest;
-					partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
-						mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite.spriteObj, foeSpaceShipSpriteObj, 'hostile');
-						gameLoop.pushCollisionTest(mainSpaceShipCollisionTest);
-						foeSpaceShipTween.collisionTestsRegister.push(mainSpaceShipCollisionTest);
-					});
 				}
+				let mainSpaceShipCollisionTest, foeSpriteIdx = 0;
+				partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
+					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite.spriteObj, foeSpaceShipSpriteObj, 'hostile');
+					gameLoop.pushCollisionTest(mainSpaceShipCollisionTest);
+					foeSpriteIdx = CoreTypes.foeSpaceShipsRegister.indexOf(foeSpaceShipSpriteObj);
+					CoreTypes.foeSpaceShipsTweensRegister[foeSpriteIdx].collisionTestsRegister.push(mainSpaceShipCollisionTest);
+				});
 			}
 			addFoeSpaceShips();
+
+//			let foeSpaceShip, foeCount = 0, shieldedFoeCount = 0, foeCell, foePosition, randomFoeSeed, randomFoe, foeSpaceShipTween;
+//			while (foeCount < 28) {
+//				foeCell = getFoeCell();
+//				foePosition = new CoreTypes.Point(
+//					parseInt(gridCoords.x[foeCell.x] + cellSize / 2),
+//					parseInt(gridCoords.y[foeCell.y] - cellSize * 2)
+//				);
+//				
+//				foeSpaceShip = new FoeSpaceShip(
+//					foePosition,
+//					foeCell,
+//					1,
+//					loadedAssets[1]['foeSpaceShip01'],
+//					0,
+//					0
+//				);
+//				
+//				let lootSprite = gameLogic.createLoot(
+//					gameLoop,
+//					foeSpaceShip.spriteObj,
+//					loadedAssets
+//				);
+//				
+//				let mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite.spriteObj, lootSprite, 'powerUp');
+////				console.log('looted', mainSpaceShipCollisionTest);
+//				CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
+//				
+//				foeCount++;
+//			}
+
 			
 			
-			// FIREBALLS
-			let fireballsRegister = [], fireballsTweensRegister = [];
-			function launchFireball() {
-				const fireballDimensions = new CoreTypes.Dimension(125, 125);
+			// Projectiles
+			function launchFireball(type) {
 				const startPosition = new CoreTypes.Point(
-					mainSpaceShipSprite.spriteObj.x + mainSpaceShipDimensions.x.value / 2 - fireballDimensions.x.value / 2,
-					mainSpaceShipSprite.spriteObj.y - fireballDimensions.y.value + 38		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
+					mainSpaceShipSprite.spriteObj.x + mainSpaceShipDimensions.x.value / 2,
+					mainSpaceShipSprite.spriteObj.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
 				);
-				
-				const fireball = new Projectile(
+				new ProjectileFactory(
+					windowSize,
+					loadedAssets,
+					gameLoop,
 					startPosition,
-					fireballDimensions,
-					loadedAssets[2].fireballsTilemap,
-					1
-				)
-				fireballsRegister.push(fireball.spriteObj);
-				
-				const fireballTween = new TileToggleMovingTween(windowSize, fireball.spriteObj, CoreTypes.TweenTypes.add, startPosition, new CoreTypes.Point(0, -25), .4, false, 12, new CoreTypes.Point(0, 125), 11, 'invert');
-				fireballsTweensRegister.push(fireballTween);
-				
-				gameLoop.pushTween(fireballTween);
-				gameLoop.stage.addChild(fireball.spriteObj);
-				
-				let fireBallCollisionTest;
-				foeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
-					fireBallCollisionTest = new fireBallCollisionTester(fireball.spriteObj, foeSpaceShipSpriteObj);
-					gameLoop.pushCollisionTest(fireBallCollisionTest);
-					fireballTween.collisionTestsRegister.push(fireBallCollisionTest);
-				});
+					weapons[type].spriteTexture,
+					weapons[type].damage,
+					weapons[type].moveTiles
+				);
 			}
 			
 			
@@ -248,7 +267,7 @@ var classConstructor = function() {
 
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
-					launchFireball();
+					launchFireball(gameState.currentWeapon);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('Q') && ctrlKey) {
 					gameLoop.stop()
@@ -259,31 +278,12 @@ var classConstructor = function() {
 			
 			
 			// STATUS BAR
-			const margin = 15;
-			const statusBar = new TilingSprite(
-				new CoreTypes.Point(0, 0),
-				new CoreTypes.Dimension(235, 74),
-				loadedAssets[0].statusBarLeft,
-				.5
-			);
-			statusBar.spriteObj.x = margin + 10;
-			statusBar.spriteObj.y = windowSize.y.value - (74 + margin);
-			statusBar.spriteObj.tilePosition.x = 942;
-			statusBar.spriteObj.name = 'statusBar';
-			gameLoop.stage.addChild(statusBar.spriteObj);
-			
-			const currentLevelText = new PIXI.Text('1', {
-				     fontFamily: '"Showcard Gothic"',
-				     fontSize: 32,
-				     fill: 0xffd338,
-				     align: 'center'
-				 }
-			 );
-			currentLevelText.x = 36 + margin;
-			currentLevelText.y = windowSize.y.value - (74 + margin) + 7;
-			
-			gameLoop.stage.addChild(statusBar.spriteObj);
-			gameLoop.stage.addChild(currentLevelText);
+			const statusBar = new StatusBarSprite(
+				windowSize,
+				loadedAssets[0].statusBarLeft
+			)
+			gameLoop.stage.addChild(statusBar.gameStatusSpriteObj);
+			gameLoop.stage.addChild(statusBar.textForLevelSpriteObj);
 			
 			
 			
@@ -291,18 +291,12 @@ var classConstructor = function() {
 			gameLoop.addEventListener('foeSpaceShipOutOfScreen', function(e) {
 				gameLogic.handleFoeSpaceShipOutOfScreen(
 					gameLoop,
-					e.data,
-					foeSpaceShipsRegister,
-					foeSpaceShipsTweensRegister
+					e.data
 				);
 			});
 			gameLoop.addEventListener('foeSpaceShipDamaged', function(e) {
 				gameLogic.handleFoeSpaceShipDamaged(
 					gameLoop,
-					foeSpaceShipsRegister,
-					foeSpaceShipsTweensRegister,
-					fireballsRegister,
-					fireballsTweensRegister,
 					e.data[1],
 					e.data[0],
 					mainSpaceShipSprite.spriteObj,
@@ -311,27 +305,22 @@ var classConstructor = function() {
 			});
 			gameLoop.addEventListener('foeSpaceShipDestroyed', function(e) {
 				gameLogic.shouldChangeLevel(
-					gameState,
-					foeSpaceShipsRegister,
-					currentLevelText,
+					statusBar.textForLevelSpriteObj,
 					addFoeSpaceShips
 				);
 			});
 			gameLoop.addEventListener('mainSpaceShipPowerUp', function(e) {
 				gameLogic.handlePowerUp(
-					gameState,
 					gameLoop,
 					e.data[1],
 					e.data[0],
-					statusBar.spriteObj
+					statusBar.gameStatusSpriteObj
 				);
 			});
 			gameLoop.addEventListener('fireballOutOfScreen', function(e) {
 				gameLogic.handleFireballOutOfScreen(
 					gameLoop,
-					e.data,
-					fireballsRegister,
-					fireballsTweensRegister
+					e.data
 				);
 			});
 			gameLoop.addEventListener('mainSpaceShipOutOfScreen', function(e) {
@@ -342,8 +331,8 @@ var classConstructor = function() {
 					gameLoop,
 					e.data[0],
 					loadedAssets,
-					statusBar.spriteObj,
-					currentLevelText
+					statusBar.gameStatusSpriteObj,
+					statusBar.textForLevelSpriteObj
 				);
 
 			});

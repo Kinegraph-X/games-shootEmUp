@@ -4,14 +4,15 @@ const CoreTypes = require('src/GameTypes/CoreTypes');
  * @constructor Sprite
  * @param position {CoreType.Point}
  */
- const Sprite = function(position, dimensions, texture, rotation) {
+ const Sprite = function(UID, position, dimensions, texture, rotation) {
 	if (typeof PIXI === 'undefined') {
 		console.warn('The PIXI lib must be present in the global scope of the page');
 		return;
 	}
 	
-	
+	this._UID = UID;
 	this.spriteObj = PIXI.Sprite.from(texture);
+	this.spriteObj._UID = this._UID;
 	this.spriteObj.enteredScreen = false;
 	 
 	position = position || new CoreTypes.Point()

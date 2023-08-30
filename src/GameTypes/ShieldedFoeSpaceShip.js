@@ -1,6 +1,7 @@
 
 
 const CoreTypes = require('src/GameTypes/CoreTypes');
+const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const Sprite = require('src/GameTypes/Sprite');
 
 
@@ -9,6 +10,7 @@ const Sprite = require('src/GameTypes/Sprite');
  * 
  */
  const ShieldedFoeSpaceShip = function(position, foeCell, type, texture, lifePoints, lootChance) {
+	 this._UID = UIDGenerator.newUID();
 	 this.dimensions = new CoreTypes.Dimension(120, 120);
 	 this.spriteObj = this.getSprite(position, texture, foeCell);
 	 this.spriteObj.lifePoints = lifePoints;
@@ -20,6 +22,7 @@ const Sprite = require('src/GameTypes/Sprite');
  
  ShieldedFoeSpaceShip.prototype.getSprite = function(position, texture, foeCell) {
 	const sprite = new Sprite(
+		this._UID,
 		position,
 		this.dimensions,
 		texture,

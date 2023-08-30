@@ -4,8 +4,10 @@
  */
 
 const CoreTypes = require('src/GameTypes/CoreTypes');
+const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const gameConstants = require('src/GameTypes/gameConstants');
 const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell, getRandomFoe} = require('src/GameTypes/gridManager');
+const gameState = require('src/GameTypes/GameState');
 
 const ExplosionSprite = require('src/GameTypes/ExplosionSprite');
 const LootSprite = require('src/GameTypes/LootSprite');
@@ -42,10 +44,6 @@ const ruleSet = {
 
 const handleFoeSpaceShipDamaged = function(
 		gameLoop,
-		foeSpaceShipsRegister,
-		foeSpaceShipsTweensRegister,
-		fireballsRegister,
-		fireballsTweensRegister,
 		damagedFoeSpaceShip,
 		explodedFireball,
 		mainSpaceShipSprite,
@@ -73,35 +71,23 @@ const handleFoeSpaceShipDamaged = function(
 		loadedAssets
 	);
 	
-	if (damagedFoeSpaceShip.lifePoints === 0)
+	if (damagedFoeSpaceShip.lifePoints <= 0)
 		 handleFoeSpaceShipDestroyed(
-			 gameLoop,
-			foeSpaceShipsRegister,
-			foeSpaceShipsTweensRegister,
-			fireballsRegister,
-			fireballsTweensRegister,
+			gameLoop,
 			damagedFoeSpaceShip,
-			explodedFireball,
 			mainSpaceShipSprite,
 			loadedAssets
 		);
 	
 	removeFireBallFromStage(
 		gameLoop,
-		fireballsRegister,
-		fireballsTweensRegister,
 		explodedFireball
 	)
 }
 
 const handleFoeSpaceShipDestroyed = function(
 		gameLoop,
-		foeSpaceShipsRegister,
-		foeSpaceShipsTweensRegister,
-		fireballsRegister,
-		fireballsTweensRegister,
 		damagedFoeSpaceShip,
-		explodedFireball,
 		mainSpaceShipSprite,
 		loadedAssets
 	) {
@@ -113,12 +99,16 @@ const handleFoeSpaceShipDestroyed = function(
 	);
 	
 	// foeSpaceShipSprite removal from the gameLoop & scene
-	let spritePos = foeSpaceShipsRegister.indexOf(damagedFoeSpaceShip);
-	foeSpaceShipsRegister.splice(spritePos, 1);
-	gameLoop.removeTween(foeSpaceShipsTweensRegister[spritePos]);
-	foeSpaceShipsTweensRegister.splice(spritePos, 1);
+	let spritePos = CoreTypes.foeSpaceShipsRegister.indexOf(damagedFoeSpaceShip);
+	CoreTypes.foeSpaceShipsRegister.splice(spritePos, 1);
+	gameLoop.removeTween(CoreTypes.foeSpaceShipsTweensRegister[spritePos]);
+	CoreTypes.foeSpaceShipsTweensRegister.splice(spritePos, 1);
 	
 	spritePos = gameLoop.stage.children.indexOf(damagedFoeSpaceShip);
+	
+	if (spritePos === -1)
+		console.warn('a foe spaceship wasn\'t found in the scene for deletion', spritePos, damagedFoeSpaceShip)
+	
 	gameLoop.stage.children.splice(spritePos, 1);
 	
 	if (Math.random() <= damagedFoeSpaceShip.lootChance) {
@@ -138,17 +128,18 @@ const handleFoeSpaceShipDestroyed = function(
 
 const removeFireBallFromStage = function(
 		gameLoop,
-		fireballsRegister,
-		fireballsTweensRegister,
 		explodedFireball
 	) {
-	let spritePos = fireballsRegister.indexOf(explodedFireball);
-	fireballsRegister.splice(spritePos, 1);
-	gameLoop.removeTween(fireballsTweensRegister[spritePos]);
-	fireballsTweensRegister.splice(spritePos, 1);
+	let spritePos = CoreTypes.fireballsRegister.indexOf(explodedFireball);
+	CoreTypes.fireballsRegister.splice(spritePos, 1);
+	gameLoop.removeTween(CoreTypes.fireballsTweensRegister[spritePos]);
+	CoreTypes.fireballsTweensRegister.splice(spritePos, 1);
+	
 	
 	spritePos = gameLoop.stage.children.indexOf(explodedFireball);
-	gameLoop.stage.children.splice(spritePos, 1);
+	
+	if (spritePos >= 0)		// seems this can be called on a fireball which has already collided with a foeSpaceShip
+		gameLoop.stage.children.splice(spritePos, 1);
 }
 
 const handleLoot = function(
@@ -164,8 +155,17 @@ const handleLoot = function(
 		loadedAssets
 	);
 	
+	// There has already been enough loots of a certain type
+	if (typeof lootSprite === 'undefined')
+		return;
+	else
+		gameState.currentLootCount[lootSprite.lootType]++;
+	
 	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, lootSprite, 'powerUp');
-	gameLoop.pushCollisionTest(mainSpaceShipCollisionTest);
+	// we chose not to append the new collisionTest synchronously,
+	// but raher to wait for the next frame : appending it synchronlously 
+	// has caused us a lot of false tracks when debugging
+	CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
 }
 
 
@@ -225,6 +225,9 @@ const handleMainSpaceShipDestroyed = function(
 	spritePos = gameLoop.stage.children.indexOf(currentLevelText);
 	gameLoop.stage.children.splice(spritePos, 1);
 	
+	// can't remove collision test while looping
+//	gameLoop.removeAllCollisionTests();
+	
 	createYellowExplosion(
 		gameLoop,
 		damagedMainSpaceShip,
@@ -233,7 +236,6 @@ const handleMainSpaceShipDestroyed = function(
 }
 
 const handlePowerUp = function(
-		gameState,
 		gameLoop,
 		lootSprite,
 		mainSpaceShipSprite,
@@ -244,7 +246,6 @@ const handlePowerUp = function(
 	gameLoop.removeTween(tween);
 	const spritePos = gameLoop.stage.children.indexOf(lootSprite);
 	gameLoop.stage.children.splice(spritePos, 1);
-	
 	
 	switch(lootSprite.lootType) {
 		case 'medikit':
@@ -261,14 +262,12 @@ const handlePowerUp = function(
 
 const handleFoeSpaceShipOutOfScreen = function(
 		gameLoop,
-		spaceShipSprite,
-		foeSpaceShipsRegister,
-		foeSpaceShipsTweensRegister
+		spaceShipSprite
 	) {
-	let spritePos = foeSpaceShipsRegister.indexOf(spaceShipSprite);
-	foeSpaceShipsRegister.splice(spritePos, 1);
-	gameLoop.removeTween(foeSpaceShipsTweensRegister[spritePos]);
-	foeSpaceShipsTweensRegister.splice(spritePos, 1);
+	let spritePos = CoreTypes.foeSpaceShipsRegister.indexOf(spaceShipSprite);
+	CoreTypes.foeSpaceShipsRegister.splice(spritePos, 1);
+	gameLoop.removeTween(CoreTypes.foeSpaceShipsTweensRegister[spritePos]);
+	CoreTypes.foeSpaceShipsTweensRegister.splice(spritePos, 1);
 	
 	spritePos = gameLoop.stage.children.indexOf(spaceShipSprite);
 	gameLoop.stage.children.splice(spritePos, 1);
@@ -278,17 +277,12 @@ const handleFoeSpaceShipOutOfScreen = function(
 
 const handleFireballOutOfScreen = function(
 		gameLoop,
-		fireballSprite,
-		fireballsRegister,
-		fireballsTweensRegister
+		fireballSprite
 	) {
-	let spritePos = fireballsRegister.indexOf(fireballSprite);
-	fireballsRegister.splice(spritePos, 1);
-	gameLoop.removeTween(fireballsTweensRegister[spritePos]);
-	fireballsTweensRegister.splice(spritePos, 1);
-	
-	spritePos = gameLoop.stage.children.indexOf(fireballSprite);
-	gameLoop.stage.children.splice(spritePos, 1);
+	removeFireBallFromStage(
+		gameLoop,
+		fireballSprite
+	);
 }
 
 
@@ -296,6 +290,9 @@ const handleFireballOutOfScreen = function(
 const handleDisposableSpriteAnimationEnded = function(gameLoop, sprite) {
 	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(sprite);
 	CoreTypes.disposableSpritesRegister.splice(spritePos, 1);
+	
+	if (spritePos === -1)
+		console.warn('a disposable FX wasn\'t found in the scene for deletion', spritePos, sprite)
 	
 	spritePos = gameLoop.stage.children.indexOf(sprite);
 	gameLoop.stage.children.splice(spritePos, 1);
@@ -450,17 +447,33 @@ const createLoot = function(
 	
 	const lootType = gameConstants.lootSpritesTextures[getRandomLootType()];
 	
+	if (gameState.currentLootCount[lootType] === gameConstants.maxLootsByType[lootType])
+		return;
+	
 	let lootDimensions = new CoreTypes.Dimension(64, 64);
 	const startPosition = new CoreTypes.Point(
 		foeSpaceShip.x,
 		foeSpaceShip.y
 	);
+	
 	const loot = new LootSprite(
 		startPosition,
 		lootDimensions,
 		loadedAssets[2][lootType + 'Tilemap'],
 		lootType
 	);
+	
+	// DEBUG
+//	const lootTextTween = new Tween(
+//		windowSize,
+//		loot.currentLevelText,
+//		CoreTypes.TweenTypes.add,
+//		new CoreTypes.Point(0, 7),
+//		.1
+//	);
+//	gameLoop.pushTween(lootTextTween);
+//	gameLoop.stage.addChild(loot.currentLevelText);
+	// DEBUG END
 	
 	const lootTween = new Tween(
 		windowSize,
@@ -484,9 +497,11 @@ const createLoot = function(
 
 
 
-const shouldChangeLevel = function (gameState, foeSpaceShipsRegister, currentLevelText, addFoeSpaceShips) {
-	if (foeSpaceShipsRegister.length === 1 && gameState.currentLevel < 6) {
+const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
+	if (CoreTypes.foeSpaceShipsRegister.length === 1 && gameState.currentLevel < 6) {
 		gameState.currentLevel++;
+		gameState.currentLootCount.medikit = 0;
+		gameState.currentLootCount.weapon = 0;
 		currentLevelText.text = gameState.currentLevel;
 		addFoeSpaceShips();
 	}
@@ -494,7 +509,7 @@ const shouldChangeLevel = function (gameState, foeSpaceShipsRegister, currentLev
 
 
 function getRandomLootType() {
-	return Math.floor(Math.random() * .9); // shall be Math.floor(Math.random() * lootTypesCount)
+	return (Math.floor(Math.random() * 1.9)).toString(); // shall be Math.floor(Math.random() * lootTypesCount)
 }
 
 function getRandomExplosionOffset(shipDimension) {
@@ -513,5 +528,6 @@ module.exports = {
 	handleFireballOutOfScreen,
 	handleDisposableSpriteAnimationEnded,
 	shouldChangeLevel,
-	handlePowerUp
+	handlePowerUp,
+	createLoot
 };

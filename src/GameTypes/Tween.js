@@ -20,6 +20,8 @@ const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 	this.speed = speed || 1; 										// px.s-1
 	this.currentStep = 0;
 	this.lastStepTimestamp = 0;
+	// collisionTestsRegister is a partial copy of the global collisionTest list
+	// it's used to clean the collision tests when a foeSpaceShip goes out of the screen
 	this.collisionTestsRegister = [];
 }
 Tween.prototype = {};
@@ -39,15 +41,15 @@ Tween.prototype.testOutOfScreen = function() {
 		this.target.enteredScreen = true;
 	}
 	
-	
-	if (this.target.name === 'fireballSprite') {
+	if (this.target.name === 'fireballSprite') {		// fireballSprite must test the upper bound of the window
 		if (this.target.y - this.target.height / 2 > this.windowSize.y.value
-			|| (this.target.enteredScreen && this.target.y + this.target.height < 0)) {
+			|| this.target.x - this.target.width / 2 < 0
+			|| this.target.x + this.target.width / 2 > this.windowSize.x.value) {
 			return true;
 		}
 	}
-	else if (this.target.y - this.target.height / 2 > this.windowSize.y.value
-		|| (this.target.enteredScreen && this.target.y - this.target.height / 2 < 0)) {
+	else if (this.target.y - this.target.height / 2 > this.windowSize.y.value		// other sprites go downwards through the window
+		) {																			//		|| (this.target.enteredScreen && this.target.y - this.target.height / 2 < 0)
 		return true;
 	}
 		
