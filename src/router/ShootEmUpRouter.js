@@ -148,20 +148,22 @@ var classConstructor = function() {
 					
 					randomFoeSeed = gameState.currentLevel < 3 ? Object.keys(loadedAssets[1]).length - 4 : Object.keys(loadedAssets[1]).length - 3;
 					randomFoe = getRandomFoe(randomFoeSeed).toString();
-					randomFoe = '2';
 					
-//					if (parseInt(randomFoe) > 1 && shieldedFoeCount <= levels[gameState.currentLevel].shieldedFoeCount - 1) {
-//						foeSpaceShip = new ShieldedFoeSpaceShip(
-//							foePosition,
-//							foeCell,
-//							randomFoe,
-//							loadedAssets[1]['foeSpaceShip0' + randomFoe + 'Shielded'],
-//							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
-//							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
-//						);
-//						shieldedFoeCount++;
-//					}
-//					else {
+					// DEBUG
+//					randomFoe = '2';
+					
+					if (parseInt(randomFoe) > 1 && shieldedFoeCount <= levels[gameState.currentLevel].shieldedFoeCount - 1) {
+						foeSpaceShip = new ShieldedFoeSpaceShip(
+							foePosition,
+							foeCell,
+							randomFoe,
+							loadedAssets[1]['foeSpaceShip0' + randomFoe + 'Shielded'],
+							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
+							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
+						);
+						shieldedFoeCount++;
+					}
+					else {
 						foeSpaceShip = new FoeSpaceShip(
 							foePosition,
 							foeCell,
@@ -170,7 +172,7 @@ var classConstructor = function() {
 							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
 							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
 						);
-//					}
+					}
 					
 					partialFoeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
 					CoreTypes.foeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
@@ -191,7 +193,12 @@ var classConstructor = function() {
 				});
 			}
 			addFoeSpaceShips();
-
+			
+			
+			
+			
+			
+			// DEBUG to display loots only
 //			let foeSpaceShip, foeCount = 0, shieldedFoeCount = 0, foeCell, foePosition, randomFoeSeed, randomFoe, foeSpaceShipTween;
 //			while (foeCount < 28) {
 //				foeCell = getFoeCell();
@@ -222,6 +229,9 @@ var classConstructor = function() {
 //				foeCount++;
 //			}
 
+			
+			
+			
 			
 			
 			// Projectiles
