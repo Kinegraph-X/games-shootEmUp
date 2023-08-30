@@ -101,7 +101,9 @@ GameLoop.prototype.start = function() {
 					self.trigger('disposableSpriteAnimationEnded', tween.target);
 				}
 				
+//				console.log(stdFrameDuration)
 				stepCount = Math.round((self.currentTime - tween.lastStepTimestamp) / stdFrameDuration);
+//				console.log(stepCount)
 				if (!stepCount)
 					continue;
 				tween.nextStep(stepCount, stdFrameDuration, self.currentTime);

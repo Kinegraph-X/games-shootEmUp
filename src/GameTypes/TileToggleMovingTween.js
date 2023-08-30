@@ -46,14 +46,14 @@ const TileToggleMovingTween = function(
 }
 TileToggleMovingTween.prototype = Object.create(TileToggleTween.prototype);
 
-TileToggleMovingTween.prototype.nextStep = function(stepCount, timestamp) {
+TileToggleMovingTween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
 	this.nextStepForTiles(stepCount, timestamp);
-	this.nextStepForSprite(stepCount, timestamp);
+	this.nextStepForSprite(stepCount, frameDuration, timestamp);
 
 	this.lastStepTimestamp = timestamp;
 }
 
-TileToggleMovingTween.prototype.nextStepForTiles = function(stepCount, frameDuration, timestamp) {
+TileToggleMovingTween.prototype.nextStepForTiles = function(stepCount, timestamp) {
 	this.currentPartialStep += stepCount;
 	
 	if (this.currentPartialStep >= this.tileTransformInterval) {
@@ -73,7 +73,7 @@ TileToggleMovingTween.prototype.nextStepForTiles = function(stepCount, frameDura
 	this.target.tilePosition.y  = (new Types.Coord(this.target.tilePosition.y))[this.type](this.tileTransform.y.value);
 }
 
-TileToggleMovingTween.prototype.nextStepForSprite = function(stepCount, timestamp) {
+TileToggleMovingTween.prototype.nextStepForSprite = function(stepCount, frameDuration, timestamp) {
 	this.target.x = (new Types.Coord(this.target.x))[this.type](this.transform.x.value * stepCount * this.speed);
 	this.target.y = (new Types.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed);
 }
