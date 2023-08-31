@@ -30,17 +30,7 @@ const Sprite = require('src/GameTypes/Sprite');
 	sprite.spriteObj.y = position.y.value;
 	
 	// DEBUG
-//	this.currentLevelText = new PIXI.Text('1', {
-//		     fontFamily: '"Showcard Gothic"',
-//		     fontSize: 14,
-//		     fill: 0xffd338,
-//		     align: 'center'
-//		 }
-//	 );
-//	this.currentLevelText.x = position.x.value - 64;
-//	this.currentLevelText.y = position.y.value - 64;
-//	this.currentLevelText.name = 'debugText';
-//	this.currentLevelText.text = this._UID;
+
 	// DEBUG END
 	
 	return sprite.spriteObj;

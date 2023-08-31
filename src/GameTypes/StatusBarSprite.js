@@ -14,6 +14,7 @@ const StatusBarSprite = function(windowSize, textureLeft, textureRight) {
 	const margin = 15;
 	this.gameStatusSpriteObj = this.getGameStatusSprite(windowSize, textureLeft, margin);
 	this.textForLevelSpriteObj = this.getTextForLevelSprite(windowSize, margin);
+	this.textForScoreSpriteObj = this.getTextForScoreSprite(windowSize, margin);
 }
 StatusBarSprite.prototype = {};
  
@@ -46,6 +47,31 @@ StatusBarSprite.prototype.getTextForLevelSprite = function(windowSize, margin) {
 	currentLevelText.x = 36 + margin;
 	currentLevelText.y = windowSize.y.value - (74 + margin) + 7;
 	return currentLevelText;
+}
+
+StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize, margin) {
+	const scoreText = new PIXI.Text('Score:', {
+		    fontFamily: '"Showcard Gothic"',
+		    fontSize: 24,
+			fill: 0xffd338,
+		    align: 'center'
+		}
+	);
+	
+	scoreText.x = windowSize.x.value - (204 + margin);
+	scoreText.y = windowSize.y.value - (44 + margin);
+	
+	const currentScoreText = new PIXI.Text('0000', {
+		     fontFamily: '"Showcard Gothic"',
+		     fontSize: 32,
+		     fill: 0xffd338,
+		     align: 'center'
+		 }
+	 );
+	currentScoreText.x = windowSize.x.value - (112 + margin);
+	currentScoreText.y = windowSize.y.value - (50 + margin);
+	
+	return [scoreText, currentScoreText];
 }
  
  

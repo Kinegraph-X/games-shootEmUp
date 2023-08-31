@@ -1,7 +1,7 @@
 /**
  * CoreTypes
  */
-
+var PropertyCache = require('src/core/PropertyCache').ObjectCache;
 
 /**
  * @constructor Coord 
@@ -75,7 +75,8 @@ const TweenTypes = {
 
 
 
-
+let foeSpaceShipsRegister = new PropertyCache('foeSpaceShipsRegister');
+let foeSpaceShipsTweensRegister = new PropertyCache('foeSpaceShipsTweensRegister');
 
 
 
@@ -90,8 +91,8 @@ const Types = {
 	Transform : Transform,
 	StepDuration : StepDuration,
 	TweenTypes : TweenTypes,
-	foeSpaceShipsRegister : [],
-	foeSpaceShipsTweensRegister : [],
+	foeSpaceShipsRegister : foeSpaceShipsRegister,
+	foeSpaceShipsTweensRegister : foeSpaceShipsTweensRegister,
 	fireballsRegister : [],
 	fireballsTweensRegister : [],
 	disposableSpritesRegister : [],

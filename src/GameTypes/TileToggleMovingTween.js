@@ -47,6 +47,7 @@ const TileToggleMovingTween = function(
 TileToggleMovingTween.prototype = Object.create(TileToggleTween.prototype);
 
 TileToggleMovingTween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
+	stepCount *= frameDuration / this.baseFrameDuration;
 	this.nextStepForTiles(stepCount, timestamp);
 	this.nextStepForSprite(stepCount, frameDuration, timestamp);
 

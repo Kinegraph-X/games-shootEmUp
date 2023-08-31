@@ -175,21 +175,20 @@ var classConstructor = function() {
 					}
 					
 					partialFoeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
-					CoreTypes.foeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
+					CoreTypes.foeSpaceShipsRegister.setItem(foeSpaceShip._UID, foeSpaceShip.spriteObj);
 					
 					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
-					CoreTypes.foeSpaceShipsTweensRegister.push(foeSpaceShipTween);
+					CoreTypes.foeSpaceShipsTweensRegister.setItem(foeSpaceShip._UID, foeSpaceShipTween);
 					
 					gameLoop.pushTween(foeSpaceShipTween);
 					gameLoop.stage.addChild(foeSpaceShip.spriteObj);
 					foeCount++;
 				}
-				let mainSpaceShipCollisionTest, foeSpriteIdx = 0;
+				let mainSpaceShipCollisionTest;
 				partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
 					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite.spriteObj, foeSpaceShipSpriteObj, 'hostile');
 					gameLoop.pushCollisionTest(mainSpaceShipCollisionTest);
-					foeSpriteIdx = CoreTypes.foeSpaceShipsRegister.indexOf(foeSpaceShipSpriteObj);
-					CoreTypes.foeSpaceShipsTweensRegister[foeSpriteIdx].collisionTestsRegister.push(mainSpaceShipCollisionTest);
+					CoreTypes.foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj._UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
 				});
 			}
 			addFoeSpaceShips();
@@ -287,19 +286,15 @@ var classConstructor = function() {
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
 					gameLoop.removeTween(mainSpaceShipeLeftTween);
-
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
 					gameLoop.removeTween(mainSpaceShipeRightTween);
-
 				}
 				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {
 					gameLoop.removeTween(mainSpaceShipeUpTween);
-
 				}
 				else if (keyCode === KeyboardEvents.indexOf('DOWN') || keyCode === KeyboardEvents.indexOf('S')) {
 					gameLoop.removeTween(mainSpaceShipeDownTween);
-
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
 					clearInterval(interval);
@@ -319,6 +314,7 @@ var classConstructor = function() {
 			)
 			gameLoop.stage.addChild(statusBar.gameStatusSpriteObj);
 			gameLoop.stage.addChild(statusBar.textForLevelSpriteObj);
+			gameLoop.stage.addChild.apply(gameLoop.stage, statusBar.textForScoreSpriteObj);
 			
 			
 			
@@ -335,7 +331,8 @@ var classConstructor = function() {
 					e.data[1],
 					e.data[0],
 					mainSpaceShipSprite.spriteObj,
-					loadedAssets
+					loadedAssets,
+					statusBar.textForScoreSpriteObj[1]
 				);
 			});
 			gameLoop.addEventListener('foeSpaceShipDestroyed', function(e) {

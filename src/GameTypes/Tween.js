@@ -14,6 +14,7 @@ const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 	this.oneShot = oneShot;
 	this.ended = false;
 	
+	this.baseFrameDuration = 1000 / 60;
 	this.transform = transform;
 	this.duration = 0;
 	this.shouldLoop = false;
@@ -27,6 +28,7 @@ const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 Tween.prototype = {};
 
 Tween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
+	stepCount *= frameDuration / this.baseFrameDuration;
 	this.currentStep++;
 	this.target.x  = (new Types.Coord(this.target.x))[this.type](this.transform.x.value * stepCount * this.speed);
 	this.target.y  = (new Types.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed);

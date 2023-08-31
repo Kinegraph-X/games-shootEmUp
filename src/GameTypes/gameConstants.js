@@ -40,27 +40,33 @@ const levels = {
 const foeDescriptors = {
 	0 : {
 		lifePoints : 1,
-		lootChance : 0
+		lootChance : 0,
+		pointsPrize : 20
 	},
 	1 : {
 		lifePoints : 2,
-		lootChance : .1
+		lootChance : .1,
+		pointsPrize : 45
 	},
 	2 : {
 		lifePoints : 3,
-		lootChance : .2
+		lootChance : .2,
+		pointsPrize : 75
 	},
 	3 : {
 		lifePoints : 5,
-		lootChance : 0
+		lootChance : 0,
+		pointsPrize : 120
 	},
 	4 : {
 		lifePoints : 6,
-		lootChance : 0
+		lootChance : 0,
+		pointsPrize : 175
 	},
 	5 : {
 		lifePoints : 7,
-		lootChance : 0
+		lootChance : 0,
+		pointsPrize : 600
 	}
 }
 

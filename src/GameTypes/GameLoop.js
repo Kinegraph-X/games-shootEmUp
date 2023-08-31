@@ -361,7 +361,7 @@ GameLoop.prototype.testAndCleanCollisions = function() {
  * It would impose us to change the shape of the CollisionTester type.
  * 
  * @param {PIXI.Sprite} collidingSprite
- * The way the collisionTesters are designed is not clear : we think of "collidingSprite" as being
+ * The collisionTesters are designed as following : we think of "collidingSprite" as being
  * the "automatically moving" sprite (fireball in case of a collision with a foe ship), 
  * but as being the mainSpaceShip in case of a collision between a loot and the main ship,
  * or a collision between foe ship and the main ship.
@@ -392,6 +392,8 @@ GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprit
 			clearedTests.add(i);
 		}
 		// This last condition works both on a collision between a foe ship and the main ship, and on a collision between the main ship and a loot
+		// FIXME: there's a bug : a foe collided once with the main spaceShip won't collide anymore
+		// Fix : wait for a while in the event's callback, and recreate the collision test (the main spaceShip could blink while it's not collidable)
 		else if (test.referenceObj === targetedSprite && collidingSprite.name === this.spriteNamesConstants.mainSpaceShipSprite) {
 //			if (collidingSprite.name === 'foeSpaceShipSprite')
 //				console.log('foeSpaceShipUnlinked', collidingSprite.name)

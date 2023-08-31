@@ -96,7 +96,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 
 ProjectileFactory.prototype.prepareCollisions = function(gameLoop, spriteObj, fireballTween) {
 	let fireBallCollisionTest;
-	CoreTypes.foeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
+	Object.values(CoreTypes.foeSpaceShipsRegister.cache).forEach(function(foeSpaceShipSpriteObj) {
 		fireBallCollisionTest = new fireBallCollisionTester(spriteObj, foeSpaceShipSpriteObj);
 		gameLoop.pushCollisionTest(fireBallCollisionTest);
 		// collisionTestsRegister is a partial copy of the global collisionTest list

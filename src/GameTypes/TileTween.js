@@ -13,7 +13,7 @@ const TileTween = function(windowSize, target, type, transform, speed, oneShot) 
 TileTween.prototype = Object.create(Tween.prototype);
 
 TileTween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
-//	console.log(this.target)//, this.target.tilePosition.y);
+	stepCount *= frameDuration / this.baseFrameDuration;
 	this.currentStep++;
 	this.target.tilePosition.x  = (new Types.Coord(this.target.tilePosition.x))[this.type](this.transform.x.value * stepCount * this.speed);
 	this.target.tilePosition.y  = (new Types.Coord(this.target.tilePosition.y))[this.type](this.transform.y.value * stepCount * this.speed);
