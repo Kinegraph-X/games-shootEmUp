@@ -8,27 +8,33 @@
 const levels = {
 	1 : {
 		foeCount : 6,
-		shieldedFoeCount : 0
+		shieldedFoeCount : 0,
+		requiredPointsToStepUp : 1000
 	},
 	2 : {
 		foeCount : 8,
-		shieldedFoeCount : 0
+		shieldedFoeCount : 0,
+		requiredPointsToStepUp : 2000
 	},
 	3 : {
 		foeCount : 10,
-		shieldedFoeCount : 3
+		shieldedFoeCount : 3,
+		requiredPointsToStepUp : 3500
 	},
 	4 : {
 		foeCount : 14,
-		shieldedFoeCount : 4
+		shieldedFoeCount : 4,
+		requiredPointsToStepUp : 5000
 	},
 	5 : {
 		foeCount : 20,
-		shieldedFoeCount : 7
+		shieldedFoeCount : 7,
+		requiredPointsToStepUp : 8000
 	},
 	6 : {
 		foeCount : 28,
-		shieldedFoeCount : 12
+		shieldedFoeCount : 12,
+		requiredPointsToStepUp : 10000
 	}
 }
 

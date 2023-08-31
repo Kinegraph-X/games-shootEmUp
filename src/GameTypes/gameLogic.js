@@ -554,12 +554,18 @@ const createLoot = function(
 
 
 const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
-	if (Object.keys(CoreTypes.foeSpaceShipsRegister.cache).length === 1 && gameState.currentLevel < 6) {
-		gameState.currentLevel++;
-		gameState.currentLootCount.medikit = 0;
-		gameState.currentLootCount.weapon = 0;
-		currentLevelText.text = gameState.currentLevel;
-		addFoeSpaceShips();
+	if (Object.keys(CoreTypes.foeSpaceShipsRegister.cache).length === 1
+		&& gameState.currentLevel < 6) {
+		
+		if (gameState.currentScore >= gameConstants.levels[gameState.currentLevel.toString()].requiredPointsToStepUp) {
+			gameState.currentLevel++;
+			gameState.currentLootCount.medikit = 0;
+			gameState.currentLootCount.weapon = 0;
+			currentLevelText.text = gameState.currentLevel;
+			addFoeSpaceShips();
+		}
+		else
+			addFoeSpaceShips();
 	}
 }
 
