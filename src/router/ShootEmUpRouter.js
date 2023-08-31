@@ -8,7 +8,7 @@ let gameState = require('src/GameTypes/GameState');
 const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell, getRandomFoe} = require('src/GameTypes/gridManager');
 const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons} = require('src/GameTypes/gameConstants');
 const KeyboardEvents = require('src/events/JSKeyboardMap');
-const KeyboardListener = require('src/events/KeyboardListener');
+const KeyboardListener = require('src/events/GameKeyboardListener');
 const Sprite = require('src/GameTypes/Sprite');
 const TilingSprite = require('src/GameTypes/TilingSprite');
 
@@ -255,29 +255,54 @@ var classConstructor = function() {
 			
 			
 			// KEYBOARD HANDLING
-			keyboardListener.addEventListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
-				if (keyCode === KeyboardEvents.indexOf('LEFT')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(-30, 0), 1, true);
-					gameLoop.pushTween(mainSpaceShipeTween);
-
+			const mainSpaceShipeLeftTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(-10, 0), 1, false);
+			const mainSpaceShipeRightTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(10, 0), 1, false);
+			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -10), 1, false);
+			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 10), 1, false);
+			let interval;
+			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
+				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
+					mainSpaceShipeLeftTween.lastStepTimestamp = gameLoop.currentTime;
+					gameLoop.pushTween(mainSpaceShipeLeftTween);
 				}
-				else if (keyCode === KeyboardEvents.indexOf('RIGHT')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(30, 0), 1, true);
-					gameLoop.pushTween(mainSpaceShipeTween);
-
+				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
+					mainSpaceShipeRightTween.lastStepTimestamp = gameLoop.currentTime;
+					gameLoop.pushTween(mainSpaceShipeRightTween);
 				}
-				else if (keyCode === KeyboardEvents.indexOf('UP')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -30), 1, true);
-					gameLoop.pushTween(mainSpaceShipeTween);
-
+				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {
+					mainSpaceShipeUpTween.lastStepTimestamp = gameLoop.currentTime;
+					gameLoop.pushTween(mainSpaceShipeUpTween);
 				}
-				else if (keyCode === KeyboardEvents.indexOf('DOWN')) {
-					const mainSpaceShipeTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 30), 1, true);
-					gameLoop.pushTween(mainSpaceShipeTween);
-
+				else if (keyCode === KeyboardEvents.indexOf('DOWN') || keyCode === KeyboardEvents.indexOf('S')) {
+					mainSpaceShipeDownTween.lastStepTimestamp = gameLoop.currentTime;
+					gameLoop.pushTween(mainSpaceShipeDownTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
 					launchFireball(gameState.currentWeapon);
+					interval = setInterval(function() {
+						launchFireball(gameState.currentWeapon);
+					}, 250);
+				}
+			});
+			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
+				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
+					gameLoop.removeTween(mainSpaceShipeLeftTween);
+
+				}
+				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
+					gameLoop.removeTween(mainSpaceShipeRightTween);
+
+				}
+				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {
+					gameLoop.removeTween(mainSpaceShipeUpTween);
+
+				}
+				else if (keyCode === KeyboardEvents.indexOf('DOWN') || keyCode === KeyboardEvents.indexOf('S')) {
+					gameLoop.removeTween(mainSpaceShipeDownTween);
+
+				}
+				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
+					clearInterval(interval);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('Q') && ctrlKey) {
 					gameLoop.stop()
