@@ -284,6 +284,25 @@ GameLoop.prototype.removeCollisionTests = function(tests) {
 }
 
 /**
+ * @method removeCollisionTests
+ * 
+ * Self-explanatory
+ * 
+ * @param {Array} tests
+ *
+ */
+GameLoop.prototype.markCollisionTestsForRemoval = function(tests) {
+	let test;
+	for (let i = this.collisionTests.length - 1; i >= 0; i--) {
+		test = this.collisionTests[i];
+		if (tests.indexOf(test) !== -1){
+			CoreTypes.clearedCollisionTests.add(i);
+		}
+	}
+}
+
+
+/**
  * @method removeAllCollisionTests
  * 
  *  * Self-explanatory
@@ -333,12 +352,8 @@ GameLoop.prototype.testAndCleanCollisions = function() {
 				}, this);
 			}
 			else if (collisionTest.objectType === this.collisionTestNamesConstants.mainSpaceShipCollisionTest) {
-//				if (collisionTest.type === 'powerUp')
-//					console.log('matched on loot', collisionTest);
 				ruleSet.mainSpaceShipTestCollision.forEach(function(rule) {
 					if (collisionTest.type === rule.type) {
-//						if (rule.type === 'powerUp')
-//							console.log('matched on loot', collisionTest);
 						this[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
 						this.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]], deletedTests, clearedTests);
 					}
@@ -371,40 +386,28 @@ GameLoop.prototype.testAndCleanCollisions = function() {
  * @param {Set} clearedTests
  */
 GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprite, deletedTests, clearedTests) {
-	let test;//, matchedOnClean = false;
+	let test;
 	for (let i = this.collisionTests.length - 1; i >= 0; i--) {
 		if (deletedTests.at(i) === 1)
 			continue;
 		
 		test = this.collisionTests[i];
 		if (test.fireballSprite === collidingSprite) {
-//			console.log('fireballSpriteUnlinked', collidingSprite.name)
-//			matchedOnClean = true;
 			clearedTests.add(i);
 		}
 		else if (test.referenceObj === targetedSprite && targetedSprite.hasShield) {
-//			matchedOnClean = true;
 			clearedTests.add(i);
 		}	
 		else if (test.referenceObj === targetedSprite && targetedSprite.lifePoints === 0) {
-//			console.log('foeSpaceShipDestroyed', targetedSprite.cell, collidingSprite.name)
-//			matchedOnClean = true;
 			clearedTests.add(i);
 		}
 		// This last condition works both on a collision between a foe ship and the main ship, and on a collision between the main ship and a loot
 		// FIXME: there's a bug : a foe collided once with the main spaceShip won't collide anymore
 		// Fix : wait for a while in the event's callback, and recreate the collision test (the main spaceShip could blink while it's not collidable)
 		else if (test.referenceObj === targetedSprite && collidingSprite.name === this.spriteNamesConstants.mainSpaceShipSprite) {
-//			if (collidingSprite.name === 'foeSpaceShipSprite')
-//				console.log('foeSpaceShipUnlinked', collidingSprite.name)
-//			else
-//				console.log('lootUnlinked', collidingSprite.name)
-//			matchedOnClean = true;
 			clearedTests.add(i);
 		}
 	}
-//	if (!matchedOnClean)
-//		console.log('cleaning didn\'t match on anything', collidingSprite, targetedSprite, deletedTests, clearedTests);
 }
 
 /**
@@ -417,7 +420,6 @@ GameLoop.prototype.updateDeletedTests = function(deletedTests, clearedTests) {
 //		console.log(testIdx)
 		deletedTests.set([1], testIdx);
 	});
-//	console.log(deletedTests);
 }
 
 /**

@@ -3,6 +3,7 @@
  */
 
 const CoreTypes = require('src/GameTypes/CoreTypes');
+const {throttle} = require('src/core/commonUtilities');
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 let gameState = require('src/GameTypes/GameState');
 const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell, getRandomFoe} = require('src/GameTypes/gridManager');
@@ -232,23 +233,26 @@ var classConstructor = function() {
 			
 			
 			
-			
+			const fireballThrottling = 250;
 			// Projectiles
-			function launchFireball(type) {
-				const startPosition = new CoreTypes.Point(
-					mainSpaceShipSprite.spriteObj.x + mainSpaceShipDimensions.x.value / 2,
-					mainSpaceShipSprite.spriteObj.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
-				);
-				new ProjectileFactory(
-					windowSize,
-					loadedAssets,
-					gameLoop,
-					startPosition,
-					weapons[type].spriteTexture,
-					weapons[type].damage,
-					weapons[type].moveTiles
-				);
-			}
+			const launchFireball = throttle(
+				function (type) {
+					const startPosition = new CoreTypes.Point(
+						mainSpaceShipSprite.spriteObj.x + mainSpaceShipDimensions.x.value / 2,
+						mainSpaceShipSprite.spriteObj.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
+					);
+					new ProjectileFactory(
+						windowSize,
+						loadedAssets,
+						gameLoop,
+						startPosition,
+						weapons[type].spriteTexture,
+						weapons[type].damage,
+						weapons[type].moveTiles
+					);
+				},
+				fireballThrottling
+			);
 			
 			
 			
@@ -278,9 +282,10 @@ var classConstructor = function() {
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
 					launchFireball(gameState.currentWeapon);
+					
 					interval = setInterval(function() {
 						launchFireball(gameState.currentWeapon);
-					}, 250);
+					}, fireballThrottling);
 				}
 			});
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
@@ -356,15 +361,21 @@ var classConstructor = function() {
 				);
 			});
 			gameLoop.addEventListener('mainSpaceShipOutOfScreen', function(e) {
-				console.log('mainSpaceShipOutOfScreen', e.data);
+				gameLogic.handleMainSpaceShipOutOfScreen(
+					windowSize,
+					gameLoop,
+					e.data
+				);
 			});
 			gameLoop.addEventListener('mainSpaceShipDamaged', function(e) {
 				gameLogic.handleMainSpaceShipDamaged(
 					gameLoop,
 					e.data[0],
+					e.data[1],
 					loadedAssets,
 					statusBar.gameStatusSpriteObj,
-					statusBar.textForLevelSpriteObj
+					statusBar.textForLevelSpriteObj,
+					statusBar.textForScoreSpriteObj[1]
 				);
 
 			});

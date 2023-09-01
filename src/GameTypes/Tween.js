@@ -51,7 +51,9 @@ Tween.prototype.testOutOfScreen = function() {
 		}
 	}
 	else if (this.target.y - this.target.height / 2 > this.windowSize.y.value		// other sprites go downwards through the window
-		) {																			//		|| (this.target.enteredScreen && this.target.y - this.target.height / 2 < 0)
+			|| this.target.x > this.windowSize.x.value
+			|| this.target.x + this.target.width < 0
+		) {
 		return true;
 	}
 		

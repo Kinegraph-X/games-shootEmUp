@@ -52,8 +52,9 @@ const handleFoeSpaceShipDamaged = function(
 	) {
 		
 	// Avoid potential double deletion when collided twice in the same frame
-	if (damagedFoeSpaceShip.lifePoints <= 0) {
-		removeFireBallFromStage(
+	if (damagedFoeSpaceShip.lifePoints <= 0
+		&& explodedFireball.name === 'fireballSprite') {	// the mainSpaceShip may also collide a foe
+		removeFireBallFromStage(							// (then the mainSpaceShipSprite is aliased as the "fireball")
 			gameLoop,
 			explodedFireball
 		)
@@ -90,10 +91,11 @@ const handleFoeSpaceShipDamaged = function(
 			scoreTextSprite
 		);
 	
-	removeFireBallFromStage(
-		gameLoop,
-		explodedFireball
-	)
+	if (explodedFireball.name === 'fireballSprite')		// the mainSpaceShip may also collide a foe
+		removeFireBallFromStage(						// (then the mainSpaceShipSprite is aliased as the "fireball")
+			gameLoop,
+			explodedFireball
+		)
 }
 
 const handleFoeSpaceShipDestroyed = function(
@@ -111,36 +113,21 @@ const handleFoeSpaceShipDestroyed = function(
 	);
 	
 	// foeSpaceShipSprite removal from the gameLoop & scene
-//	let spritePos = CoreTypes.foeSpaceShipsRegister.indexOf(damagedFoeSpaceShip);
-//	if (spritePos === -1) {
-//		console.warn('a foe spaceship wasn\'t found in the register for deletion');
-//		addUIDMarkerToEntity(
-//			gameLoop,
-//			damagedFoeSpaceShip,
-//			loadedAssets
-//		);
-//	}
-//	else {
-//		CoreTypes.foeSpaceShipsRegister.splice(spritePos, 1);
-//		gameLoop.removeTween(CoreTypes.foeSpaceShipsTweensRegister[spritePos]);
-//		CoreTypes.foeSpaceShipsTweensRegister.splice(spritePos, 1);
-//	}
-	
 	CoreTypes.foeSpaceShipsRegister.deleteItem(damagedFoeSpaceShip._UID);
-	gameLoop.removeCollisionTests(CoreTypes.foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip._UID).collisionTestsRegister);
+	gameLoop.markCollisionTestsForRemoval(CoreTypes.foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip._UID).collisionTestsRegister);
 	CoreTypes.foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip._UID);
 	
 	const spritePos = gameLoop.stage.children.indexOf(damagedFoeSpaceShip);
 	
 	if (spritePos === -1) {
 		console.warn('a foe spaceship wasn\'t found in the scene for deletion', damagedFoeSpaceShip);
-		addUIDMarkerToEntity(
-			gameLoop,
-			damagedFoeSpaceShip,
-			loadedAssets,
-			200,
-			'\nStage'
-		);
+//		addUIDMarkerToEntity(
+//			gameLoop,
+//			damagedFoeSpaceShip,
+//			loadedAssets,
+//			200,
+//			'\nStage'
+//		);
 		return;
 	}
 	
@@ -210,13 +197,26 @@ const handleLoot = function(
 const handleMainSpaceShipDamaged = function(
 		gameLoop,
 		damagedMainSpaceShip,
+		damagedFoeSpaceShip,
 		loadedAssets,
 		statusBarSprite,
-		currentLevelText
+		currentLevelText,
+		scoreTextSprite
 	) {
 		
 	damagedMainSpaceShip.lifePoints--;
 	statusBarSprite.tilePosition.x -= 470;
+	
+	handleFoeSpaceShipDamaged(
+		gameLoop,
+		damagedFoeSpaceShip,
+		{
+			damage : 1
+		},
+		damagedMainSpaceShip,
+		loadedAssets,
+		scoreTextSprite
+	);
 
 	activateShield(
 		gameLoop,
@@ -234,6 +234,8 @@ const handleMainSpaceShipDamaged = function(
 		},
 		loadedAssets
 	);
+	
+	
 	
 	if (damagedMainSpaceShip.lifePoints === 0)
 		 handleMainSpaceShipDestroyed(
@@ -285,12 +287,7 @@ const handlePowerUp = function(
 		
 	const spritePos = gameLoop.stage.children.indexOf(lootSprite);
 	if (spritePos === -1) {
-		console.warn('a powerUp wasn\'t found in the scene for deletion', damagedFoeSpaceShip);
-		addUIDMarkerToEntity(
-			gameLoop,
-			lootSprite,
-			loadedAssets
-		);
+		console.warn('a powerUp wasn\'t found in the scene for deletion. loot UID is _' + lootSprite._UID, lootSprite);
 		return;
 	}
 	gameLoop.stage.children.splice(spritePos, 1);
@@ -315,10 +312,6 @@ const handleFoeSpaceShipOutOfScreen = function(
 		gameLoop,
 		spaceShipSprite
 	) {
-//	let spritePos = CoreTypes.foeSpaceShipsRegister.indexOf(spaceShipSprite);
-//	CoreTypes.foeSpaceShipsRegister.splice(spritePos, 1);
-//	gameLoop.removeTween(CoreTypes.foeSpaceShipsTweensRegister[spritePos]);
-//	CoreTypes.foeSpaceShipsTweensRegister.splice(spritePos, 1);
 	
 	CoreTypes.foeSpaceShipsRegister.deleteItem(spaceShipSprite._UID);
 	CoreTypes.foeSpaceShipsTweensRegister.deleteItem(spaceShipSprite._UID);
@@ -344,14 +337,30 @@ const handleFireballOutOfScreen = function(
 
 
 
+const handleMainSpaceShipOutOfScreen = function(
+		windowSize,
+		gameLoop,
+		mainSpaceShipSprite
+	) {
+	
+	if (mainSpaceShipSprite.x > windowSize.x.value)
+		mainSpaceShipSprite.x -= mainSpaceShipSprite.width * 2;
+	else if (mainSpaceShipSprite.x + mainSpaceShipSprite.width < 0)
+		mainSpaceShipSprite.x += mainSpaceShipSprite.width * 2;
+	else if (mainSpaceShipSprite.y > windowSize.y.value)
+		mainSpaceShipSprite.y -= mainSpaceShipSprite.height * 2;
+}
+
+
+
 const handleDisposableSpriteAnimationEnded = function(gameLoop, sprite) {
 	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(sprite);
-	CoreTypes.disposableSpritesRegister.splice(spritePos, 1);
 	
 	if (spritePos === -1) {
 		console.warn('a disposable FX wasn\'t found in the register for deletion', spritePos, sprite);
 		return;
 	}
+	CoreTypes.disposableSpritesRegister.splice(spritePos, 1);
 	
 	spritePos = gameLoop.stage.children.indexOf(sprite);
 	if (spritePos === -1) {
@@ -527,10 +536,6 @@ const createLoot = function(
 		lootType
 	);
 	
-	// DEBUG
-
-	// DEBUG END
-	
 	const lootTween = new Tween(
 		windowSize,
 		loot.spriteObj,
@@ -629,6 +634,7 @@ module.exports = {
 	handleFoeSpaceShipOutOfScreen,
 	handleMainSpaceShipDamaged,
 	handleFireballOutOfScreen,
+	handleMainSpaceShipOutOfScreen,
 	handleDisposableSpriteAnimationEnded,
 	shouldChangeLevel,
 	handlePowerUp,
