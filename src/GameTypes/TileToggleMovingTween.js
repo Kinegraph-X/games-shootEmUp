@@ -50,7 +50,10 @@ TileToggleMovingTween.prototype.nextStep = function(stepCount, frameDuration, ti
 	stepCount *= frameDuration / this.baseFrameDuration;
 	this.nextStepForTiles(stepCount, timestamp);
 	this.nextStepForSprite(stepCount, frameDuration, timestamp);
-
+	if (this.target.name === "fireballSprite") {
+		this.target.rotation =
+		Math.atan2(this.transform.y.value, this.transform.x.value) + Math.PI / 2;
+	}
 	this.lastStepTimestamp = timestamp;
 }
 
