@@ -32,7 +32,7 @@ ProjectileFactory.prototype = {}
 ProjectileFactory.prototype.setHorizontalValues = function(len) {
 	// Fire in a brush shape if more than one projectile
 	const middle = Math.floor(len / 2),
-		offset = 25;
+		offset = 7;
 	let horizontalTweenValue = 0;
 	
 	for (let i = middle - 1; i >=0; i--) {
@@ -83,7 +83,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		.4,
 		false,
 		12,
-		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] : 0, -70),
+		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] : 0, 70),
 		11,
 		'invert');
 	CoreTypes.fireballsTweensRegister.push(fireballTween);
