@@ -55,7 +55,7 @@ var classConstructor = function() {
 				{
 					name : 'spaceShips',
 					assets : [
-						{name : 'mainSpaceShip', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/07/Spaceship_07_YELLOW.png'},
+						{name : 'mainSpaceShip', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/07/Spaceship_07_YELLOW_animated.png'},
 						{name : 'foeSpaceShip01', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/03/Spaceship_03_RED.png'},
 						{name : 'foeSpaceShip02', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_PURPLE.png'},
 						{name : 'foeSpaceShip03', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_BLUE.png'},
@@ -298,10 +298,12 @@ var classConstructor = function() {
 			let interval;
 			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
+					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 200;
 					mainSpaceShipeLeftTween.lastStepTimestamp = gameLoop.currentTime;
 					gameLoop.pushTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
+					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 0;
 					mainSpaceShipeRightTween.lastStepTimestamp = gameLoop.currentTime;
 					gameLoop.pushTween(mainSpaceShipeRightTween);
 				}
@@ -323,9 +325,11 @@ var classConstructor = function() {
 			});
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
+					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 400;
 					gameLoop.removeTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
+					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 400;
 					gameLoop.removeTween(mainSpaceShipeRightTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {
