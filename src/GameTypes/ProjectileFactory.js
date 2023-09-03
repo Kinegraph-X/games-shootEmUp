@@ -83,7 +83,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		.4,
 		false,
 		12,
-		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] : 0, 70),
+		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] / 2 : 0, 70),
 		11,
 		'invert');
 	CoreTypes.fireballsTweensRegister.push(fireballTween);

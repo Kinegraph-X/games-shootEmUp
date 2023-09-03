@@ -2,6 +2,8 @@
  * @router DevToolsStructRouter 
  */
 
+const FontFaceObserver = require('src/utilities/fontfaceobserver');
+
 const CoreTypes = require('src/GameTypes/CoreTypes');
 const {throttle} = require('src/core/commonUtilities');
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
@@ -45,13 +47,15 @@ var classConstructor = function() {
 					name : 'backgrounds',
 					assets : [
 						{name : 'bgBack', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Blue Nebula/Blue Nebula 1 - 1024x1024.png'},
+						{name : 'bgMiddle', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Blue Nebula/Blue Nebula 6 - 1024x1024.png'},
+						{name : 'bgFront', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Starfields/Starfield-9 - 1024x1024.png'},
 						{name : 'statusBarLeft', srcs : 'plugins/ShootEmUp/assets/Status_Bar_Left.png'}
 					]
 				},
 				{
 					name : 'spaceShips',
 					assets : [
-						{name : 'mainSpaceShip', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/04/Spaceship_04_YELLOW.png'},
+						{name : 'mainSpaceShip', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/07/Spaceship_07_YELLOW.png'},
 						{name : 'foeSpaceShip01', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/03/Spaceship_03_RED.png'},
 						{name : 'foeSpaceShip02', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_PURPLE.png'},
 						{name : 'foeSpaceShip03', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_BLUE.png'},
@@ -79,7 +83,10 @@ var classConstructor = function() {
 				PIXI.Assets.loadBundle('backgrounds'),
 				PIXI.Assets.loadBundle('spaceShips'),
 				PIXI.Assets.loadBundle('flames')
-			]).then(onLoaded);
+			]).then(function(loadedAssets) {
+				(new FontFaceObserver('Showcard Gothic'))
+					.load().then(onLoaded.bind(null, loadedAssets))
+			});
 		});
 		
 		
@@ -93,17 +100,43 @@ var classConstructor = function() {
 			
 			// BACKGROUND
 			const bgZoom = 1.8;
-			const worldMap = new TilingSprite(
+			const worldMapBack = new TilingSprite(
 				UIDGenerator.newUID(),
 				new CoreTypes.Point(-(windowSize.x.value * bgZoom - windowSize.x.value) / 2, 0),
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
 				loadedAssets[0].bgBack,
 				bgZoom
 			);
-			worldMap.spriteObj.name = 'bgLayer01';
-			const worldMapTween = new TileTween(windowSize, worldMap.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1);
-			gameLoop.pushTween(worldMapTween);
-			gameLoop.stage.addChild(worldMap.spriteObj);
+			worldMapBack.spriteObj.name = 'bgLayer01';
+			const worldMapBackTween = new TileTween(windowSize, worldMapBack.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1);
+			gameLoop.pushTween(worldMapBackTween);
+			gameLoop.stage.addChild(worldMapBack.spriteObj);
+			
+			const worldMapMiddle = new TilingSprite(
+				UIDGenerator.newUID(),
+				new CoreTypes.Point(-(windowSize.x.value * bgZoom - windowSize.x.value) / 2, 0),
+				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
+				loadedAssets[0].bgMiddle,
+				1
+			);
+			worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
+			worldMapMiddle.spriteObj.name = 'bgLayer02';
+			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1);
+			gameLoop.pushTween(worldMapMiddleTween);
+			gameLoop.stage.addChild(worldMapMiddle.spriteObj);
+			
+			const worldMapFront = new TilingSprite(
+				UIDGenerator.newUID(),
+				new CoreTypes.Point(-(windowSize.x.value * bgZoom - windowSize.x.value) / 2, 0),
+				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
+				loadedAssets[0].bgFront,
+				.3
+			);
+			worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
+			worldMapFront.spriteObj.name = 'bgLayer03';
+			const worldMapFrontTween = new TileTween(windowSize, worldMapFront.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1);
+			gameLoop.pushTween(worldMapFrontTween);
+			gameLoop.stage.addChild(worldMapFront.spriteObj);
 			
 			
 			
