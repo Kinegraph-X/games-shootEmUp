@@ -38,12 +38,13 @@ StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture, ma
  
 StatusBarSprite.prototype.getTextForLevelSprite = function(windowSize, margin) {
 	const currentLevelText = new PIXI.Text('1', {
-		     fontFamily: '"Showcard Gothic"',
-		     fontSize: 32,
-		     fill: 0xffd338,
-		     align: 'center'
-		 }
-	 );
+			fontFamily: '"Showcard Gothic"',
+			fontSize: 32,
+			fill: 0xffd338,
+			align: 'center'
+		}
+	);
+	currentLevelText.text = '1';		// not needed, but while debugging, we tested that...
 	currentLevelText.x = 36 + margin;
 	currentLevelText.y = windowSize.y.value - (74 + margin) + 7;
 	return currentLevelText;
@@ -51,23 +52,24 @@ StatusBarSprite.prototype.getTextForLevelSprite = function(windowSize, margin) {
 
 StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize, margin) {
 	const scoreText = new PIXI.Text('Score:', {
-		    fontFamily: '"Showcard Gothic"',
-		    fontSize: 24,
+			fontFamily: '"Showcard Gothic"',
+			fontSize: 24,
 			fill: 0xffd338,
-		    align: 'center'
+			align: 'Score'
 		}
 	);
-	
+	scoreText.text = 'Score';			// not needed, but while debugging, we tested that...
 	scoreText.x = windowSize.x.value - (204 + margin);
 	scoreText.y = windowSize.y.value - (44 + margin);
 	
 	const currentScoreText = new PIXI.Text('0000', {
-		     fontFamily: '"Showcard Gothic"',
-		     fontSize: 32,
-		     fill: 0xffd338,
-		     align: 'center'
-		 }
-	 );
+			fontFamily: '"Showcard Gothic"',
+			fontSize: 32,
+			fill: 0xffd338,
+			align: 'center'
+		}
+	);
+	currentScoreText.text = '0000';		// not needed, but while debugging, we tested that...
 	currentScoreText.x = windowSize.x.value - (112 + margin);
 	currentScoreText.y = windowSize.y.value - (50 + margin);
 	
