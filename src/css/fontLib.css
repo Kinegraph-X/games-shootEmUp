@@ -1,0 +1,7 @@
+/* Showcard Gothic */
+@font-face {
+	font-family: 'Showcard Gothic';
+	font-style: regular;
+	font-weight: 400;
+	src: local(''), url('../assets/fontlib/SHOWG.TTF');
+}
