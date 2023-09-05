@@ -29,7 +29,6 @@ const Player = require('src/GameTypes/gameSingletons/Player');
 const handleFoeSpaceShipDamaged = function(
 		damagedFoeSpaceShip,
 		explodedFireball,
-		mainSpaceShipSprite,
 		loadedAssets,
 		scoreTextSprite
 	) {
@@ -45,6 +44,7 @@ const handleFoeSpaceShipDamaged = function(
 	
 	if (damagedFoeSpaceShip.hasShield) {
 		activateShield(
+			damagedFoeSpaceShip,
 			{
 				x : damagedFoeSpaceShip.x,
 				y : damagedFoeSpaceShip.y,
@@ -65,7 +65,6 @@ const handleFoeSpaceShipDamaged = function(
 	if (damagedFoeSpaceShip.lifePoints <= 0)
 		 handleFoeSpaceShipDestroyed(
 			damagedFoeSpaceShip,
-			mainSpaceShipSprite,
 			loadedAssets,
 			scoreTextSprite
 		);
@@ -78,7 +77,6 @@ const handleFoeSpaceShipDamaged = function(
 
 const handleFoeSpaceShipDestroyed = function(
 		damagedFoeSpaceShip,
-		mainSpaceShipSprite,
 		loadedAssets,
 		scoreTextSprite
 	) {
@@ -98,7 +96,6 @@ const handleFoeSpaceShipDestroyed = function(
 	if (Math.random() <= damagedFoeSpaceShip.lootChance) {
 		handleLoot(
 			damagedFoeSpaceShip,
-			mainSpaceShipSprite,
 			loadedAssets
 		);
 	}
@@ -124,7 +121,6 @@ const removeFireBallFromStage = function(
 
 const handleLoot = function(
 		damagedFoeSpaceShip,
-		mainSpaceShipSprite,
 		loadedAssets
 	) {
 	
@@ -139,7 +135,7 @@ const handleLoot = function(
 	else
 		GameState().currentLootCount[lootSprite.lootType]++;
 	
-	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, lootSprite, 'powerUp');
+	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, lootSprite, 'powerUp');
 	// we chose not to append the new collisionTest synchronously,
 	// but raher to wait for the next frame : appending it synchronlously 
 	// has caused us a lot of false tracks when debugging
@@ -149,7 +145,6 @@ const handleLoot = function(
 
 
 const handleMainSpaceShipDamaged = function(
-		damagedMainSpaceShip,
 		damagedFoeSpaceShip,
 		loadedAssets,
 		statusBarSprite,
@@ -157,29 +152,19 @@ const handleMainSpaceShipDamaged = function(
 		scoreTextSprite
 	) {
 		
-	damagedMainSpaceShip.lifePoints--;
-	statusBarSprite.tilePositionX -= 470;
-	
-	handleFoeSpaceShipDamaged(
-		damagedFoeSpaceShip,
-		{
-			damage : 1
-		},
-		damagedMainSpaceShip,
-		loadedAssets,
-		scoreTextSprite
-	);
+	Player().mainSpaceShip.lifePoints--;
+	statusBarSprite.tilePositionX = statusBarSprite.tilePositionX - 470;
 
 	activateShield(
-		damagedMainSpaceShip,
+		Player().mainSpaceShip,
 		loadedAssets
 	);
 
 	createSmallExplosion(
 		{
-			x : damagedMainSpaceShip.x + damagedMainSpaceShip.width / 2,
-			y : damagedMainSpaceShip.y + damagedMainSpaceShip.height / 1.8,
-			width : damagedMainSpaceShip.width / 2,
+			x : Player().mainSpaceShip.x + Player().mainSpaceShip.width / 2,
+			y : Player().mainSpaceShip.y + Player().mainSpaceShip.height / 1.8,
+			width : Player().mainSpaceShip.width / 2,
 			height : 0
 		},
 		loadedAssets
@@ -187,25 +172,33 @@ const handleMainSpaceShipDamaged = function(
 	
 	
 	
-	if (damagedMainSpaceShip.lifePoints === 0)
+	if (Player().mainSpaceShip.lifePoints === 0)
 		 handleMainSpaceShipDestroyed(
-			damagedMainSpaceShip,
 			loadedAssets,
 			statusBarSprite,
 			currentLevelText
+		);
+	else
+		handleFoeSpaceShipDamaged(
+			damagedFoeSpaceShip,
+			{
+				damage : 1
+			},
+			loadedAssets,
+			scoreTextSprite
 		);
 }
 
 
 
 const handleMainSpaceShipDestroyed = function(
-		damagedMainSpaceShip,
 		loadedAssets,
 		statusBarSprite,
 		currentLevelText
 	) {
 	// damagedMainSpaceShip removal from the gameLoop & scene
-	GameLoop().removeSpriteFromScene(damagedMainSpaceShip);
+//	console.log(Player().mainSpaceShip);
+	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);
 	GameLoop().removeSpriteFromScene(statusBarSprite);
 	GameLoop().removeSpriteFromScene(currentLevelText);
 	
@@ -213,14 +206,13 @@ const handleMainSpaceShipDestroyed = function(
 //	GameLoop().removeAllCollisionTests();
 	
 	createYellowExplosion(
-		damagedMainSpaceShip,
+		Player().mainSpaceShip,
 		loadedAssets
 	);
 }
 
 const handlePowerUp = function(
 		lootSprite,
-		mainSpaceShipSprite,
 		statusBarSprite
 	) {
 	
@@ -232,8 +224,8 @@ const handlePowerUp = function(
 	
 	switch(lootSprite.lootType) {
 		case 'medikit':
-			if (mainSpaceShipSprite.lifePoints < gameConstants.mainSpaceShipLifePoints[GameState().currentLevel]) {
-				mainSpaceShipSprite.lifePoints++;
+			if (Player().mainSpaceShip.lifePoints < gameConstants.mainSpaceShipLifePoints[GameState().currentLevel]) {
+				Player().mainSpaceShip.lifePoints++;
 				statusBarSprite.tilePositionX += 470;
 			}
 			break;
@@ -270,16 +262,15 @@ const handleFireballOutOfScreen = function(
 
 
 const handleMainSpaceShipOutOfScreen = function(
-		windowSize,
-		mainSpaceShipSprite
+		windowSize
 	) {
 	
-	if (mainSpaceShipSprite.x > windowSize.x.value)
-		mainSpaceShipSprite.x -= mainSpaceShipSprite.width * 2;
-	else if (mainSpaceShipSprite.x + mainSpaceShipSprite.width < 0)
-		mainSpaceShipSprite.x += mainSpaceShipSprite.width * 2;
-	else if (mainSpaceShipSprite.y > windowSize.y.value)
-		mainSpaceShipSprite.y -= mainSpaceShipSprite.height * 2;
+	if (Player().mainSpaceShip.x > windowSize.x.value)
+		Player().mainSpaceShip.x -= Player().mainSpaceShip.width * 2;
+	else if (Player().mainSpaceShip.x + Player().mainSpaceShip.width < 0)
+		Player().mainSpaceShip.x += Player().mainSpaceShip.width * 2;
+	else if (Player().mainSpaceShip.y > windowSize.y.value)
+		Player().mainSpaceShip.y -= Player().mainSpaceShip.height * 2;
 }
 
 
@@ -293,7 +284,7 @@ const handleDisposableSpriteAnimationEnded = function(sprite) {
 	}
 	CoreTypes.disposableSpritesRegister.splice(spritePos, 1);
 	
-	GameLoop().removeSpriteFromScene(sprite);
+	GameLoop().removeSpriteFromScene(sprite, true); // noError: we found a weird bug on destructing the mainSpaceShip
 }
 
 

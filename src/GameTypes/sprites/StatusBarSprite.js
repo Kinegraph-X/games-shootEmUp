@@ -45,7 +45,7 @@ StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture, ma
 	statusBar.name = 'statusBar';
 	
 	
-	return statusBar.spriteObj;
+	return statusBar;
 }
 
 /**

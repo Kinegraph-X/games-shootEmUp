@@ -341,7 +341,7 @@ var classConstructor = function() {
 				windowSize,
 				loadedAssets[0].statusBarLeft
 			)
-			GameLoop().stage.addChild(statusBar.gameStatusSpriteObj);
+			GameLoop().addSpriteToScene(statusBar.gameStatusSpriteObj);
 			GameLoop().stage.addChild(statusBar.textForLevelSpriteObj);
 			GameLoop().stage.addChild.apply(GameLoop().stage, statusBar.textForScoreSpriteObj);
 			
@@ -357,7 +357,6 @@ var classConstructor = function() {
 				gameLogic.handleFoeSpaceShipDamaged(
 					e.data[1],
 					e.data[0],
-					mainSpaceShipSprite,
 					loadedAssets,
 					statusBar.textForScoreSpriteObj[1]
 				);
@@ -371,7 +370,6 @@ var classConstructor = function() {
 			GameLoop().addEventListener('mainSpaceShipPowerUp', function(e) {
 				gameLogic.handlePowerUp(
 					e.data[1],
-					e.data[0],
 					statusBar.gameStatusSpriteObj
 				);
 			});
@@ -388,7 +386,6 @@ var classConstructor = function() {
 			});
 			GameLoop().addEventListener('mainSpaceShipDamaged', function(e) {
 				gameLogic.handleMainSpaceShipDamaged(
-					e.data[0],
 					e.data[1],
 					loadedAssets,
 					statusBar.gameStatusSpriteObj,
