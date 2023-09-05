@@ -3,7 +3,7 @@
  * 
  */
 
-const CoreTypes = require('src/GameTypes/_game/CoreTypes');
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 
 const windowSize = new CoreTypes.Dimension(950, 950);
  

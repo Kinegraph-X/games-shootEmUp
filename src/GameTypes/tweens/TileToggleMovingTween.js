@@ -1,5 +1,5 @@
 
-const Types = require('src/GameTypes/_game/CoreTypes'); 
+const Types = require('src/GameTypes/gameSingletons/CoreTypes'); 
 const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
 
 
@@ -22,20 +22,7 @@ const TileToggleMovingTween = function(
 		invert,
 		endAfterTileLoop
 	) {
-//	console.log(
-//		windowSize,
-//		target,
-//		type,
-//		startPosition,
-//		spriteTransform,
-//		spriteTransfomSpeed,
-//		oneShot,
-//		positionCount,
-//		tileTransform,
-//		tileTransformInterval,
-//		invert,
-//		endAfterTileLoop
-//	)
+	
 	TileToggleTween.call(
 		this, 
 		windowSize,
@@ -101,13 +88,13 @@ TileToggleMovingTween.prototype.nextStepForSprite = function(stepCount, frameDur
 			this.hasReachedClimax = true;
 		const quantifier = (-Math.sin(Math.acos(offset)) + 1);
 		this.target.y = (new Types.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed * quantifier);
-		this.target.rotation = Math.atan2(this.transform.y.value * quantifier, this.transform.x.value) + Math.PI / 2;
+		this.target.rotation = (Math.atan2(this.transform.y.value * quantifier, this.transform.x.value) + Math.PI / 2) * 180 / Math.PI;
 	}
 	else {
 		this.target.y = (new Types.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed);
 		if (this.target.name === "fireballSprite") {
 			this.transform.x.value = 0;
-			this.target.rotation = Math.atan2(this.transform.y.value, this.transform.x.value) + Math.PI / 2;
+			this.target.rotation = (Math.atan2(this.transform.y.value, this.transform.x.value) + Math.PI / 2) * 180 / Math.PI;
 		}
 	}
 	

@@ -1,9 +1,9 @@
 
 
-const CoreTypes = require('src/GameTypes/_game/CoreTypes');
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Sprite = require('src/GameTypes/sprites/Sprite');
 
-const {foeDescriptors} = require('src/GameTypes/_game/gameConstants');
+const {foeDescriptors} = require('src/GameTypes/gameSingletons/gameConstants');
 
 
 /**
@@ -27,7 +27,7 @@ const FoeSpaceShip = function(position, foeCell, texture, foeType) {
 	this.y = position.y.value;
 	this.width = this.defaultSpaceShipDimensions.x.value;
 	this.height = this.defaultSpaceShipDimensions.y.value;
-	this.rotation = Math.PI;
+	this.rotation = 180;
 }
 FoeSpaceShip.prototype = Object.create(Sprite.prototype);
 
@@ -39,6 +39,23 @@ FoeSpaceShip.prototype.getSprite = function(texture) {
 	const sprite = PIXI.Sprite.from(texture);
 	sprite.anchor.set(0.5);
 	return sprite;
+}
+
+/**
+ * @method handleDamage
+ * @param {Damage} sprite
+ */
+FoeSpaceShip.prototype.handleDamage = function(sprite) {
+	this.lifePoints -= sprite.damage;
+	return this.hasBeenDestroyed();
+}
+
+/**
+ * @method hasBeenDestroyed
+ * @param {Damage} sprite
+ */
+FoeSpaceShip.prototype.hasBeenDestroyed = function() {
+	return this.lifePoints <= 0;
 }
 
 /**

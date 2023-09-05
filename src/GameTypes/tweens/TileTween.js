@@ -1,5 +1,5 @@
 
-const Types = require('src/GameTypes/_game/CoreTypes'); 
+const Types = require('src/GameTypes/gameSingletons/CoreTypes'); 
 const Tween = require('src/GameTypes/tweens/Tween');
 
 

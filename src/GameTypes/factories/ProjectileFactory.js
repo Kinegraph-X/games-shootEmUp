@@ -1,16 +1,17 @@
-const CoreTypes = require('src/GameTypes/_game/CoreTypes');
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Projectile = require('src/GameTypes/sprites/Projectile');
 const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
 const fireBallCollisionTester = require('src/GameTypes/collisionTests/fireBallCollisionTester');
-const {weapons} = require('src/GameTypes/_game/gameConstants');
+const {weapons} = require('src/GameTypes/gameSingletons/gameConstants');
 
-const Player = require('src/GameTypes/_game/Player');
+const GameLoop = require('src/GameTypes/gameSingletons/GameLoop');
+const Player = require('src/GameTypes/gameSingletons/Player');
 
 
 /**
  * @constructor ProjectileFactory
  */
-const ProjectileFactory = function(windowSize, loadedAssets, gameLoop, startPosition, projectileType) {
+const ProjectileFactory = function(windowSize, loadedAssets, startPosition, projectileType) {
 	this.moveTiles = weapons[projectileType].moveTiles;
 	this.horizontalTweenValues = [];
 	const projectileCount = weapons[projectileType].spriteTexture.length;
@@ -22,7 +23,6 @@ const ProjectileFactory = function(windowSize, loadedAssets, gameLoop, startPosi
 			projectileCount,
 			windowSize,
 			loadedAssets,
-			gameLoop,
 			startPosition,
 			textureName,
 			projectileType
@@ -49,7 +49,7 @@ ProjectileFactory.prototype.setHorizontalValues = function(len) {
 	}
 }
 
-ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loadedAssets, gameLoop, startPosition, textureName, projectileType) {
+ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loadedAssets, startPosition, textureName, projectileType) {
 	
 	const fireball = new Projectile(
 		startPosition,
@@ -64,17 +64,15 @@ ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loaded
 		len,
 		windowSize,
 		startPosition,
-		gameLoop,
 		fireball
 	);
 	this.prepareCollisions(
-		gameLoop,
 		fireball,
 		fireballTween
 	);
 }
 
-ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPosition, gameLoop, spriteObj) {
+ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPosition, spriteObj) {
 	
 	
 	const fireballTween = new TileToggleMovingTween(
@@ -91,17 +89,17 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		'invert');
 	CoreTypes.fireballsTweensRegister.push(fireballTween);
 	
-	gameLoop.pushTween(fireballTween);
-	gameLoop.addSpriteToScene(spriteObj);
+	GameLoop().pushTween(fireballTween);
+	GameLoop().addSpriteToScene(spriteObj);
 	
 	return fireballTween;
 }
 
-ProjectileFactory.prototype.prepareCollisions = function(gameLoop, spriteObj, fireballTween) {
+ProjectileFactory.prototype.prepareCollisions = function(spriteObj, fireballTween) {
 	let fireBallCollisionTest;
 	Object.values(Player().foeSpaceShipsRegister.cache).forEach(function(foeSpaceShipSpriteObj) {
 		fireBallCollisionTest = new fireBallCollisionTester(spriteObj, foeSpaceShipSpriteObj);
-		gameLoop.pushCollisionTest(fireBallCollisionTest);
+		GameLoop().pushCollisionTest(fireBallCollisionTest);
 		// collisionTestsRegister is a partial copy of the global collisionTest list
 		// it's used to clean the collision tests when a foeSpaceShip goes out of the screen
 		fireballTween.collisionTestsRegister.push(fireBallCollisionTest);

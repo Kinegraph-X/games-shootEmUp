@@ -1,18 +1,18 @@
 
-const CoreTypes = require('src/GameTypes/_game/CoreTypes');
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Sprite = require('src/GameTypes/sprites/Sprite');
 const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
 
-const {weapons} = require('src/GameTypes/_game/gameConstants');
+const {weapons} = require('src/GameTypes/gameSingletons/gameConstants');
 
 /**
  * @constructor Projectile
  */
 const Projectile = function(position, dimensions, texture, projectileType) {
-	this.damage = weapons[projectileType].damage;
 	
 	Sprite.call(this);
 	
+	this.damage = weapons[projectileType].damage;
 	this.spriteObj = this.getSprite(dimensions, texture);
 	this.x = position.x.value;
 	this.y = position.y.value;

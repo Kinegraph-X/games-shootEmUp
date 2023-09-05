@@ -1,6 +1,6 @@
 
 
-const CoreTypes = require('src/GameTypes/_game/CoreTypes');
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const Sprite = require('src/GameTypes/sprites/Sprite');
 const TilingSprite = require('src/GameTypes/sprites/TilingSprite');

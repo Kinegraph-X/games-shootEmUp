@@ -1,5 +1,6 @@
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
-const CoreTypes = require('src/GameTypes/_game/CoreTypes');
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
+const Damage = require('src/GameTypes/actionables/Damage');
  
  /**
  * @constructor Sprite
@@ -10,6 +11,7 @@ const CoreTypes = require('src/GameTypes/_game/CoreTypes');
 		console.warn('The PIXI lib must be present in the global scope of the page');
 		return;
 	}
+	Damage.call(this);
 	
 	this._UID = UIDGenerator.newUID();
 	this.enteredScreen = false;
@@ -18,7 +20,7 @@ const CoreTypes = require('src/GameTypes/_game/CoreTypes');
 	
 	this.definePropsOnSelf();
 }
-Sprite.prototype = {};
+Sprite.prototype = Object.create(Damage.prototype);
 
 Sprite.prototype.getSprite = function() {}			// VIRTUAL
 
