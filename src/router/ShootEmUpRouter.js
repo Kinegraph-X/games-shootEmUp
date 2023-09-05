@@ -3,42 +3,41 @@
  */
 
 const FontFaceObserver = require('src/utilities/fontfaceobserver');
-
-const CoreTypes = require('src/GameTypes/CoreTypes');
-const {throttle} = require('src/core/commonUtilities');
-const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
-let gameState = require('src/GameTypes/GameState');
-const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell, getRandomFoe} = require('src/GameTypes/gridManager');
-const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons} = require('src/GameTypes/gameConstants');
 const KeyboardEvents = require('src/events/JSKeyboardMap');
 const KeyboardListener = require('src/events/GameKeyboardListener');
-const Sprite = require('src/GameTypes/Sprite');
-const TilingSprite = require('src/GameTypes/TilingSprite');
+const {throttle} = require('src/core/commonUtilities');
+const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
+const PropertyCache = require('src/core/PropertyCache').ObjectCache;
 
-const Tween = require('src/GameTypes/Tween');
-const TileTween = require('src/GameTypes/TileTween');
-const TileToggleTween = require('src/GameTypes/TileToggleTween');
-const TileToggleMovingTween = require('src/GameTypes/TileToggleMovingTween');
+const CoreTypes = require('src/GameTypes/_game/CoreTypes');
+let gameState = require('src/GameTypes/_game/GameState');
+const Player = require('src/GameTypes/_game/Player');
+const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell} = require('src/GameTypes/grids/gridManager');
+const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons} = require('src/GameTypes/_game/gameConstants');
 
-const MainSpaceShip = require('src/GameTypes/MainSpaceShip');
-const FoeSpaceShip = require('src/GameTypes/FoeSpaceShip');
-const ShieldedFoeSpaceShip = require('src/GameTypes/ShieldedFoeSpaceShip');
-const StatusBarSprite = require('src/GameTypes/StatusBarSprite');
-const Projectile = require('src/GameTypes/Projectile');
-const ProjectileFactory = require('src/GameTypes/ProjectileFactory');
+const Sprite = require('src/GameTypes/sprites/Sprite');
+const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
 
-const spaceShipCollisionTester = require('src/GameTypes/spaceShipCollisionTester');
-const fireBallCollisionTester = require('src/GameTypes/fireBallCollisionTester');
-const mainSpaceShipCollisionTester = require('src/GameTypes/mainSpaceShipCollisionTester');
+const Tween = require('src/GameTypes/tweens/Tween');
+const TileTween = require('src/GameTypes/tweens/TileTween');
+const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
+const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
 
-const GameLoop = require('src/GameTypes/GameLoop');
-const gameLogic = require('src/GameTypes/gameLogic');
+const MainSpaceShip = require('src/GameTypes/sprites/MainSpaceShip');
+const FoeSpaceShip = require('src/GameTypes/sprites/FoeSpaceShip');
+const StatusBarSprite = require('src/GameTypes/sprites/StatusBarSprite');
+const ProjectileFactory = require('src/GameTypes/factories/ProjectileFactory');
+
+const spaceShipCollisionTester = require('src/GameTypes/collisionTests/spaceShipCollisionTester');
+const fireBallCollisionTester = require('src/GameTypes/collisionTests/fireBallCollisionTester');
+const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
+
+const GameLoop = require('src/GameTypes/_game/GameLoop');
+const gameLogic = require('src/GameTypes/_game/gameLogic');
  
 var classConstructor = function() {
 	function init(rootNodeSelector) {
 		const keyboardListener = new KeyboardListener();
-		
-
 		
 		// ASSETS PRELOADING
 		const manifest = {
@@ -56,11 +55,11 @@ var classConstructor = function() {
 					name : 'spaceShips',
 					assets : [
 						{name : 'mainSpaceShip', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/07/Spaceship_07_YELLOW_animated.png'},
-						{name : 'foeSpaceShip01', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/03/Spaceship_03_RED.png'},
-						{name : 'foeSpaceShip02', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_PURPLE.png'},
-						{name : 'foeSpaceShip03', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_BLUE.png'},
-						{name : 'foeSpaceShip02Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_YELLOW.png'},
-						{name : 'foeSpaceShip03Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_YELLOW.png'}
+						{name : 'foeSpaceShip00', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/03/Spaceship_03_RED.png'},
+						{name : 'foeSpaceShip01', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_PURPLE.png'},
+						{name : 'foeSpaceShip02', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_BLUE.png'},
+						{name : 'foeSpaceShip01Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_YELLOW.png'},
+						{name : 'foeSpaceShip02Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_YELLOW.png'}
 					]
 				},
 				{
@@ -101,61 +100,53 @@ var classConstructor = function() {
 			// BACKGROUND
 			const bgZoom = 1.8;
 			const worldMapBack = new TilingSprite(
-				UIDGenerator.newUID(),
-				new CoreTypes.Point(-(windowSize.x.value * bgZoom - windowSize.x.value) / 2, 0),
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
 				loadedAssets[0].bgBack,
 				bgZoom
 			);
-			worldMapBack.spriteObj.name = 'bgLayer01';
-			const worldMapBackTween = new TileTween(windowSize, worldMapBack.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1);
+			worldMapBack.name = 'bgLayer01';
+			const worldMapBackTween = new TileTween(windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1);
 			gameLoop.pushTween(worldMapBackTween);
-			gameLoop.stage.addChild(worldMapBack.spriteObj);
+			gameLoop.addSpriteToScene(worldMapBack);
 			
 			const worldMapMiddle = new TilingSprite(
-				UIDGenerator.newUID(),
-				new CoreTypes.Point(-(windowSize.x.value * bgZoom - windowSize.x.value) / 2, 0),
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
 				loadedAssets[0].bgMiddle,
 				1
 			);
 			worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
-			worldMapMiddle.spriteObj.name = 'bgLayer02';
-			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1);
+			worldMapMiddle.name = 'bgLayer02';
+			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1);
 			gameLoop.pushTween(worldMapMiddleTween);
-			gameLoop.stage.addChild(worldMapMiddle.spriteObj);
+			gameLoop.addSpriteToScene(worldMapMiddle);
 			
 			const worldMapFront = new TilingSprite(
-				UIDGenerator.newUID(),
-				new CoreTypes.Point(-(windowSize.x.value * bgZoom - windowSize.x.value) / 2, 0),
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
 				loadedAssets[0].bgFront,
 				.3
 			);
 			worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
-			worldMapFront.spriteObj.name = 'bgLayer03';
-			const worldMapFrontTween = new TileTween(windowSize, worldMapFront.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1);
+			worldMapFront.name = 'bgLayer03';
+			const worldMapFrontTween = new TileTween(windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1);
 			gameLoop.pushTween(worldMapFrontTween);
-			gameLoop.stage.addChild(worldMapFront.spriteObj);
+			gameLoop.addSpriteToScene(worldMapFront);
 			
 			
 			
 			// MAIN SPACESHIP
-			const mainSpaceShipDimensions = new CoreTypes.Dimension(200, 200);
 			const mainSpaceShipStartPosition = new CoreTypes.Point(
-				windowSize.x.value / 2 - mainSpaceShipDimensions.x.value / 2,
-				windowSize.y.value - mainSpaceShipDimensions.y.value
+				windowSize.x.value / 2 - MainSpaceShip.prototype.defaultSpaceShipDimensions.x.value / 2,
+				windowSize.y.value - MainSpaceShip.prototype.defaultSpaceShipDimensions.y.value
 			);
 			const mainSpaceShipSprite = new MainSpaceShip(
 				mainSpaceShipStartPosition,
-				mainSpaceShipDimensions,
 				loadedAssets[1].mainSpaceShip,
 				loadedAssets[2].flamesTilemap,
 				mainSpaceShipLifePoints['1']
 			);
 			const flameTween = new TileToggleTween(
 				windowSize,
-				mainSpaceShipSprite.flameTileSprite.spriteObj,
+				mainSpaceShipSprite.flameTileSprite,
 				CoreTypes.TweenTypes.add,
 				new CoreTypes.Point(0, 83),
 				.1,
@@ -164,7 +155,19 @@ var classConstructor = function() {
 				6
 			);
 			gameLoop.pushTween(flameTween);
-			gameLoop.stage.addChild(mainSpaceShipSprite.spriteObj);
+			gameLoop.addSpriteToScene(mainSpaceShipSprite);
+			
+			
+			
+			
+			
+			
+			// PLAYER INSTANCIATION : After Having got our mainSpaceShip
+			const player = Player({
+				foeSpaceShipsRegister : new PropertyCache('foeSpaceShipsRegister'),
+				foeSpaceShipsTweensRegister : new PropertyCache('foeSpaceShipsTweensRegister'),
+				mainSpaceShip : mainSpaceShipSprite
+			});
 			
 			
 			
@@ -181,48 +184,38 @@ var classConstructor = function() {
 					);
 					
 					randomFoeSeed = gameState.currentLevel < 3 ? Object.keys(loadedAssets[1]).length - 4 : Object.keys(loadedAssets[1]).length - 3;
-					randomFoe = getRandomFoe(randomFoeSeed).toString();
+					randomFoe = gameLogic.getRandomFoe(randomFoeSeed);
 					
 					// DEBUG
 //					randomFoe = '2';
 					
-					if (parseInt(randomFoe) > 1 && shieldedFoeCount <= levels[gameState.currentLevel].shieldedFoeCount - 1) {
-						foeSpaceShip = new ShieldedFoeSpaceShip(
-							foePosition,
-							foeCell,
-							randomFoe,
-							loadedAssets[1]['foeSpaceShip0' + randomFoe + 'Shielded'],
-							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
-							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
-						);
+					foeSpaceShip = new FoeSpaceShip(
+						foePosition,
+						foeCell,
+						loadedAssets[1]['foeSpaceShip0' + randomFoe],
+						randomFoe
+					);
+					
+					if (parseInt(randomFoe) > 0 && shieldedFoeCount <= levels[gameState.currentLevel].shieldedFoeCount - 1) {
+						foeSpaceShip.hasShield = true;
 						shieldedFoeCount++;
 					}
-					else {
-						foeSpaceShip = new FoeSpaceShip(
-							foePosition,
-							foeCell,
-							randomFoe,
-							loadedAssets[1]['foeSpaceShip0' + randomFoe],
-							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lifePoints,
-							foeDescriptors[(parseInt(randomFoe) - 1).toString()].lootChance
-						);
-					}
 					
-					partialFoeSpaceShipsRegister.push(foeSpaceShip.spriteObj);
-					CoreTypes.foeSpaceShipsRegister.setItem(foeSpaceShip._UID, foeSpaceShip.spriteObj);
+					partialFoeSpaceShipsRegister.push(foeSpaceShip);
+					player.foeSpaceShipsRegister.setItem(foeSpaceShip._UID, foeSpaceShip);
 					
-					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
-					CoreTypes.foeSpaceShipsTweensRegister.setItem(foeSpaceShip._UID, foeSpaceShipTween);
+					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
+					player.foeSpaceShipsTweensRegister.setItem(foeSpaceShip._UID, foeSpaceShipTween);
 					
 					gameLoop.pushTween(foeSpaceShipTween);
-					gameLoop.stage.addChild(foeSpaceShip.spriteObj);
+					gameLoop.addSpriteToScene(foeSpaceShip);
 					foeCount++;
 				}
 				let mainSpaceShipCollisionTest;
 				partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
-					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite.spriteObj, foeSpaceShipSpriteObj, 'hostile');
+					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, foeSpaceShipSpriteObj, 'hostile');
 					gameLoop.pushCollisionTest(mainSpaceShipCollisionTest);
-					CoreTypes.foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj._UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
+					Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj._UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
 				});
 			}
 			addFoeSpaceShips();
@@ -251,11 +244,11 @@ var classConstructor = function() {
 //				
 //				let lootSprite = gameLogic.createLoot(
 //					gameLoop,
-//					foeSpaceShip.spriteObj,
+//					foeSpaceShip,
 //					loadedAssets
 //				);
 //				
-//				let mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite.spriteObj, lootSprite, 'powerUp');
+//				let mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, lootSprite, 'powerUp');
 ////				console.log('looted', mainSpaceShipCollisionTest);
 //				CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
 //				
@@ -265,23 +258,20 @@ var classConstructor = function() {
 			
 			
 			
-			
+			// PROJECTILES
 			const fireballThrottling = 250;
-			// Projectiles
 			const launchFireball = throttle(
 				function (type) {
 					const startPosition = new CoreTypes.Point(
-						mainSpaceShipSprite.spriteObj.x + mainSpaceShipDimensions.x.value / 2,
-						mainSpaceShipSprite.spriteObj.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
+						mainSpaceShipSprite.x + mainSpaceShipSprite.defaultSpaceShipDimensions.x.value / 2,
+						mainSpaceShipSprite.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
 					);
 					new ProjectileFactory(
 						windowSize,
 						loadedAssets,
 						gameLoop,
 						startPosition,
-						weapons[type].spriteTexture,
-						weapons[type].damage,
-						weapons[type].moveTiles
+						type
 					);
 				},
 				fireballThrottling
@@ -291,19 +281,19 @@ var classConstructor = function() {
 			
 			
 			// KEYBOARD HANDLING
-			const mainSpaceShipeLeftTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(-10, 0), 1, false);
-			const mainSpaceShipeRightTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(10, 0), 1, false);
-			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -10), 1, false);
-			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite.spriteObj, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 10), 1, false);
+			const mainSpaceShipeLeftTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(-10, 0), 1, false);
+			const mainSpaceShipeRightTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(10, 0), 1, false);
+			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -10), 1, false);
+			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 10), 1, false);
 			let interval;
 			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
-					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 200;
+					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 200;
 					mainSpaceShipeLeftTween.lastStepTimestamp = gameLoop.currentTime;
 					gameLoop.pushTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
-					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 0;
+					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 0;
 					mainSpaceShipeRightTween.lastStepTimestamp = gameLoop.currentTime;
 					gameLoop.pushTween(mainSpaceShipeRightTween);
 				}
@@ -325,11 +315,11 @@ var classConstructor = function() {
 			});
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
-					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 400;
+					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 400;
 					gameLoop.removeTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
-					mainSpaceShipSprite.mainSpaceShipSprite.spriteObj.tilePosition.y = 400;
+					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 400;
 					gameLoop.removeTween(mainSpaceShipeRightTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {
@@ -372,7 +362,7 @@ var classConstructor = function() {
 					gameLoop,
 					e.data[1],
 					e.data[0],
-					mainSpaceShipSprite.spriteObj,
+					mainSpaceShipSprite,
 					loadedAssets,
 					statusBar.textForScoreSpriteObj[1]
 				);
