@@ -302,15 +302,13 @@ const createSmallExplosion = function(
 		damagedFoeSpaceShip,
 		loadedAssets
 	) {
-	const explosionDimensions = new CoreTypes.Dimension(32, 32);
-	const startPosition = new CoreTypes.Point(
-		damagedFoeSpaceShip.x + getRandomExplosionOffset(damagedFoeSpaceShip.width),		// ExplosionSprite has a 0.5 anchor
-		damagedFoeSpaceShip.y + damagedFoeSpaceShip.height - getRandomExplosionOffset(damagedFoeSpaceShip.height) - 84								// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
-	);
 	const explosion = new ExplosionSprite(
-		startPosition,
-		explosionDimensions,
+		new CoreTypes.Point(
+			damagedFoeSpaceShip.x + getRandomExplosionOffset(damagedFoeSpaceShip.width),		// ExplosionSprite has a 0.5 anchor
+			damagedFoeSpaceShip.y + damagedFoeSpaceShip.height - getRandomExplosionOffset(damagedFoeSpaceShip.height) - 84								// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
+		),
 		loadedAssets[2].impactTilemap,
+		new CoreTypes.Dimension(32, 32)
 	);
 	const explosionTween = new TileToggleTween(
 		windowSize,
@@ -324,8 +322,8 @@ const createSmallExplosion = function(
 		'invert',
 		true
 	);
-	GameLoop().pushTween(explosionTween);
-	GameLoop().addSpriteToScene(explosion);
+	
+	GameLoop().addAnimatedSpriteToScene(explosion, explosionTween);
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
 
@@ -333,7 +331,7 @@ const createGreenExplosion = function(
 		damagedFoeSpaceShip,
 		loadedAssets
 	) {
-	const explosionDimensions = new CoreTypes.Dimension(64, 64);
+	
 	const startPosition = new CoreTypes.Point(
 		damagedFoeSpaceShip.x + getRandomExplosionOffset(damagedFoeSpaceShip.width / 4),		// ExplosionSprite has a 0.5 anchor
 		damagedFoeSpaceShip.y - getRandomExplosionOffset(damagedFoeSpaceShip.height / 8)
@@ -341,8 +339,7 @@ const createGreenExplosion = function(
 	
 	const explosion = new ExplosionSprite(
 		startPosition,
-		explosionDimensions,
-		loadedAssets[2].greenExplosionTilemap,
+		loadedAssets[2].greenExplosionTilemap
 	);
 	explosion.scaleX = 1.5;
 	explosion.scaleY = 1.5;
@@ -359,8 +356,8 @@ const createGreenExplosion = function(
 		'invert',
 		true
 	);
-	GameLoop().pushTween(explosionTween);
-	GameLoop().addSpriteToScene(explosion);
+	
+	GameLoop().addAnimatedSpriteToScene(explosion, explosionTween);
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
 
@@ -368,16 +365,13 @@ const createYellowExplosion = function(
 		damagedFoeSpaceShip,
 		loadedAssets
 	) {
-	const explosionDimensions = new CoreTypes.Dimension(64, 64);
-	const startPosition = new CoreTypes.Point(
-		damagedFoeSpaceShip.x + damagedFoeSpaceShip.width / 2 + getRandomExplosionOffset(damagedFoeSpaceShip.width / 4),		// ExplosionSprite has a 0.5 anchor
-		damagedFoeSpaceShip.y + damagedFoeSpaceShip.height / 2 - getRandomExplosionOffset(damagedFoeSpaceShip.height / 8)
-	);
 	
 	const explosion = new ExplosionSprite(
-		startPosition,
-		explosionDimensions,
-		loadedAssets[2].yellowExplosionTilemap,
+		new CoreTypes.Point(
+			damagedFoeSpaceShip.x + damagedFoeSpaceShip.width / 2 + getRandomExplosionOffset(damagedFoeSpaceShip.width / 4),		// ExplosionSprite has a 0.5 anchor
+			damagedFoeSpaceShip.y + damagedFoeSpaceShip.height / 2 - getRandomExplosionOffset(damagedFoeSpaceShip.height / 8)
+		),
+		loadedAssets[2].yellowExplosionTilemap
 	);
 	explosion.scaleX = 2;
 	explosion.scaleY = 2;
@@ -394,8 +388,8 @@ const createYellowExplosion = function(
 		'invert',
 		true
 	);
-	GameLoop().pushTween(explosionTween);
-	GameLoop().addSpriteToScene(explosion);
+	
+	GameLoop().addAnimatedSpriteToScene(explosion, explosionTween);
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
 
@@ -405,17 +399,15 @@ const activateShield = function(
 		loadedAssets
 	) {
 	
-	let shieldDimensions, zoom = 1;
-	shieldDimensions = new CoreTypes.Dimension(200, 200);
-
-	const startPosition = new CoreTypes.Point(
-		spaceShip.x + spaceShip.width / 2,
-		spaceShip.y + spaceShip.height / 2
-	);
+	let zoom = 1; 
+	
 	const shield = new ExplosionSprite(
-		startPosition,
-		shieldDimensions,
+		new CoreTypes.Point(
+			spaceShip.x + spaceShip.width / 2,
+			spaceShip.y + spaceShip.height / 2
+		),
 		loadedAssets[2].shieldTilemap,
+		new CoreTypes.Dimension(200, 200)
 	);
 	shield.name = 'shieldSprite';
 	shield.zoom = zoom;
@@ -432,8 +424,8 @@ const activateShield = function(
 		'invert',
 		true
 	);
-	GameLoop().pushTween(shieldTween);
-	GameLoop().addSpriteToScene(shield);
+	
+	GameLoop().addAnimatedSpriteToScene(shield, shieldTween);
 	CoreTypes.disposableSpritesRegister.push(shield);
 }
 
@@ -447,15 +439,12 @@ const createLoot = function(
 	if (GameState().currentLootCount[lootType] === gameConstants.maxLootsByType[lootType])
 		return;
 	
-	let lootDimensions = new CoreTypes.Dimension(64, 64);
-	const startPosition = new CoreTypes.Point(
-		foeSpaceShip.x,
-		foeSpaceShip.y
-	);
-	
+		
 	const loot = new LootSprite(
-		startPosition,
-		lootDimensions,
+		new CoreTypes.Point(
+			foeSpaceShip.x,
+			foeSpaceShip.y
+		),
 		loadedAssets[2][lootType + 'Tilemap'],
 		lootType
 	);
@@ -467,8 +456,7 @@ const createLoot = function(
 		new CoreTypes.Point(0, 7),
 		.1
 	);
-	GameLoop().pushTween(lootTween);
-	GameLoop().addSpriteToScene(loot);
+	GameLoop().addAnimatedSpriteToScene(loot, lootTween);
 	
 	CoreTypes.disposableTweensRegister.push({
 		lootSprite : loot,

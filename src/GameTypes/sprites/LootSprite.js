@@ -12,7 +12,7 @@ const Sprite = require('src/GameTypes/sprites/Sprite');
  * FIXME: Explicitly type that :
  * @param {String} lootType		// {medikit | weapon}
  */
-const LootSprite = function(position, dimensions, texture, lootType) {
+const LootSprite = function(position, texture, lootType) {
 	 this.lootType = lootType;
 	 
 	 Sprite.call(this);
@@ -20,8 +20,8 @@ const LootSprite = function(position, dimensions, texture, lootType) {
 	 this.spriteObj = this.getSprite(texture);
 	 this.x = position.x.value;
 	 this.y = position.y.value;
-	 this.width = dimensions.x.value;
-	 this.height = dimensions.y.value;
+	 this.width = this.defaulSpriteDimensions.x.value;
+	 this.height = this.defaulSpriteDimensions.y.value;
 }
 LootSprite.prototype = Object.create(Sprite.prototype);
 
@@ -39,6 +39,9 @@ LootSprite.prototype.getSprite = function(texture) {
 	sprite.anchor.set(0.5);
 	return sprite;
 }
+
+
+LootSprite.prototype.defaulSpriteDimensions = new CoreTypes.Dimension(64, 64);
 
  
  

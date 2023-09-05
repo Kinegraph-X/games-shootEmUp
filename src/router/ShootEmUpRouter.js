@@ -110,8 +110,7 @@ var classConstructor = function() {
 			);
 			worldMapBack.name = 'bgLayer01';
 			const worldMapBackTween = new TileTween(windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1);
-			GameLoop().pushTween(worldMapBackTween);
-			GameLoop().addSpriteToScene(worldMapBack);
+			GameLoop().addAnimatedSpriteToScene(worldMapBack, worldMapBackTween);
 			
 			const worldMapMiddle = new TilingSprite(
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
@@ -121,8 +120,7 @@ var classConstructor = function() {
 			worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 			worldMapMiddle.name = 'bgLayer02';
 			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1);
-			GameLoop().pushTween(worldMapMiddleTween);
-			GameLoop().addSpriteToScene(worldMapMiddle);
+			GameLoop().addAnimatedSpriteToScene(worldMapMiddle, worldMapMiddleTween);
 			
 			const worldMapFront = new TilingSprite(
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
@@ -132,8 +130,7 @@ var classConstructor = function() {
 			worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 			worldMapFront.name = 'bgLayer03';
 			const worldMapFrontTween = new TileTween(windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1);
-			GameLoop().pushTween(worldMapFrontTween);
-			GameLoop().addSpriteToScene(worldMapFront);
+			GameLoop().addAnimatedSpriteToScene(worldMapFront, worldMapFrontTween);
 			
 			
 			
@@ -158,8 +155,7 @@ var classConstructor = function() {
 				2,
 				6
 			);
-			GameLoop().pushTween(flameTween);
-			GameLoop().addSpriteToScene(mainSpaceShipSprite);
+			GameLoop().addAnimatedSpriteToScene(mainSpaceShipSprite, flameTween);
 			
 			
 			
@@ -211,8 +207,7 @@ var classConstructor = function() {
 					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
 					player.foeSpaceShipsTweensRegister.setItem(foeSpaceShip._UID, foeSpaceShipTween);
 					
-					GameLoop().pushTween(foeSpaceShipTween);
-					GameLoop().addSpriteToScene(foeSpaceShip);
+					GameLoop().addAnimatedSpriteToScene(foeSpaceShip, foeSpaceShipTween);
 					foeCount++;
 				}
 				let mainSpaceShipCollisionTest;

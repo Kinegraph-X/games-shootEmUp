@@ -89,8 +89,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		'invert');
 	CoreTypes.fireballsTweensRegister.push(fireballTween);
 	
-	GameLoop().pushTween(fireballTween);
-	GameLoop().addSpriteToScene(spriteObj);
+	GameLoop().addAnimatedSpriteToScene(spriteObj, fireballTween);
 	
 	return fireballTween;
 }

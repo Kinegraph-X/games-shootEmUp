@@ -201,6 +201,19 @@ GameLoop.prototype.addSpriteToScene = function(sprite) {
 }
 
 /**
+ * @method addAnimatedSpriteToScene
+ * 
+ * Self-explanatory
+ * 
+ * @param {Sprite} sprite
+ * @param {Tween} tween
+ */
+GameLoop.prototype.addAnimatedSpriteToScene = function(sprite, tween) {
+	this.stage.addChild(sprite.spriteObj);
+	this.pushTween(tween);
+}
+
+/**
  * @method removeSpriteFromScene
  * 
  * Self-explanatory
