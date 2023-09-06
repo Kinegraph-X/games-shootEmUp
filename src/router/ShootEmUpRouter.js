@@ -285,12 +285,12 @@ var classConstructor = function() {
 			let interval;
 			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
-					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 200;
+					mainSpaceShipSprite.rollWingsLeft();
 					mainSpaceShipeLeftTween.lastStepTimestamp = GameLoop().currentTime;
 					GameLoop().pushTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
-					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 0;
+					mainSpaceShipSprite.rollWingsRight();
 					mainSpaceShipeRightTween.lastStepTimestamp = GameLoop().currentTime;
 					GameLoop().pushTween(mainSpaceShipeRightTween);
 				}
@@ -312,11 +312,11 @@ var classConstructor = function() {
 			});
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
-					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 400;
+					mainSpaceShipSprite.rollWingsFlat();
 					GameLoop().removeTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
-					mainSpaceShipSprite.mainSpaceShipSprite.tilePositionY = 400;
+					mainSpaceShipSprite.rollWingsFlat();
 					GameLoop().removeTween(mainSpaceShipeRightTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {

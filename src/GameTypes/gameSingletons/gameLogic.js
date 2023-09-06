@@ -45,12 +45,6 @@ const handleFoeSpaceShipDamaged = function(
 	if (damagedFoeSpaceShip.hasShield) {
 		activateShield(
 			damagedFoeSpaceShip,
-			{
-				x : damagedFoeSpaceShip.x,
-				y : damagedFoeSpaceShip.y,
-				width : 0,
-				height : 0
-			},
 			loadedAssets
 		);
 	}
@@ -151,9 +145,8 @@ const handleMainSpaceShipDamaged = function(
 		currentLevelText,
 		scoreTextSprite
 	) {
-		
+	
 	Player().mainSpaceShip.lifePoints--;
-	statusBarSprite.tilePositionX = statusBarSprite.tilePositionX - 470;
 
 	activateShield(
 		Player().mainSpaceShip,
@@ -178,7 +171,8 @@ const handleMainSpaceShipDamaged = function(
 			statusBarSprite,
 			currentLevelText
 		);
-	else
+	else {
+		statusBarSprite.tilePositionX = statusBarSprite.tilePositionX - 470;
 		handleFoeSpaceShipDamaged(
 			damagedFoeSpaceShip,
 			{
@@ -187,6 +181,7 @@ const handleMainSpaceShipDamaged = function(
 			loadedAssets,
 			scoreTextSprite
 		);
+	}
 }
 
 
@@ -196,11 +191,16 @@ const handleMainSpaceShipDestroyed = function(
 		statusBarSprite,
 		currentLevelText
 	) {
-	// damagedMainSpaceShip removal from the gameLoop & scene
-//	console.log(Player().mainSpaceShip);
+	
 	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);
-	GameLoop().removeSpriteFromScene(statusBarSprite);
-	GameLoop().removeSpriteFromScene(currentLevelText);
+//	GameLoop().removeSpriteFromScene(statusBarSprite);
+//	GameLoop().removeSpriteFromScene(currentLevelText, true);	// noError: hard to say why the level-text isn't anymore in the scene sometimes...
+	
+	// Temporary hack to shw the animation before stopping
+	setTimeout(function() {
+		GameLoop().stop();
+	},1024)
+	
 	
 	// can't remove collision test while looping
 //	GameLoop().removeAllCollisionTests();
@@ -217,7 +217,7 @@ const handlePowerUp = function(
 	) {
 	
 	const tween = CoreTypes.disposableTweensRegister.findObjectByValue('lootSprite', lootSprite).lootTween;
-	if (tween)		// let's assume it can fail...  for now...
+	if (tween)		// let's assume that can fail...  for now...
 		GameLoop().removeTween(tween);
 		
 	GameLoop().removeSpriteFromScene(lootSprite);
@@ -390,13 +390,26 @@ const activateShield = function(
 		loadedAssets
 	) {
 	
-	let zoom = 1; 
-	
-	const shield = new ExplosionSprite(
-		new CoreTypes.Point(
+	let zoom = 1;
+	let shieldPosition;
+	if (spaceShip.name === 'mainSpaceShipSprite'		// mainSpaceShipSprite doesn't have a spriteObj prop
+		|| (spaceShip.spriteObj.anchor.x === 1
+			&& spaceShip.spriteObj.anchor.y === 1)) {
+		shieldPosition = new CoreTypes.Point(
 			spaceShip.x + spaceShip.width / 2,
 			spaceShip.y + spaceShip.height / 2
-		),
+		);
+	}
+	else if (spaceShip.spriteObj.anchor.x === .5
+		&& spaceShip.spriteObj.anchor.y === .5) {
+		shieldPosition = new CoreTypes.Point(
+			spaceShip.x,
+			spaceShip.y
+		);
+	}
+	
+	const shield = new ExplosionSprite(
+		shieldPosition,
 		loadedAssets[2].shieldTilemap,
 		new CoreTypes.Dimension(200, 200)
 	);
