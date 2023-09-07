@@ -1,30 +1,168 @@
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
-const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
-const Damage = require('src/GameTypes/actionables/Damage');
+
+// like if it "implements" the Damageable interface
+const Damageable = require('src/GameTypes/interfaces/Damageable');
  
- /**
+
+/**
+ * @namespace Sprite
  * @constructor Sprite
  * @param {Number} lifePoints
  */
- const Sprite = function(lifePoints) {
+const Sprite = function(lifePoints) {
+	// @ts-ignore
 	if (typeof PIXI === 'undefined') {
 		console.warn('The PIXI lib must be present in the global scope of the page');
 		return;
 	}
-	Damage.call(this);
+	Damageable.call(this);
 	
-	this._UID = UIDGenerator.newUID();
+	this.UID = UIDGenerator.newUID();
 	this.enteredScreen = false;
 	this.lifePoints = lifePoints || 0;
 	this.spriteObj = null;
-	
-	this.definePropsOnSelf();
 }
-Sprite.prototype = Object.create(Damage.prototype);
+Sprite.prototype = Object.create(Damageable.prototype);
 
+/**
+ * @method @virtual getSprite
+ */
 Sprite.prototype.getSprite = function() {}			// VIRTUAL
 
-Sprite.prototype.definePropsOnSelf = function() {
+/**
+ * @virtual name
+ */
+Sprite.prototype.name = 'Sprite'					// VIRTUAL
+
+
+Object.defineProperty(Sprite.prototype, 'x', {
+	get : function() {
+		return this.spriteObj.x;
+	},
+	set : function(newVal) {
+		this.spriteObj.x = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype,'y', {
+	get : function() {
+		return this.spriteObj.y;
+	},
+	set : function(newVal) {
+		this.spriteObj.y = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'width', {
+	get : function() {
+		return this.spriteObj.width;
+	},
+	set : function(newVal) {
+		this.spriteObj.width = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'height', {
+	get : function() {
+		return this.spriteObj.height;
+	},
+	set : function(newVal) {
+		this.spriteObj.height = newVal;
+	}
+});
+
+// The rotations are meant to be expressed in degrees
+Object.defineProperty(Sprite.prototype, 'rotation', {
+	get : function() {
+		return this.spriteObj.rotation * 180 / Math.PI;
+	},
+	set : function(newVal) {
+		this.spriteObj.rotation = newVal * Math.PI / 180;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'scaleX', {
+	get : function() {
+		return this.spriteObj.scale.x;
+	},
+	set : function(newVal) {
+		this.spriteObj.scale.x = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'scaleY', {
+	get : function() {
+		return this.spriteObj.scale.y;
+	},
+	set : function(newVal) {
+		this.spriteObj.scale.y = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'zoom', {
+	get : function() {
+		return this.spriteObj.zoom;
+	},
+	set : function(newVal) {
+		this.spriteObj.zoom = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'tilePositionX', {
+	get : function() {
+		return this.spriteObj.tilePosition.x;
+	},
+	set : function(newVal) {
+		this.spriteObj.tilePosition.x = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'tilePositionY', {
+	get : function() {
+		return this.spriteObj.tilePosition.y;
+	},
+	set : function(newVal) {
+		this.spriteObj.tilePosition.y = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'tileTransformScaleX', {
+	get : function() {
+		return this.spriteObj.tileTransform.scale.x;
+	},
+	set : function(newVal) {
+		this.spriteObj.tileTransform.scale.x = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'tileTransformScaleY', {
+	get : function() {
+		return this.spriteObj.tileTransform.scale.y;
+	},
+	set : function(newVal) {
+		this.spriteObj.tileTransform.scale.y = newVal;
+	}
+});
+
+Object.defineProperty(Sprite.prototype, 'tileTransformRotation', {
+	get : function() {
+		return this.spriteObj.tileTransform.rotation;
+	},
+	set : function(newVal) {
+		this.spriteObj.tileTransform.rotation = newVal;
+	}
+});
+
+
+/**
+ * @method _definePropsOnSelf
+ * //@private 
+ * 
+ * A helper to obtain a list of getter/setter props hosted on 
+ * a not-Sprite instance meant to reflect the often-used props
+ * of a PIXI.Sprite object 
+ */
+Sprite.prototype._definePropsOnSelf = function() {
 	
 	Object.defineProperty(this, 'x', {
 		get : function() {
@@ -62,6 +200,7 @@ Sprite.prototype.definePropsOnSelf = function() {
 		}
 	});
 	
+	// The rotations are meant to be expressed in degrees
 	Object.defineProperty(this, 'rotation', {
 		get : function() {
 			return this.spriteObj.rotation * 180 / Math.PI;
@@ -97,52 +236,6 @@ Sprite.prototype.definePropsOnSelf = function() {
 			this.spriteObj.zoom = newVal;
 		}
 	});
-	
-	Object.defineProperty(this, 'tilePositionX', {
-		get : function() {
-			return this.spriteObj.tilePosition.x;
-		},
-		set : function(newVal) {
-			this.spriteObj.tilePosition.x = newVal;
-		}
-	});
-	
-	Object.defineProperty(this, 'tilePositionY', {
-		get : function() {
-			return this.spriteObj.tilePosition.y;
-		},
-		set : function(newVal) {
-			this.spriteObj.tilePosition.y = newVal;
-		}
-	});
-	
-	Object.defineProperty(this, 'tileTransformScaleX', {
-		get : function() {
-			return this.spriteObj.tileTransform.scale.x;
-		},
-		set : function(newVal) {
-			this.spriteObj.tileTransform.scale.x = newVal;
-		}
-	});
-	
-	Object.defineProperty(this, 'tileTransformScaleY', {
-		get : function() {
-			return this.spriteObj.tileTransform.scale.y;
-		},
-		set : function(newVal) {
-			this.spriteObj.tileTransform.scale.y = newVal;
-		}
-	});
-	
-	Object.defineProperty(this, 'tileTransformRotation', {
-		get : function() {
-			return this.spriteObj.tileTransform.rotation;
-		},
-		set : function(newVal) {
-			this.spriteObj.tileTransform.rotation = newVal;
-		}
-	});
-
 }
 
  

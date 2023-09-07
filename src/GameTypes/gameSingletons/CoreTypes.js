@@ -4,22 +4,29 @@
 //var PropertyCache = require('src/core/PropertyCache').ObjectCache;
 
 /**
- * @constructor Coord 
+ * @constructor Coord
+ * @param {Number} value
  */
 const Coord = function(value) {
 	this.value = value;
 }
 
-
-
+/**
+ * @type {{
+ * [key:String] : (val:Number) => Number
+ * }} Operations
+ */
 const Operations = {
 	add : function(val) {
+		// @ts-ignore
 		return this.value + val;
 	},
 	mult : function(val) {
+		// @ts-ignore
 		return this.value * val;
 	},
 	div : function(val) {
+		// @ts-ignore
 		return this.value / val;
 	}
 }
@@ -32,7 +39,9 @@ for (var op in Operations) {
 
 
 /**
- * @constructor Point 
+ * @constructor Point
+ * @param {Number} x
+ * @param {Number} y
  */
 const Point = function(x, y) {
 	this.x = new Coord(x || 0);
@@ -40,7 +49,9 @@ const Point = function(x, y) {
 }
 
 /**
- * @constructor Dimension 
+ * @constructor Dimension
+ * @param {Number} x
+ * @param {Number} y
  */
 const Dimension = function(x, y) {
 	this.x = new Coord(x || 0);
@@ -49,14 +60,18 @@ const Dimension = function(x, y) {
 
 
 /**
- * @constructor Transform 
+ * @constructor Transform
+ * @param {Number} x
+ * @param {Number} y
  */
 const Transform = function(x, y) {
 	Point.call(this, x, y);
 }
 
 /**
- * @constructor StepDuration 
+ * @constructor StepDuration
+ * @param {Number} x
+ * @param {Number} y
  */
 const StepDuration = function(x, y) {
 	this.x = x || 1;						// ms
@@ -82,26 +97,44 @@ const TweenTypes = {
 
 
 
-
-
-const Types = {
+/**
+ * @namespace CoreTypes
+ */
+/**
+ * @typedef {Object} Sprite
+ * @typedef {Object} Tween
+ * @typedef {Object} CollisionTest
+ * 
+ * @typedef {Array<Sprite>} CoreTypes.fireballsRegister
+ * @typedef {Array<Tween>} CoreTypes.fireballsTweensRegister
+ * @typedef {Array<Sprite>} CoreTypes.disposableSpritesRegister
+ * @typedef {Array<Tween>} CoreTypes.disposableTweensRegister
+ * @typedef {Array<CollisionTest>} CoreTypes.tempAsyncCollisionsTests
+ * 
+ * @typedef {Coord} CoreTypes.Coord
+ * @typedef {Point} CoreTypes.Point
+ * @typedef {Dimension} CoreTypes.Dimension
+ * @typedef {Transform} CoreTypes.Transform
+ * @typedef {StepDuration} CoreTypes.StepDuration
+ * @typedef {Object} CoreTypes.TweenTypes
+ * @typedef {Set<Number>} CoreTypes.clearedCollisionTests 
+ */
+const CoreTypes = {
 	Coord : Coord,
 	Point : Point,
 	Dimension : Dimension,
 	Transform : Transform,
 	StepDuration : StepDuration,
 	TweenTypes : TweenTypes,
-//	foeSpaceShipsRegister : foeSpaceShipsRegister,
-//	foeSpaceShipsTweensRegister : foeSpaceShipsTweensRegister,
-	fireballsRegister : [],
-	fireballsTweensRegister : [],
-	disposableSpritesRegister : [],
-	disposableTweensRegister : [],
-	tempAsyncCollisionsTests : [],
-	clearedCollisionTests : new Set()
+	fireballsRegister : new Array(),
+	fireballsTweensRegister : new Array(),
+	disposableSpritesRegister : new Array(),
+	disposableTweensRegister : new Array(),
+	tempAsyncCollisionsTests : new Array(),
+	clearedCollisionTests : new Set()				
 };
 
 
 
 
-module.exports = Types;
+module.exports = CoreTypes;

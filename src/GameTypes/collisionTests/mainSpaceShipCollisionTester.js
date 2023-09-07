@@ -1,19 +1,30 @@
-
+ /**
+ * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
+ */
 
 
 
 
 /**
- * @constructor fireballCollisionTester
+ * @constructor mainSpaceShipCollisionTester
+ * @param {Sprite} mainSpaceShipSprite
+ * @param {Sprite} referenceObj
+ * @param {String} type						// FIXME: this is Union type {'powerUp' | 'hostile'}
  */
 const mainSpaceShipCollisionTester = function(mainSpaceShipSprite, referenceObj, type) {
 	this.mainSpaceShipSprite = mainSpaceShipSprite;
 	this.referenceObj = referenceObj;
 	this.type = type;
 }
-mainSpaceShipCollisionTester.prototype = {};
+//mainSpaceShipCollisionTester.prototype = {};
+/**
+ * @static objectType
+ */
 mainSpaceShipCollisionTester.prototype.objectType = 'mainSpaceShipCollisionTest';
 
+/**
+ * @method testCollision
+ */
 mainSpaceShipCollisionTester.prototype.testCollision = function() {
 //	console.log(this.referenceObj.x + this.referenceObj.width / 2, this.mainSpaceShipSprite.x, this.mainSpaceShipSprite.width * 3 / 12);
 //	console.log(this.referenceObj.x - this.referenceObj.width / 2, this.mainSpaceShipSprite.x, this.mainSpaceShipSprite.width * 9 / 12);	

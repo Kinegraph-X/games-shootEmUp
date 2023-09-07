@@ -1,10 +1,19 @@
+ 
+ /**
+ * @typedef {Object} PIXI.Text
+ * @typedef {import('src/GameTypes/interfaces/Damageable')} Damageable
+ * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
+ * @typedef {import('src/GameTypes/sprites/TilingSprite')} TilingSprite
+ * @typedef {import('src/GameTypes/sprites/FoeSpaceShip')} FoeSpaceShip
+ * @typedef {import('src/GameTypes/sprites/Projectile')} Projectile
+ */
+
 /**
- * @ruleSet
- * 
+ * @singleton
+ * Rules for the actual game
  */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
-const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const gameConstants = require('src/GameTypes/gameSingletons/gameConstants');
 const {windowSize, occupiedCells} = require('src/GameTypes/grids/gridManager');
 const ruleSet = require('src/GameTypes/gameSingletons/gameRules');
@@ -25,7 +34,14 @@ const Player = require('src/GameTypes/gameSingletons/Player');
 
 
 
-
+/**
+ * @method handleFoeSpaceShipDamaged
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @param {Projectile} explodedFireball
+ * @param {Array<Object>} loadedAssets
+ * @param {PIXI.Text} scoreTextSprite
+ * @return Void
+ */
 const handleFoeSpaceShipDamaged = function(
 		damagedFoeSpaceShip,
 		explodedFireball,
@@ -34,28 +50,31 @@ const handleFoeSpaceShipDamaged = function(
 	) {
 		
 	// Avoid potential double deletion when collided twice in the same frame
+	// @ts-ignore lifePoints is inherited
 	if (damagedFoeSpaceShip.lifePoints <= 0
-		&& explodedFireball.name === 'fireballSprite') {	// the mainSpaceShip may also collide a foe
-		removeFireBallFromStage(							// (then the mainSpaceShipSprite is aliased as the "fireball")
-			explodedFireball
+		&& explodedFireball.name === 'fireballSprite') {	// Test the "name" prop : the mainSpaceShip may also collide a foe
+		removeFireBallFromStage(							// (then the mainSpaceShipSprite is positionned
+			explodedFireball								// at the same propName as the "fireball")
 		)
 		return;
 	}
 	
 	if (damagedFoeSpaceShip.hasShield) {
 		activateShield(
+			// @ts-ignore :expected {Sprite}, given {FoeSpaceShip} => TS doesn't understand anything to prototype inheritance...
 			damagedFoeSpaceShip,
 			loadedAssets
 		);
 	}
 
-	damagedFoeSpaceShip.lifePoints -= explodedFireball.damage;
+	damagedFoeSpaceShip.handleDamage(explodedFireball);
 	
 	createSmallExplosion(
 		damagedFoeSpaceShip,
 		loadedAssets
 	);
 	
+	// @ts-ignore lifePoints is inherited
 	if (damagedFoeSpaceShip.lifePoints <= 0)
 		 handleFoeSpaceShipDestroyed(
 			damagedFoeSpaceShip,
@@ -69,6 +88,13 @@ const handleFoeSpaceShipDamaged = function(
 		)
 }
 
+/**
+ * @method handleFoeSpaceShipDestroyed
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @param {Array<Object>} loadedAssets
+ * @param {PIXI.Text} scoreTextSprite
+ * @return Void
+ */
 const handleFoeSpaceShipDestroyed = function(
 		damagedFoeSpaceShip,
 		loadedAssets,
@@ -81,9 +107,12 @@ const handleFoeSpaceShipDestroyed = function(
 	);
 	
 	// foeSpaceShipSprite removal from the gameLoop & scene
-	Player().foeSpaceShipsRegister.deleteItem(damagedFoeSpaceShip._UID);
-	GameLoop().markCollisionTestsForRemoval(Player().foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip._UID).collisionTestsRegister);
-	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip._UID);
+	// @ts-ignore UID is inherited
+	Player().foeSpaceShipsRegister.deleteItem(damagedFoeSpaceShip.UID);
+	// @ts-ignore UID is inherited
+	GameLoop().markCollisionTestsForRemoval(Player().foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip.UID).collisionTestsRegister);
+	// @ts-ignore UID is inherited
+	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
 	
 	GameLoop().removeSpriteFromScene(damagedFoeSpaceShip);
 	
@@ -97,11 +126,17 @@ const handleFoeSpaceShipDestroyed = function(
 	// prepare to load more foeSpaceShips
 	occupiedCells[damagedFoeSpaceShip.cell.x][damagedFoeSpaceShip.cell.y] = false;
 	GameState().currentScore += gameConstants.foeDescriptors[damagedFoeSpaceShip.foeType].pointsPrize;
+	// @ts-ignore PIXI.Text is a mocked type
 	scoreTextSprite.text = GameState().currentScore.toString().padStart(4, '0')
 	
 	GameLoop().trigger('foeSpaceShipDestroyed');
 }
 
+/**
+ * @method handleFoeSpaceShipDestroyed
+ * @param {Projectile} explodedFireball
+ * @return Void
+ */
 const removeFireBallFromStage = function(
 		explodedFireball
 	) {
@@ -113,6 +148,12 @@ const removeFireBallFromStage = function(
 	GameLoop().removeSpriteFromScene(explodedFireball, true);		// might fail if already collided => noError
 }
 
+/**
+ * @method handleFoeSpaceShipDestroyed
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @param {Array<Object>} loadedAssets
+ * @return Void
+ */
 const handleLoot = function(
 		damagedFoeSpaceShip,
 		loadedAssets
@@ -127,8 +168,10 @@ const handleLoot = function(
 	if (typeof lootSprite === 'undefined')
 		return;
 	else
+		// @ts-ignore FIXME: lootType should be Union {'madikit' | 'powerUp'}
 		GameState().currentLootCount[lootSprite.lootType]++;
 	
+	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototype inheritance...
 	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, lootSprite, 'powerUp');
 	// we chose not to append the new collisionTest synchronously,
 	// but raher to wait for the next frame : appending it synchronlously 
@@ -137,7 +180,15 @@ const handleLoot = function(
 }
 
 
-
+/**
+ * @method handleMainSpaceShipDamaged
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @param {Array<Object>} loadedAssets
+ * @param {TilingSprite} statusBarSprite
+ * @param {PIXI.Text} currentLevelText
+ * @param {PIXI.Text} scoreTextSprite
+ * @return Void
+ */
 const handleMainSpaceShipDamaged = function(
 		damagedFoeSpaceShip,
 		loadedAssets,
@@ -154,6 +205,7 @@ const handleMainSpaceShipDamaged = function(
 	);
 
 	createSmallExplosion(
+		// @ts-ignore FIXME: HACK
 		{
 			x : Player().mainSpaceShip.x + Player().mainSpaceShip.width / 2,
 			y : Player().mainSpaceShip.y + Player().mainSpaceShip.height / 1.8,
@@ -172,9 +224,13 @@ const handleMainSpaceShipDamaged = function(
 			currentLevelText
 		);
 	else {
+		// only if we're not dead, visually decrement the life-bar
+		// @ts-ignore tilePositionX is inherited
 		statusBarSprite.tilePositionX = statusBarSprite.tilePositionX - 470;
+		
 		handleFoeSpaceShipDamaged(
 			damagedFoeSpaceShip,
+			// @ts-ignore FIXME: HACK
 			{
 				damage : 1
 			},
@@ -185,7 +241,13 @@ const handleMainSpaceShipDamaged = function(
 }
 
 
-
+/**
+ * @method handleMainSpaceShipDestroyed
+ * @param {Array<Object>} loadedAssets
+ * @param {TilingSprite} statusBarSprite
+ * @param {PIXI.Text} currentLevelText
+ * @return Void
+ */
 const handleMainSpaceShipDestroyed = function(
 		loadedAssets,
 		statusBarSprite,
@@ -193,8 +255,9 @@ const handleMainSpaceShipDestroyed = function(
 	) {
 	
 	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);
-//	GameLoop().removeSpriteFromScene(statusBarSprite);
-//	GameLoop().removeSpriteFromScene(currentLevelText, true);	// noError: hard to say why the level-text isn't anymore in the scene sometimes...
+	GameLoop().removeSpriteFromScene(statusBarSprite);
+	GameLoop().stage.removeChild(currentLevelText);
+		// noError: hard to say why the level-text isn't anymore in the scene sometimes...
 	
 	// Temporary hack to shw the animation before stopping
 	setTimeout(function() {
@@ -211,11 +274,18 @@ const handleMainSpaceShipDestroyed = function(
 	);
 }
 
+/**
+ * @method handlePowerUp
+ * @param {LootSprite} lootSprite
+ * @param {TilingSprite} statusBarSprite
+ * @return Void
+ */
 const handlePowerUp = function(
 		lootSprite,
 		statusBarSprite
 	) {
 	
+	// @ts-ignore
 	const tween = CoreTypes.disposableTweensRegister.findObjectByValue('lootSprite', lootSprite).lootTween;
 	if (tween)		// let's assume that can fail...  for now...
 		GameLoop().removeTween(tween);
@@ -226,31 +296,43 @@ const handlePowerUp = function(
 		case 'medikit':
 			if (Player().mainSpaceShip.lifePoints < gameConstants.mainSpaceShipLifePoints[GameState().currentLevel]) {
 				Player().mainSpaceShip.lifePoints++;
+				// @ts-ignore tilePositionX is inherited
 				statusBarSprite.tilePositionX += 470;
 			}
 			break;
 		case 'weapon':
-			if (typeof gameConstants.weapons[(++GameState().currentWeapon).toString()] === 'undefined')
+			// FIXME: don't like declaring Object props as {Number}
+			if (typeof gameConstants.weapons[++GameState().currentWeapon] === 'undefined')
 				GameState().currentWeapon--;
 		default:
 			break;
 	}
 }
 
-
+/**
+ * @method handleFoeSpaceShipOutOfScreen
+ * @param {FoeSpaceShip} spaceShipSprite
+ * @return Void
+ */
 const handleFoeSpaceShipOutOfScreen = function(
 		spaceShipSprite
 	) {
-	
-	Player().foeSpaceShipsRegister.deleteItem(spaceShipSprite._UID);
-	Player().foeSpaceShipsTweensRegister.deleteItem(spaceShipSprite._UID);
-	GameLoop().removeTween(Player().foeSpaceShipsTweensRegister.getItem(spaceShipSprite._UID));
+	// @ts-ignore UID is inherited
+	Player().foeSpaceShipsRegister.deleteItem(spaceShipSprite.UID);
+	// @ts-ignore UID is inherited
+	Player().foeSpaceShipsTweensRegister.deleteItem(spaceShipSprite.UID);
+	// @ts-ignore UID is inherited
+	GameLoop().removeTween(Player().foeSpaceShipsTweensRegister.getItem(spaceShipSprite.UID));
 	
 	GameLoop().removeSpriteFromScene(spaceShipSprite, true);		// might fail if already destroyed => noError
 }
 
 
-
+/**
+ * @method handleFireballOutOfScreen
+ * @param {Projectile} fireballSprite
+ * @return Void
+ */
 const handleFireballOutOfScreen = function(
 		fireballSprite
 	) {
@@ -260,7 +342,11 @@ const handleFireballOutOfScreen = function(
 }
 
 
-
+/**
+ * @method handleMainSpaceShipOutOfScreen
+ * @param {CoreTypes.Dimension} windowSize
+ * @return Void
+ */
 const handleMainSpaceShipOutOfScreen = function(
 		windowSize
 	) {
@@ -274,7 +360,11 @@ const handleMainSpaceShipOutOfScreen = function(
 }
 
 
-
+/**
+ * @method handleDisposableSpriteAnimationEnded
+ * @param {Sprite} sprite
+ * @return Void
+ */
 const handleDisposableSpriteAnimationEnded = function(sprite) {
 	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(sprite);
 	
@@ -288,7 +378,12 @@ const handleDisposableSpriteAnimationEnded = function(sprite) {
 }
 
 
-
+/**
+ * @method createSmallExplosion
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @param {Array<Object>} loadedAssets
+ * @return Void
+ */
 const createSmallExplosion = function(
 		damagedFoeSpaceShip,
 		loadedAssets
@@ -298,6 +393,7 @@ const createSmallExplosion = function(
 			damagedFoeSpaceShip.x + getRandomExplosionOffset(damagedFoeSpaceShip.width),		// ExplosionSprite has a 0.5 anchor
 			damagedFoeSpaceShip.y + damagedFoeSpaceShip.height - getRandomExplosionOffset(damagedFoeSpaceShip.height) - 84								// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
 		),
+		// @ts-ignore loadedAssets.prop unknown
 		loadedAssets[2].impactTilemap,
 		new CoreTypes.Dimension(32, 32)
 	);
@@ -318,6 +414,12 @@ const createSmallExplosion = function(
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
 
+/**
+ * @method createGreenExplosion
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @param {Array<Object>} loadedAssets
+ * @return Void
+ */
 const createGreenExplosion = function(
 		damagedFoeSpaceShip,
 		loadedAssets
@@ -330,9 +432,13 @@ const createGreenExplosion = function(
 	
 	const explosion = new ExplosionSprite(
 		startPosition,
-		loadedAssets[2].greenExplosionTilemap
+		// @ts-ignore loadedAssets.prop unknown
+		loadedAssets[2].greenExplosionTilemap,
+		null
 	);
+	// @ts-ignore scaleX is inherited
 	explosion.scaleX = 1.5;
+	// @ts-ignore scaleY is inherited
 	explosion.scaleY = 1.5;
 	
 	const explosionTween = new TileToggleTween(
@@ -352,6 +458,12 @@ const createGreenExplosion = function(
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
 
+/**
+ * @method createYellowExplosion
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @param {Array<Object>} loadedAssets
+ * @return Void
+ */
 const createYellowExplosion = function(
 		damagedFoeSpaceShip,
 		loadedAssets
@@ -362,9 +474,13 @@ const createYellowExplosion = function(
 			damagedFoeSpaceShip.x + damagedFoeSpaceShip.width / 2 + getRandomExplosionOffset(damagedFoeSpaceShip.width / 4),		// ExplosionSprite has a 0.5 anchor
 			damagedFoeSpaceShip.y + damagedFoeSpaceShip.height / 2 - getRandomExplosionOffset(damagedFoeSpaceShip.height / 8)
 		),
-		loadedAssets[2].yellowExplosionTilemap
+		// @ts-ignore loadedAssets.prop unknown
+		loadedAssets[2].yellowExplosionTilemap,
+		null
 	);
+	// @ts-ignore
 	explosion.scaleX = 2;
+	// @ts-ignore
 	explosion.scaleY = 2;
 	
 	const explosionTween = new TileToggleTween(
@@ -384,7 +500,12 @@ const createYellowExplosion = function(
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
 
-
+/**
+ * @method activateShield
+ * @param {Sprite} spaceShip
+ * @param {Array<Object>} loadedAssets
+ * @return Void
+ */
 const activateShield = function(
 		spaceShip,
 		loadedAssets
@@ -410,10 +531,12 @@ const activateShield = function(
 	
 	const shield = new ExplosionSprite(
 		shieldPosition,
+		// @ts-ignore loadedAssets.prop unknown
 		loadedAssets[2].shieldTilemap,
 		new CoreTypes.Dimension(200, 200)
 	);
 	shield.name = 'shieldSprite';
+	// @ts-ignore zoom is inherited
 	shield.zoom = zoom;
 	
 	const shieldTween = new TileToggleTween(
@@ -433,14 +556,20 @@ const activateShield = function(
 	CoreTypes.disposableSpritesRegister.push(shield);
 }
 
+/**
+ * @method createLoot
+ * @param {FoeSpaceShip} foeSpaceShip
+ * @param {Array<Object>} loadedAssets
+ * @return {LootSprite}
+ */
 const createLoot = function(
 		foeSpaceShip,
 		loadedAssets
 	) {
 	
-	const lootType = gameConstants.lootSpritesTextures[getRandomLootType()];
+	const lootTextureName = gameConstants.lootSpritesTextures[getRandomLootType()];
 	
-	if (GameState().currentLootCount[lootType] === gameConstants.maxLootsByType[lootType])
+	if (GameState().currentLootCount[lootTextureName] === gameConstants.maxLootsByType[lootTextureName])
 		return;
 	
 		
@@ -449,8 +578,9 @@ const createLoot = function(
 			foeSpaceShip.x,
 			foeSpaceShip.y
 		),
-		loadedAssets[2][lootType + 'Tilemap'],
-		lootType
+		// @ts-ignore loadedAssets.prop unknown
+		loadedAssets[2][lootTextureName + 'Tilemap'],
+		lootTextureName
 	);
 	
 	const lootTween = new Tween(
@@ -473,7 +603,12 @@ const createLoot = function(
 
 
 
-
+/**
+ * @method shouldChangeLevel
+ * @param {PIXI.Text} currentLevelText
+ * @param {() => Void} addFoeSpaceShips
+ * @return Void
+ */
 const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 	if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 1
 		&& GameState().currentLevel < 6) {
@@ -482,6 +617,7 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 			GameState().currentLevel++;
 			GameState().currentLootCount.medikit = 0;
 			GameState().currentLootCount.weapon = 0;
+			// @ts-ignore PIXI.Text is a mocked type
 			currentLevelText.text = GameState().currentLevel;
 			addFoeSpaceShips();
 		}
@@ -490,14 +626,27 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 	}
 }
 
+/**
+ * @method getRandomFoe
+ * @param {Number} count
+ */
 function getRandomFoe(count) {
 	return Math.floor(Math.random() * count).toString();
 }
 
+/**
+ * @method getRandomLootType
+ * @return {'0'|'1'|'2'|'3'}
+ */
 function getRandomLootType() {
+	// @ts-ignore TS doesn't understand the algo
 	return (Math.floor(Math.random() * 1.9)).toString(); // shall be Math.floor(Math.random() * lootTypesCount)
 }
 
+/**
+ * @method getRandomExplosionOffset
+ * @param {Number} shipDimension
+ */
 function getRandomExplosionOffset(shipDimension) {
 	return Math.round((Math.random() - .5) * shipDimension / 2);
 }
@@ -506,17 +655,22 @@ function getRandomExplosionOffset(shipDimension) {
 let counter = 0;
 
 /**
+ * @method addUIDMarkerToEntity
  * Helper method for debug
+ * @param {Sprite} sprite
+ * @param {Number} offset
+ * @param {String} text
+ * @return Void
  */
 function addUIDMarkerToEntity(
 		sprite,
-		loadedAssets,
 		offset,
 		text
 	) {
 	
 	offset = offset || 0;
 	text = text || '';
+	// @ts-ignore
 	const currentLevelText = new PIXI.Text('1', {
 		     fontFamily: '"Helvetica Neue"',
 		     fontSize: 16,
@@ -527,7 +681,7 @@ function addUIDMarkerToEntity(
 	currentLevelText.x = sprite.x - 49 + offset;
 	currentLevelText.y = sprite.y - 49;
 	currentLevelText.name = 'debugText';
-	currentLevelText.text = counter++ + ' ' + sprite._UID + ' ' + (GameLoop().currentTime / 1000).toString().slice(0, 4) + ' ' + text;
+	currentLevelText.text = counter++ + ' ' + sprite.UID + ' ' + (GameLoop().currentTime / 1000).toString().slice(0, 4) + ' ' + text;
 	
 	
 	const textTween = new Tween(

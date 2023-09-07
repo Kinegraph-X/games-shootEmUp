@@ -1,4 +1,11 @@
+/**
+ * @typedef {Object} PIXI.Texture
+ */
 
+/**
+ * @typedef {import('src/GameTypes/grids/gridManager').FoeCell} gridManager.FoeCell
+ * @typedef {import('src/GameTypes/interfaces/Damageable')} Damageable
+ */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Sprite = require('src/GameTypes/sprites/Sprite');
@@ -9,7 +16,7 @@ const {foeDescriptors} = require('src/GameTypes/gameSingletons/gameConstants');
 /**
  * @constructor FoeSpaceShip
  * @param {CoreTypes.Point} position
- * @param {gridManager.foeCell} foeCell
+ * @param {gridManager.FoeCell} foeCell
  * @param {PIXI.Texture} texture
  * @param {String} foeType // Number represented as String
  */
@@ -34,8 +41,10 @@ FoeSpaceShip.prototype = Object.create(Sprite.prototype);
 /**
  * @method getSprite
  * @param {PIXI.Texture} texture
+ * //@return {PIXI.Sprite}
  */
 FoeSpaceShip.prototype.getSprite = function(texture) {
+	// @ts-ignore
 	const sprite = PIXI.Sprite.from(texture);
 	sprite.anchor.set(0.5);
 	return sprite;
@@ -43,18 +52,21 @@ FoeSpaceShip.prototype.getSprite = function(texture) {
 
 /**
  * @method handleDamage
- * @param {Damage} sprite
+ * @param {Damageable} sprite
+ * @return {Boolean}
  */
 FoeSpaceShip.prototype.handleDamage = function(sprite) {
+	// @ts-ignore
 	this.lifePoints -= sprite.damage;
 	return this.hasBeenDestroyed();
 }
 
 /**
  * @method hasBeenDestroyed
- * @param {Damage} sprite
+ * @return {Boolean}
  */
 FoeSpaceShip.prototype.hasBeenDestroyed = function() {
+	// @ts-ignore
 	return this.lifePoints <= 0;
 }
 

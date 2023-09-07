@@ -2,9 +2,14 @@
  * @definitions
 */
 
-/*
-* ennemies in scene per difficulty level
-*/
+/**
+ * @type {{[key:String] : {
+ * 		foeCount : Number,
+ * 		shieldedFoeCount : Number,
+ * 		requiredPointsToStepUp : Number}
+ * }} levels
+ * ennemies in scene per difficulty level
+ */
 const levels = {
 	1 : {
 		foeCount : 6,
@@ -40,43 +45,49 @@ const levels = {
 
 
 
-/*
-* ennemies descriptors
-*/
+/**
+ * @type {{[key:String] : {
+ * 		lifePoints : Number,
+ * 		lootChance : Number,
+ * 		pointsPrize : Number}
+ * }} foeDescriptors
+ * ennemies descriptors
+ */
 const foeDescriptors = {
-	0 : {
+	'0' : {
 		lifePoints : 1,
 		lootChance : 0,
 		pointsPrize : 20
 	},
-	1 : {
+	'1' : {
 		lifePoints : 2,
 		lootChance : .1,
 		pointsPrize : 45
 	},
-	2 : {
+	'2' : {
 		lifePoints : 3,
 		lootChance : .2,
 		pointsPrize : 75
 	},
-	3 : {
+	'3' : {
 		lifePoints : 5,
 		lootChance : 0,
 		pointsPrize : 120
 	},
-	4 : {
+	'4' : {
 		lifePoints : 6,
 		lootChance : 0,
 		pointsPrize : 175
 	},
-	5 : {
+	'5' : {
 		lifePoints : 7,
 		lootChance : 0,
 		pointsPrize : 600
 	}
 }
 
-/*
+/**
+* @type {{[key:Number] : Number}}
 * life points for the main speceship in relation to the currentLevel
 */
 const mainSpaceShipLifePoints = {
@@ -88,80 +99,103 @@ const mainSpaceShipLifePoints = {
 	6 : 3, //7
 }
 
-/*
+/**
+* @type {{[key:String] : String}}
 * lootSprite depending on lootType
 */
 const lootSpritesTextures = {
-	0 : 'medikit',
-	1 : 'weapon',
-	2 : '',
-	3 : ''
+	'0' : 'medikit',
+	'1' : 'weapon',
+	'2' : '',
+	'3' : ''
 }
 
 
 
-/*
-* maximums loots at each new level
-*/
+/**
+ * maximums loots at each new level
+ * @type {{[key:String] : Number}}
+ */
 const maxLootsByType = {
 	'medikit' : 2,
 	'weapon' : 1
 }
 
 
-/*
-* weapon types in relation to damage
-*/
+
+/**
+ * @constructor WeaponDescriptor
+ * Weapon type in relation to texture, count & damage
+ * 
+ * @param  {String} name
+ * @param  {Number} damage
+ * @param  {Number} projectileCount
+ * @param {Array<String>} spriteTexture
+ * @param {Boolean} moveTiles
+ */
+const WeaponDescriptor = function(name, damage, projectileCount, spriteTexture, moveTiles) {
+	this.name = name;
+	this.damage= damage;
+	this.projectileCount = projectileCount;
+	this.spriteTexture = spriteTexture;
+	this.moveTiles = moveTiles
+}
+
+
+/**
+ * @type {{[key:Number] : WeaponDescriptor}} weapons
+ * weapon types in relation to damage
+ */
 const weapons = {
-	0 : {
-		name : 'fireball',
-		damage : 1,
-		projectileCount : 1,
-		spriteTexture : [
+	0 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
 			'fireballsTilemap'
 		],
-		moveTiles : false
-	},
-	1 : {
-		name : 'firewave',
-		damage : 2,
-		projectileCount : 1,
-		spriteTexture : [
+		false
+	),
+	1 : new WeaponDescriptor(
+		'firewave',
+		2,
+		1,
+		[
 			'fireballsTilemap'
 		],
-		moveTiles : false
-	},
-	2 : {
-		name : 'tripleFireballInterlaced',
-		damage : 1,
-		projectileCount : 3,
-		spriteTexture : [
+		false
+	),
+	2 : new WeaponDescriptor(
+		'tripleFireballInterlaced',
+		1,
+		3,
+		[
 			'fireballsTilemap',
 			'fireballsTilemap',
 			'fireballsTilemap'
 		],
-		moveTiles : true
-	},
-	3 : {
-		name : 'tripleFireball',
-		damage : 1,
-		projectileCount : 3,
-		spriteTexture : [
+		true
+	),
+	3 : new WeaponDescriptor(
+		'tripleFireball',
+		1,
+		3,
+		[
 			'fireballsTilemap',
 			'fireballsTilemap',
 			'fireballsTilemap'
 		],
-		moveTiles : false
-	},
-	4 : {
-		name : 'laser',
-		damage : 3,
-		projectileCount : 1,
-		spriteTexture : [
+		false
+	),
+	4 : new WeaponDescriptor(
+		'laser',
+		3,
+		1,
+		[
 			'fireballsTilemap'
 		],
-		moveTiles : false
-	}
+		false
+	)
 }
 
 

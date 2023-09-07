@@ -1,4 +1,6 @@
-
+/**
+ * @typedef {Object} PIXI.Texture
+ */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Sprite = require('src/GameTypes/sprites/Sprite');
@@ -24,10 +26,12 @@ ExplosionSprite.prototype = Object.create(Sprite.prototype);
  * @method getSprite
  * @param {CoreTypes.Dimension} dimensions
  * @param {PIXI.Texture} texture
+  * //@return {PIXI.Sprite}
  */
 ExplosionSprite.prototype.getSprite = function(dimensions, texture) {
 	 // Not sure we'll keep this "TilingSprite" type.
 	 // As it inherits from Sprite, it looks quite redundant, structurally talking
+	 // @ts-ignore
 	const sprite = new TilingSprite(
 		dimensions || this.defaultExplosionDimensions,
 		texture

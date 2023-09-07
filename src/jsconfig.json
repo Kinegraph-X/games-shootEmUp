@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+	"baseUrl": "../",
+	"typeRoots": ["../../../node_modules/@types"],
+    "module": "commonjs",
+    "checkJs" : true,
+    "paths": {
+		"src/core/*": ["../../jsCore/src/core/*"],
+		"src/events/*": ["../../jsKeyboardEvents/src/events/*"]
+	},
+	"lib" : ["es2017", "dom"],
+    "noImplicitAny": true,
+    "preserveConstEnums": true
+  }
+ }

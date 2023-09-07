@@ -9,6 +9,7 @@ const {throttle} = require('src/core/commonUtilities');
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const PropertyCache = require('src/core/PropertyCache').ObjectCache;
 
+const AssetsLoader = require('src/GameTypes/gameSingletons/AssetsLoader');
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell} = require('src/GameTypes/grids/gridManager');
 const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons} = require('src/GameTypes/gameSingletons/gameConstants');
@@ -40,94 +41,61 @@ const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainS
 
  
 var classConstructor = function() {
+	/** @type {(rootNodeSelector:String) => Void}} */
 	function init(rootNodeSelector) {
 		const keyboardListener = new KeyboardListener();
 		
-		// ASSETS PRELOADING
-		const manifest = {
-			bundles : [
-				{
-					name : 'backgrounds',
-					assets : [
-						{name : 'bgBack', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Blue Nebula/Blue Nebula 1 - 1024x1024.png'},
-						{name : 'bgMiddle', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Blue Nebula/Blue Nebula 6 - 1024x1024.png'},
-						{name : 'bgFront', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Starfields/Starfield-9 - 1024x1024.png'},
-						{name : 'statusBarLeft', srcs : 'plugins/ShootEmUp/assets/Status_Bar_Left.png'}
-					]
-				},
-				{
-					name : 'spaceShips',
-					assets : [
-						{name : 'mainSpaceShip', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/07/Spaceship_07_YELLOW_animated.png'},
-						{name : 'foeSpaceShip00', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/03/Spaceship_03_RED.png'},
-						{name : 'foeSpaceShip01', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_PURPLE.png'},
-						{name : 'foeSpaceShip02', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_BLUE.png'},
-						{name : 'foeSpaceShip01Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_YELLOW.png'},
-						{name : 'foeSpaceShip02Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_YELLOW.png'}
-					]
-				},
-				{
-					name : 'flames',
-					assets : [
-						{name : 'flamesTilemap', srcs : 'plugins/ShootEmUp/assets/ships/Flames_tilemap.png'},
-						{name : 'fireballsTilemap', srcs : 'plugins/ShootEmUp/assets/Fireball_sprite_v2.png'},
-						{name : 'impactTilemap', srcs : 'plugins/ShootEmUp/assets/Impact_sprite.png'},
-						{name : 'greenExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Explosion_Sprite.png'},
-						{name : 'yellowExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Yellow_Explosion_Sprite.png'},
-						{name : 'shieldTilemap', srcs : 'plugins/ShootEmUp/assets/Shield_Sprite.png'},
-						{name : 'medikitTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Medikit_Sprite.png'},
-						{name : 'weaponTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Weapon_Sprite.png'}
-					]
-				}
-			]
-		};
-		PIXI.Assets.init({manifest}).then(function() {
-			Promise.all([
-				PIXI.Assets.loadBundle('backgrounds'),
-				PIXI.Assets.loadBundle('spaceShips'),
-				PIXI.Assets.loadBundle('flames')
-			]).then(function(loadedAssets) {
-				(new FontFaceObserver('Showcard Gothic'))
-					.load().then(onLoaded.bind(null, loadedAssets))
-			});
-		});
+		AssetsLoader().then(function(loadedAssets) {
+			(new FontFaceObserver('Showcard Gothic'))
+				.load().then(onLoaded.bind(null, loadedAssets))
+		})
 		
 		
 		
 		// ONLOADED => GAME INIT
+		/** @type {(loadedAssets:Array<Object>) => Void} */
 		function onLoaded(loadedAssets) {
 			console.log('Ctrl + Q to stop the game loop');
-			
-			
 			
 			
 			// BACKGROUND
 			const bgZoom = 1.8;
 			const worldMapBack = new TilingSprite(
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
+				// @ts-ignore loadedAssets.prop unknown
 				loadedAssets[0].bgBack,
-				bgZoom
+				bgZoom,
+				null
 			);
+			// @ts-ignore name
 			worldMapBack.name = 'bgLayer01';
 			const worldMapBackTween = new TileTween(windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1);
 			GameLoop().addAnimatedSpriteToScene(worldMapBack, worldMapBackTween);
 			
 			const worldMapMiddle = new TilingSprite(
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
+				// @ts-ignore loadedAssets.prop unknown
 				loadedAssets[0].bgMiddle,
-				1
+				1,
+				null
 			);
+			// @ts-ignore blendMode
 			worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
+			// @ts-ignore name
 			worldMapMiddle.name = 'bgLayer02';
 			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1);
 			GameLoop().addAnimatedSpriteToScene(worldMapMiddle, worldMapMiddleTween);
 			
 			const worldMapFront = new TilingSprite(
 				new CoreTypes.Dimension(windowSize.x.value, windowSize.y.value),
+				// @ts-ignore loadedAssets.prop unknown
 				loadedAssets[0].bgFront,
-				.3
+				.3,
+				null
 			);
+			// @ts-ignore blendMode
 			worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
+			// @ts-ignore name
 			worldMapFront.name = 'bgLayer03';
 			const worldMapFrontTween = new TileTween(windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1);
 			GameLoop().addAnimatedSpriteToScene(worldMapFront, worldMapFrontTween);
@@ -141,7 +109,9 @@ var classConstructor = function() {
 			);
 			const mainSpaceShipSprite = new MainSpaceShip(
 				mainSpaceShipStartPosition,
+				// @ts-ignore loadedAssets.prop unknown
 				loadedAssets[1].mainSpaceShip,
+				// @ts-ignore loadedAssets.prop unknown
 				loadedAssets[2].flamesTilemap,
 				mainSpaceShipLifePoints['1']
 			);
@@ -175,12 +145,12 @@ var classConstructor = function() {
 			function addFoeSpaceShips() {
 				let partialFoeSpaceShipsRegister = [];
 				let foeSpaceShip, foeCount = 0, shieldedFoeCount = 0, foeCell, foePosition, randomFoeSeed, randomFoe, foeSpaceShipTween;
-				while (foeCount < levels[GameState().currentLevel].foeCount) {
+				while (foeCount < levels[GameState().currentLevel.toString()].foeCount) {
 					
 					foeCell = getFoeCell();
 					foePosition = new CoreTypes.Point(
-						parseInt(gridCoords.x[foeCell.x] + cellSize / 2),
-						parseInt(gridCoords.y[foeCell.y] - cellSize * 2)
+						gridCoords.x[foeCell.x] + cellSize / 2,
+						gridCoords.y[foeCell.y] - cellSize * 2
 					);
 					
 					randomFoeSeed = GameState().currentLevel < 3 ? Object.keys(loadedAssets[1]).length - 4 : Object.keys(loadedAssets[1]).length - 3;
@@ -192,6 +162,7 @@ var classConstructor = function() {
 					foeSpaceShip = new FoeSpaceShip(
 						foePosition,
 						foeCell,
+						// @ts-ignore loadedAssets.prop unknown
 						loadedAssets[1]['foeSpaceShip0' + randomFoe],
 						randomFoe
 					);
@@ -202,19 +173,23 @@ var classConstructor = function() {
 					}
 					
 					partialFoeSpaceShipsRegister.push(foeSpaceShip);
-					player.foeSpaceShipsRegister.setItem(foeSpaceShip._UID, foeSpaceShip);
+					// @ts-ignore UID is inherited
+					player.foeSpaceShipsRegister.setItem(foeSpaceShip.UID, foeSpaceShip);
 					
 					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
-					player.foeSpaceShipsTweensRegister.setItem(foeSpaceShip._UID, foeSpaceShipTween);
+					// @ts-ignore UID is inherited
+					player.foeSpaceShipsTweensRegister.setItem(foeSpaceShip.UID, foeSpaceShipTween);
 					
 					GameLoop().addAnimatedSpriteToScene(foeSpaceShip, foeSpaceShipTween);
 					foeCount++;
 				}
 				let mainSpaceShipCollisionTest;
 				partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
+					// @ts-ignore inherited props on mainSpaceShipSprite
 					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, foeSpaceShipSpriteObj, 'hostile');
 					GameLoop().pushCollisionTest(mainSpaceShipCollisionTest);
-					Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj._UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
+					// @ts-ignore UID is inherited
+					Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
 				});
 			}
 			addFoeSpaceShips();
@@ -259,9 +234,12 @@ var classConstructor = function() {
 			// PROJECTILES
 			const fireballThrottling = 250;
 			const launchFireball = throttle(
+				/** @type {(type:Number) =>  Void} */
 				function (type) {
 					const startPosition = new CoreTypes.Point(
+						// @ts-ignore x is inherited
 						mainSpaceShipSprite.x + mainSpaceShipSprite.defaultSpaceShipDimensions.x.value / 2,
+						// @ts-ignore y is inherited
 						mainSpaceShipSprite.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
 					);
 					new ProjectileFactory(
@@ -282,7 +260,9 @@ var classConstructor = function() {
 			const mainSpaceShipeRightTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(10, 0), 1, false);
 			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -10), 1, false);
 			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 10), 1, false);
+			/** @type {Number} uid returned by setInterval */
 			let interval;
+			// @ts-ignore don't know how to type callbacks
 			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
 					mainSpaceShipSprite.rollWingsLeft();
@@ -310,6 +290,7 @@ var classConstructor = function() {
 					}, fireballThrottling);
 				}
 			});
+			// @ts-ignore don't know how to type callbacks
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
 					mainSpaceShipSprite.rollWingsFlat();
@@ -339,7 +320,9 @@ var classConstructor = function() {
 			// STATUS BAR
 			const statusBar = new StatusBarSprite(
 				windowSize,
-				loadedAssets[0].statusBarLeft
+				// @ts-ignore loadedAssets.prop unknown
+				loadedAssets[0].statusBarLeft,
+				null
 			)
 			GameLoop().addSpriteToScene(statusBar.gameStatusSpriteObj);
 			GameLoop().stage.addChild(statusBar.textForLevelSpriteObj);
@@ -348,11 +331,13 @@ var classConstructor = function() {
 			
 			
 			// GAME LOOP EVENTS
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('foeSpaceShipOutOfScreen', function(e) {
 				gameLogic.handleFoeSpaceShipOutOfScreen(
 					e.data
 				);
 			});
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('foeSpaceShipDamaged', function(e) {
 				gameLogic.handleFoeSpaceShipDamaged(
 					e.data[1],
@@ -361,29 +346,33 @@ var classConstructor = function() {
 					statusBar.textForScoreSpriteObj[1]
 				);
 			});
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('foeSpaceShipDestroyed', function(e) {
 				gameLogic.shouldChangeLevel(
 					statusBar.textForLevelSpriteObj,
 					addFoeSpaceShips
 				);
 			});
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('mainSpaceShipPowerUp', function(e) {
 				gameLogic.handlePowerUp(
 					e.data[1],
 					statusBar.gameStatusSpriteObj
 				);
 			});
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('fireballOutOfScreen', function(e) {
 				gameLogic.handleFireballOutOfScreen(
 					e.data
 				);
 			});
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('mainSpaceShipOutOfScreen', function(e) {
 				gameLogic.handleMainSpaceShipOutOfScreen(
-					windowSize,
-					e.data
+					windowSize
 				);
 			});
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('mainSpaceShipDamaged', function(e) {
 				gameLogic.handleMainSpaceShipDamaged(
 					e.data[1],
@@ -394,6 +383,7 @@ var classConstructor = function() {
 				);
 
 			});
+			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('disposableSpriteAnimationEnded', function(e) {
 				gameLogic.handleDisposableSpriteAnimationEnded(
 					e.data

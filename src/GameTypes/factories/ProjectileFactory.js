@@ -1,3 +1,8 @@
+ /**
+ * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
+ * @typedef {import('src/GameTypes/tweens/Tween')} Tween
+ */
+
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Projectile = require('src/GameTypes/sprites/Projectile');
 const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
@@ -10,9 +15,14 @@ const Player = require('src/GameTypes/gameSingletons/Player');
 
 /**
  * @constructor ProjectileFactory
+ * @param {CoreTypes.Dimension} windowSize
+ * @param {Array<Object>} loadedAssets
+ * @param {CoreTypes.Point} startPosition
+ * @param {Number} projectileType
  */
 const ProjectileFactory = function(windowSize, loadedAssets, startPosition, projectileType) {
 	this.moveTiles = weapons[projectileType].moveTiles;
+	/** @type {Array<Number>} */
 	this.horizontalTweenValues = [];
 	const projectileCount = weapons[projectileType].spriteTexture.length;
 	this.setHorizontalValues(projectileCount);
@@ -29,8 +39,12 @@ const ProjectileFactory = function(windowSize, loadedAssets, startPosition, proj
 		);
 	}, this)
 }
-ProjectileFactory.prototype = {}
+//ProjectileFactory.prototype = {}
 
+/**
+ * @method setHorizontalValues
+ * @param {Number} len
+ */
 ProjectileFactory.prototype.setHorizontalValues = function(len) {
 	// Fire in a brush shape if more than one projectile
 	const middle = Math.floor(len / 2),
@@ -49,16 +63,28 @@ ProjectileFactory.prototype.setHorizontalValues = function(len) {
 	}
 }
 
+/**
+ * @method createSprite
+ * @param {Number} idx
+ * @param {Number} len
+ * @param {CoreTypes.Dimension} windowSize
+ * @param {Array<Object>} loadedAssets
+ * @param {CoreTypes.Point} startPosition
+ * @param {String} textureName
+ * @param {Number} projectileType
+ */
 ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loadedAssets, startPosition, textureName, projectileType) {
-	
+	/** @type {Sprite} */ // @ts-ignore
 	const fireball = new Projectile(
 		startPosition,
 		this.projectileDimensions,
+		// @ts-ignore loadedAssets.prop unknown
 		loadedAssets[2][textureName],
 		projectileType
 	)
 	CoreTypes.fireballsRegister.push(fireball.spriteObj);
 	
+	/** @type {Tween} */ // @ts-ignore
 	const fireballTween = this.addToScene(
 		idx,
 		len,
@@ -72,6 +98,14 @@ ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loaded
 	);
 }
 
+/**
+ * @method addToScene
+ * @param {Number} idx
+ * @param {Number} len
+ * @param {CoreTypes.Dimension} windowSize
+ * @param {CoreTypes.Point} startPosition
+ * @param {Sprite}spriteObj 
+ */
 ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPosition, spriteObj) {
 	
 	
@@ -94,6 +128,11 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 	return fireballTween;
 }
 
+/**
+ * @method prepareCollisions
+ * @param {Sprite}spriteObj
+ * @param {Tween} fireballTween 
+ */
 ProjectileFactory.prototype.prepareCollisions = function(spriteObj, fireballTween) {
 	let fireBallCollisionTest;
 	Object.values(Player().foeSpaceShipsRegister.cache).forEach(function(foeSpaceShipSpriteObj) {

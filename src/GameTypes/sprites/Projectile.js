@@ -1,3 +1,6 @@
+/**
+ * @typedef {Object} PIXI.Texture
+ */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Sprite = require('src/GameTypes/sprites/Sprite');
@@ -7,6 +10,10 @@ const {weapons} = require('src/GameTypes/gameSingletons/gameConstants');
 
 /**
  * @constructor Projectile
+ * @param {CoreTypes.Point} position
+ * @param {CoreTypes.Dimension} dimensions
+ * @param {PIXI.Texture} texture
+ * @param {Number} projectileType
  */
 const Projectile = function(position, dimensions, texture, projectileType) {
 	
@@ -16,7 +23,6 @@ const Projectile = function(position, dimensions, texture, projectileType) {
 	this.spriteObj = this.getSprite(dimensions, texture);
 	this.x = position.x.value;
 	this.y = position.y.value;
-	
 }
 Projectile.prototype = Object.create(Sprite.prototype);
 
@@ -27,8 +33,12 @@ Projectile.prototype.name = 'fireballSprite';
 
 /**
  * @method getSprite
+ * @param {CoreTypes.Dimension} dimensions
+ * @param {PIXI.Texture} texture
+ * //@return {PIXI.Sprite}
  */
 Projectile.prototype.getSprite = function(dimensions, texture) {
+	// @ts-ignore
 	const sprite = new TilingSprite(
 		dimensions,
 		texture

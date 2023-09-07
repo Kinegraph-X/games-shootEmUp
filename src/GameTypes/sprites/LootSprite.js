@@ -1,4 +1,6 @@
-
+/**
+ * @typedef {Object} PIXI.Texture
+ */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Sprite = require('src/GameTypes/sprites/Sprite');
@@ -7,7 +9,6 @@ const Sprite = require('src/GameTypes/sprites/Sprite');
 /**
  * @constructor LootSprite
  * @param {CoreTypes.Point} position
- * @param {CoreTypes.Dimension} dimensions
  * @param {PIXI.Texture} texture
  * FIXME: Explicitly type that :
  * @param {String} lootType		// {medikit | weapon}
@@ -33,8 +34,10 @@ LootSprite.prototype.name = 'lootSprite';
 /**
  * @method getSprite
  * @param {PIXI.Texture} texture
+ * //@return {PIXI.Sprite}
  */
 LootSprite.prototype.getSprite = function(texture) {
+	// @ts-ignore
 	const sprite = PIXI.Sprite.from(texture);
 	sprite.anchor.set(0.5);
 	return sprite;
