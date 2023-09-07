@@ -1,16 +1,24 @@
+ /**
+ * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
+ */
 
-const Types = require('src/GameTypes/gameSingletons/CoreTypes'); 
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes'); 
 
 
 
 /**
  * @constructor Tween
- * @param {Transform} transform
+ * @param {CoreTypes.Dimension} windowSize
+ * @param {Sprite} target
+ * @param {CoreTypes.TweenTypes} type			// UNION{add, mult, div}
+ * @param {CoreTypes.Transform} transform
+ * @param {Number} speed
+ * @param {Boolean} oneShot
  */
 const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 	this.windowSize = windowSize;
 	this.target = target;
-	this.type = type;										// UNION{add, mult, div}
+	this.type = type;
 	this.oneShot = oneShot;
 	this.ended = false;
 	
@@ -23,18 +31,30 @@ const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 	this.lastStepTimestamp = 0;
 	// collisionTestsRegister is a partial copy of the global collisionTest list
 	// it's used to clean the collision tests when a foeSpaceShip goes out of the screen
-	this.collisionTestsRegister = [];
+	this.collisionTestsRegister = new Array();
 }
-Tween.prototype = {};
+//Tween.prototype = {};
 
+/**
+ * @method nextStep
+ * @param {Number} stepCount
+ * @param {Number} frameDuration
+ * @param {Number} timestamp
+ * @return Void
+ */
 Tween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
 	stepCount *= frameDuration / this.baseFrameDuration;
 	this.currentStep++;
-	this.target.x  = (new Types.Coord(this.target.x))[this.type](this.transform.x.value * stepCount * this.speed);
-	this.target.y  = (new Types.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed);
+	// @ts-ignore x is inherited
+	this.target.x  = (new CoreTypes.Coord(this.target.x))[this.type](this.transform.x.value * stepCount * this.speed);
+	// @ts-ignore y is inherited
+	this.target.y  = (new CoreTypes.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed);
 	this.lastStepTimestamp = timestamp;
 }
 
+/**
+ * @method testOutOfScreen
+ */
 Tween.prototype.testOutOfScreen = function() {
 	if (this.target.name.match(/bgLayer/) || this.target.name.match(/flame/))
 		return false;
