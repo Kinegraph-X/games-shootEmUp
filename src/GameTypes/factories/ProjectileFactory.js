@@ -137,6 +137,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
  */
 ProjectileFactory.prototype.prepareCollisions = function(spriteObj, fireballTween) {
 	let fireBallCollisionTest;
+	// @ts-ignore Player expects 1 argument
 	Object.values(Player().foeSpaceShipsRegister.cache).forEach(function(foeSpaceShipSpriteObj) {
 		fireBallCollisionTest = new fireBallCollisionTester(spriteObj, foeSpaceShipSpriteObj);
 		GameLoop().pushCollisionTest(fireBallCollisionTest);

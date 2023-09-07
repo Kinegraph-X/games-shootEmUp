@@ -26,6 +26,9 @@ const MainSpaceShip = function(position, texture, flameTexture, lifePoints) {
 }
 //MainSpaceShip.prototype = {};
 MainSpaceShip.prototype._definePropsOnSelf = Sprite.prototype._definePropsOnSelf;
+MainSpaceShip.prototype.incrementHealth = Sprite.prototype.incrementHealth;
+MainSpaceShip.prototype.decrementHealth = Sprite.prototype.decrementHealth;
+MainSpaceShip.prototype.hasBeenDestroyed = Sprite.prototype.hasBeenDestroyed;
 
 /**
  * @method getSprite
@@ -88,6 +91,8 @@ MainSpaceShip.prototype.rollWingsFlat = function() {
 	// @ts-ignore
 	this.mainSpaceShipSprite.tilePositionY = 400;
 }
+
+
 
 /**
  * @static {String} name

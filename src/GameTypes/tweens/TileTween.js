@@ -33,9 +33,9 @@ TileTween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
 	// @ts-ignore currentStep is inherited
 	this.currentStep++;
 	// @ts-ignore target is inherited
-	this.target.tilePositionX  = (new Types.Coord(this.target.tilePositionX))[this.type](this.transform.x.value * stepCount * this.speed);
+	this.target.tilePositionX  = (new CoreTypes.Coord(this.target.tilePositionX))[this.type](this.transform.x.value * stepCount * this.speed);
 	// @ts-ignore target is inherited
-	this.target.tilePositionY  = (new Types.Coord(this.target.tilePositionY))[this.type](this.transform.y.value * stepCount * this.speed);
+	this.target.tilePositionY  = (new CoreTypes.Coord(this.target.tilePositionY))[this.type](this.transform.y.value * stepCount * this.speed);
 	
 	this.lastStepTimestamp = timestamp;
 }

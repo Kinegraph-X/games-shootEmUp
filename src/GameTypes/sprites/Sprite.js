@@ -1,7 +1,7 @@
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 
 // like if it "implements" the Damageable interface
-const Damageable = require('src/GameTypes/interfaces/Damageable');
+const Wounder = require('src/GameTypes/interfaces/Wounder');
  
 
 /**
@@ -15,14 +15,14 @@ const Sprite = function(lifePoints) {
 		console.warn('The PIXI lib must be present in the global scope of the page');
 		return;
 	}
-	Damageable.call(this);
+	Wounder.call(this);
 	
 	this.UID = UIDGenerator.newUID();
 	this.enteredScreen = false;
 	this.lifePoints = lifePoints || 0;
 	this.spriteObj = null;
 }
-Sprite.prototype = Object.create(Damageable.prototype);
+Sprite.prototype = Object.create(Wounder.prototype);
 
 /**
  * @method @virtual getSprite
@@ -33,6 +33,30 @@ Sprite.prototype.getSprite = function() {}			// VIRTUAL
  * @virtual name
  */
 Sprite.prototype.name = 'Sprite'					// VIRTUAL
+
+/**
+ * @method incrementHealth
+ */
+Sprite.prototype.incrementHealth = function() {
+	// @ts-ignore lifePoints is inherited
+	this.lifePoints++
+}
+
+/**
+ * @method decrementHealth
+ */
+Sprite.prototype.decrementHealth = function() {
+	// @ts-ignore lifePoints is inherited
+	this.lifePoints--
+}
+
+/**
+ * @method hasBeenDestroyed
+ * @return {boolean}
+ */
+Sprite.prototype.hasBeenDestroyed = function() {
+	return this.lifePoints === 0;
+}
 
 
 Object.defineProperty(Sprite.prototype, 'x', {

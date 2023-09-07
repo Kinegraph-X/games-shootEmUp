@@ -4,7 +4,7 @@
 
 /**
  * @typedef {import('src/GameTypes/grids/gridManager').FoeCell} gridManager.FoeCell
- * @typedef {import('src/GameTypes/interfaces/Damageable')} Damageable
+ * @typedef {import('src/GameTypes/interfaces/Wounder')} Wounder
  */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
@@ -52,7 +52,7 @@ FoeSpaceShip.prototype.getSprite = function(texture) {
 
 /**
  * @method handleDamage
- * @param {Damageable} sprite
+ * @param {Wounder} sprite
  * @return {Boolean}
  */
 FoeSpaceShip.prototype.handleDamage = function(sprite) {

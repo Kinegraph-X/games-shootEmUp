@@ -1,7 +1,7 @@
  
  /**
  * @typedef {Object} PIXI.Text
- * @typedef {import('src/GameTypes/interfaces/Damageable')} Damageable
+ * @typedef {import('src/GameTypes/interfaces/Wounder')} Wounder
  * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
  * @typedef {import('src/GameTypes/sprites/TilingSprite')} TilingSprite
  * @typedef {import('src/GameTypes/sprites/FoeSpaceShip')} FoeSpaceShip
@@ -25,6 +25,7 @@ const LootSprite = require('src/GameTypes/sprites/LootSprite');
 
 const Tween = require('src/GameTypes/tweens/Tween');
 const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
+const CooledDownPropFadeToggleTween = require('src/GameTypes/tweens/CooledDownPropFadeToggleTween');
 
 const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
 
@@ -196,10 +197,16 @@ const handleMainSpaceShipDamaged = function(
 		currentLevelText,
 		scoreTextSprite
 	) {
+	// @ts-ignore Player expects 1 argument
+	Player().mainSpaceShip.decrementHealth();
 	
-	Player().mainSpaceShip.lifePoints--;
+	createBlinkingSpaceShip(
+		// @ts-ignore Player expects 1 argument
+		Player().mainSpaceShip
+	);
 
 	activateShield(
+		// @ts-ignore Player expects 1 argument
 		Player().mainSpaceShip,
 		loadedAssets
 	);
@@ -207,8 +214,11 @@ const handleMainSpaceShipDamaged = function(
 	createSmallExplosion(
 		// @ts-ignore FIXME: HACK
 		{
+			// @ts-ignore Player expects 1 argument
 			x : Player().mainSpaceShip.x + Player().mainSpaceShip.width / 2,
+			// @ts-ignore Player expects 1 argument
 			y : Player().mainSpaceShip.y + Player().mainSpaceShip.height / 1.8,
+			// @ts-ignore Player expects 1 argument
 			width : Player().mainSpaceShip.width / 2,
 			height : 0
 		},
@@ -216,8 +226,8 @@ const handleMainSpaceShipDamaged = function(
 	);
 	
 	
-	
-	if (Player().mainSpaceShip.lifePoints === 0)
+	// @ts-ignore Player expects 1 argument
+	if (Player().mainSpaceShip.hasBeenDestroyed())
 		 handleMainSpaceShipDestroyed(
 			loadedAssets,
 			statusBarSprite,
@@ -253,9 +263,11 @@ const handleMainSpaceShipDestroyed = function(
 		statusBarSprite,
 		currentLevelText
 	) {
-	
+	// @ts-ignore GameLoop expects 1 argument
 	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);
+	// @ts-ignore GameLoop expects 1 argument
 	GameLoop().removeSpriteFromScene(statusBarSprite);
+	// @ts-ignore GameLoop expects 1 argument
 	GameLoop().stage.removeChild(currentLevelText);
 		// noError: hard to say why the level-text isn't anymore in the scene sometimes...
 	
@@ -269,6 +281,7 @@ const handleMainSpaceShipDestroyed = function(
 //	GameLoop().removeAllCollisionTests();
 	
 	createYellowExplosion(
+		// @ts-ignore Player expects 1 argument
 		Player().mainSpaceShip,
 		loadedAssets
 	);
@@ -294,8 +307,10 @@ const handlePowerUp = function(
 	
 	switch(lootSprite.lootType) {
 		case 'medikit':
+			// @ts-ignore Player expects 1 argument
 			if (Player().mainSpaceShip.lifePoints < gameConstants.mainSpaceShipLifePoints[GameState().currentLevel]) {
-				Player().mainSpaceShip.lifePoints++;
+				// @ts-ignore Player expects 1 argument
+				Player().mainSpaceShip.incrementHealth();
 				// @ts-ignore tilePositionX is inherited
 				statusBarSprite.tilePositionX += 470;
 			}
@@ -350,12 +365,17 @@ const handleFireballOutOfScreen = function(
 const handleMainSpaceShipOutOfScreen = function(
 		windowSize
 	) {
-	
+	// @ts-ignore Player expects 1 argument
 	if (Player().mainSpaceShip.x > windowSize.x.value)
+		// @ts-ignore Player expects 1 argument
 		Player().mainSpaceShip.x -= Player().mainSpaceShip.width * 2;
+	// @ts-ignore Player expects 1 argument
 	else if (Player().mainSpaceShip.x + Player().mainSpaceShip.width < 0)
+		// @ts-ignore Player expects 1 argument
 		Player().mainSpaceShip.x += Player().mainSpaceShip.width * 2;
+	// @ts-ignore Player expects 1 argument
 	else if (Player().mainSpaceShip.y > windowSize.y.value)
+		// @ts-ignore Player expects 1 argument
 		Player().mainSpaceShip.y -= Player().mainSpaceShip.height * 2;
 }
 
@@ -377,6 +397,27 @@ const handleDisposableSpriteAnimationEnded = function(sprite) {
 	GameLoop().removeSpriteFromScene(sprite, true); // noError: we found a weird bug on destructing the mainSpaceShip
 }
 
+
+/**
+ * @method createBlinkingSpaceShip
+ * @param {Sprite} spaceShip
+ * @return Void
+ */
+const createBlinkingSpaceShip = function(
+	spaceShip
+) {
+	const blinkTween = new CooledDownPropFadeToggleTween(
+		spaceShip,
+		CoreTypes.TweenTypes.add,
+		'opacity',
+		-1,
+		120,
+		function() {},
+		20
+	);
+	
+	GameLoop().pushTween(blinkTween);
+}
 
 /**
  * @method createSmallExplosion
@@ -616,6 +657,7 @@ const createLoot = function(
  * @return Void
  */
 const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
+	// @ts-ignore Player expects 1 argument
 	if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 1
 		&& GameState().currentLevel < 6) {
 		

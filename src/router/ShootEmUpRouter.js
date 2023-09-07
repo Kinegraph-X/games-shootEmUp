@@ -134,6 +134,7 @@ var classConstructor = function() {
 			const player = Player({
 				foeSpaceShipsRegister : new PropertyCache('foeSpaceShipsRegister'),
 				foeSpaceShipsTweensRegister : new PropertyCache('foeSpaceShipsTweensRegister'),
+				foeSpaceShipsCollisionTestsRegister : new PropertyCache('foeSpaceShipsCollisionTestsRegister'),
 				mainSpaceShip : mainSpaceShipSprite
 			});
 			
@@ -185,6 +186,8 @@ var classConstructor = function() {
 				partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
 					// @ts-ignore inherited props on mainSpaceShipSprite
 					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, foeSpaceShipSpriteObj, 'hostile');
+					// @ts-ignore UID is inherited
+					Player().foeSpaceShipsCollisionTestsRegister.setItem(foeSpaceShipSpriteObj.UID, mainSpaceShipCollisionTest)
 					GameLoop().pushCollisionTest(mainSpaceShipCollisionTest);
 					// @ts-ignore UID is inherited
 					Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
