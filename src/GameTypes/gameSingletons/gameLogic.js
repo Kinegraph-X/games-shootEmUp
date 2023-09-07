@@ -399,6 +399,7 @@ const createSmallExplosion = function(
 	);
 	const explosionTween = new TileToggleTween(
 		windowSize,
+		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		explosion,
 		CoreTypes.TweenTypes.add,
 		new CoreTypes.Point(0, 32),
@@ -443,6 +444,7 @@ const createGreenExplosion = function(
 	
 	const explosionTween = new TileToggleTween(
 		windowSize,
+		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		explosion,
 		CoreTypes.TweenTypes.add,
 		new CoreTypes.Point(64, 0),
@@ -485,6 +487,7 @@ const createYellowExplosion = function(
 	
 	const explosionTween = new TileToggleTween(
 		windowSize,
+		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		explosion,
 		CoreTypes.TweenTypes.add,
 		new CoreTypes.Point(64, 0),
@@ -541,6 +544,7 @@ const activateShield = function(
 	
 	const shieldTween = new TileToggleTween(
 		windowSize,
+		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		shield,
 		CoreTypes.TweenTypes.add,
 		new CoreTypes.Point(0, 200),
@@ -585,10 +589,12 @@ const createLoot = function(
 	
 	const lootTween = new Tween(
 		windowSize,
+		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		loot,
 		CoreTypes.TweenTypes.add,
 		new CoreTypes.Point(0, 7),
-		.1
+		.1,
+		false
 	);
 	GameLoop().addAnimatedSpriteToScene(loot, lootTween);
 	
@@ -689,7 +695,8 @@ function addUIDMarkerToEntity(
 		currentLevelText,
 		CoreTypes.TweenTypes.add,
 		new CoreTypes.Point(0, 7),
-		.1
+		.1,
+		false
 	);
 	
 	GameLoop().pushTween(textTween);

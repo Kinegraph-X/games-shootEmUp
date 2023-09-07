@@ -53,7 +53,9 @@ var classConstructor = function() {
 		
 		
 		// ONLOADED => GAME INIT
-		/** @type {(loadedAssets:Array<Object>) => Void} */
+		/** 
+		 * @type {(loadedAssets:Array<Object>) => Void}
+		 */
 		function onLoaded(loadedAssets) {
 			console.log('Ctrl + Q to stop the game loop');
 			
@@ -67,9 +69,7 @@ var classConstructor = function() {
 				bgZoom,
 				null
 			);
-			// @ts-ignore name
-			worldMapBack.name = 'bgLayer01';
-			const worldMapBackTween = new TileTween(windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1);
+			const worldMapBackTween = new TileTween(windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1, false);
 			GameLoop().addAnimatedSpriteToScene(worldMapBack, worldMapBackTween);
 			
 			const worldMapMiddle = new TilingSprite(
@@ -81,9 +81,7 @@ var classConstructor = function() {
 			);
 			// @ts-ignore blendMode
 			worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
-			// @ts-ignore name
-			worldMapMiddle.name = 'bgLayer02';
-			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1);
+			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1, false);
 			GameLoop().addAnimatedSpriteToScene(worldMapMiddle, worldMapMiddleTween);
 			
 			const worldMapFront = new TilingSprite(
@@ -95,9 +93,7 @@ var classConstructor = function() {
 			);
 			// @ts-ignore blendMode
 			worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
-			// @ts-ignore name
-			worldMapFront.name = 'bgLayer03';
-			const worldMapFrontTween = new TileTween(windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1);
+			const worldMapFrontTween = new TileTween(windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1, false);
 			GameLoop().addAnimatedSpriteToScene(worldMapFront, worldMapFrontTween);
 			
 			
@@ -123,7 +119,9 @@ var classConstructor = function() {
 				.1,
 				false,
 				2,
-				6
+				6,
+				'',
+				false
 			);
 			GameLoop().addAnimatedSpriteToScene(mainSpaceShipSprite, flameTween);
 			
@@ -175,8 +173,8 @@ var classConstructor = function() {
 					partialFoeSpaceShipsRegister.push(foeSpaceShip);
 					// @ts-ignore UID is inherited
 					player.foeSpaceShipsRegister.setItem(foeSpaceShip.UID, foeSpaceShip);
-					
-					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1);
+					// @ts-ignore : TS doesn't understand anything to prototypal inheritance (foeSpaceShip IS an instance of a Sprite)
+					foeSpaceShipTween = new Tween(windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1, false);
 					// @ts-ignore UID is inherited
 					player.foeSpaceShipsTweensRegister.setItem(foeSpaceShip.UID, foeSpaceShipTween);
 					
@@ -195,38 +193,6 @@ var classConstructor = function() {
 			addFoeSpaceShips();
 			
 			
-			
-			
-			
-			// DEBUG to display loots only
-//			let foeSpaceShip, foeCount = 0, shieldedFoeCount = 0, foeCell, foePosition, randomFoeSeed, randomFoe, foeSpaceShipTween;
-//			while (foeCount < 28) {
-//				foeCell = getFoeCell();
-//				foePosition = new CoreTypes.Point(
-//					parseInt(gridCoords.x[foeCell.x] + cellSize / 2),
-//					parseInt(gridCoords.y[foeCell.y] - cellSize * 2)
-//				);
-//				
-//				foeSpaceShip = new FoeSpaceShip(
-//					foePosition,
-//					foeCell,
-//					1,
-//					loadedAssets[1]['foeSpaceShip01'],
-//					0,
-//					0
-//				);
-//				
-//				let lootSprite = gameLogic.createLoot(
-//					foeSpaceShip,
-//					loadedAssets
-//				);
-//				
-//				let mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, lootSprite, 'powerUp');
-////				console.log('looted', mainSpaceShipCollisionTest);
-//				CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
-//				
-//				foeCount++;
-//			}
 
 			
 			
@@ -256,9 +222,13 @@ var classConstructor = function() {
 			
 			
 			// KEYBOARD HANDLING
+			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
 			const mainSpaceShipeLeftTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(-10, 0), 1, false);
+			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
 			const mainSpaceShipeRightTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(10, 0), 1, false);
+			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
 			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -10), 1, false);
+			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
 			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 10), 1, false);
 			/** @type {Number} uid returned by setInterval */
 			let interval;

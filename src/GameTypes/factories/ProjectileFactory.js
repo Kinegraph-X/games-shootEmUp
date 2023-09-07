@@ -120,7 +120,9 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		12,
 		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] / 2 : 0, 70),
 		11,
-		'invert');
+		'invert',
+		false
+		);
 	CoreTypes.fireballsTweensRegister.push(fireballTween);
 	
 	GameLoop().addAnimatedSpriteToScene(spriteObj, fireballTween);
