@@ -27,6 +27,7 @@ const Tween = require('src/GameTypes/tweens/Tween');
 const TileTween = require('src/GameTypes/tweens/TileTween');
 const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
 const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
+const RecurringCallbackTween = require('src/GameTypes/tweens/RecurringCallbackTween');
 
 const MainSpaceShip = require('src/GameTypes/sprites/MainSpaceShip');
 const FoeSpaceShip = require('src/GameTypes/sprites/FoeSpaceShip');
@@ -207,7 +208,7 @@ var classConstructor = function() {
 			
 			
 			// PROJECTILES
-			const fireballThrottling = 250;
+			const fireballThrottling = 15;
 			const launchFireball = throttle(
 				/** @type {(type:Number) =>  Void} */
 				function (type) {
@@ -224,7 +225,7 @@ var classConstructor = function() {
 						type
 					);
 				},
-				fireballThrottling
+				fireballThrottling * 1000 /60
 			);
 			
 			
@@ -239,8 +240,10 @@ var classConstructor = function() {
 			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -10), 1, false);
 			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
 			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 10), 1, false);
-			/** @type {Number} uid returned by setInterval */
-			let interval;
+			
+			// @ts-ignore GameState() expects 1 argument 
+			const fireTween = new RecurringCallbackTween(launchFireball, fireballThrottling, null, GameState(), 'currentWeapon');
+
 			// @ts-ignore don't know how to type callbacks
 			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
@@ -272,9 +275,8 @@ var classConstructor = function() {
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
 					launchFireball(GameState().currentWeapon);
 					
-					interval = setInterval(function() {
-						launchFireball(GameState().currentWeapon);
-					}, fireballThrottling);
+					// @ts-ignore GameLoop() expects 1 argument 
+					GameLoop().pushTween(fireTween);
 				}
 			});
 			// @ts-ignore don't know how to type callbacks
@@ -298,7 +300,8 @@ var classConstructor = function() {
 					GameLoop().removeTween(mainSpaceShipeDownTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
-					clearInterval(interval);
+					// @ts-ignore GameLoop() expects 1 argument 
+					GameLoop().removeTween(fireTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('Q') && ctrlKey) {
 					// @ts-ignore GameLoop() expects 1 argument 
