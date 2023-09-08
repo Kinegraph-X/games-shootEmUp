@@ -6,6 +6,7 @@
  * @typedef {import('src/GameTypes/sprites/TilingSprite')} TilingSprite
  * @typedef {import('src/GameTypes/sprites/FoeSpaceShip')} FoeSpaceShip
  * @typedef {import('src/GameTypes/sprites/Projectile')} Projectile
+ * @typedef {import('src/GameTypes/sprites/StatusBarSprite')} StatusBarSprite
  */
 
 /**
@@ -187,17 +188,13 @@ const handleLoot = function(
  * @method handleMainSpaceShipDamaged
  * @param {FoeSpaceShip} damagedFoeSpaceShip
  * @param {Array<Object>} loadedAssets
- * @param {TilingSprite} statusBarSprite
- * @param {PIXI.Text} currentLevelText
- * @param {PIXI.Text} scoreTextSprite
+ * @param {StatusBarSprite} statusBar
  * @return Void
  */
 const handleMainSpaceShipDamaged = function(
 		damagedFoeSpaceShip,
 		loadedAssets,
-		statusBarSprite,
-		currentLevelText,
-		scoreTextSprite
+		statusBar
 	) {
 	// @ts-ignore Player expects 1 argument
 	Player().mainSpaceShip.decrementHealth();
@@ -227,13 +224,12 @@ const handleMainSpaceShipDamaged = function(
 	if (Player().mainSpaceShip.hasBeenDestroyed())
 		 handleMainSpaceShipDestroyed(
 			loadedAssets,
-			statusBarSprite,
-			currentLevelText
+			statusBar
 		);
 	else {
 		// only if we're not dead, visually decrement the life-bar
 		// @ts-ignore tilePositionX is inherited
-		statusBarSprite.tilePositionX = statusBarSprite.tilePositionX - 470;
+		statusBar.decrementHealth();
 		
 		handleFoeSpaceShipDamaged(
 			damagedFoeSpaceShip,
@@ -242,7 +238,7 @@ const handleMainSpaceShipDamaged = function(
 				damage : 1
 			},
 			loadedAssets,
-			scoreTextSprite
+			statusBar.textForScoreSpriteObj
 		);
 		
 		handleInvicibleMainSpaceShip(
@@ -260,21 +256,19 @@ const handleMainSpaceShipDamaged = function(
 /**
  * @method handleMainSpaceShipDestroyed
  * @param {Array<Object>} loadedAssets
- * @param {TilingSprite} statusBarSprite
- * @param {PIXI.Text} currentLevelText
+ * @param {StatusBarSprite} statusBar
  * @return Void
  */
 const handleMainSpaceShipDestroyed = function(
 		loadedAssets,
-		statusBarSprite,
-		currentLevelText
+		statusBar
 	) {
 	// @ts-ignore GameLoop expects 1 argument
 	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);
 	// @ts-ignore GameLoop expects 1 argument
-	GameLoop().removeSpriteFromScene(statusBarSprite);
+	GameLoop().removeSpriteFromScene(statusBar.gameStatusSpriteObj);
 	// @ts-ignore GameLoop expects 1 argument
-	GameLoop().stage.removeChild(currentLevelText);
+	GameLoop().stage.removeChild(statusBar.textForLevelSpriteObj);
 		// noError: hard to say why the level-text isn't anymore in the scene sometimes...
 	
 	// Temporary hack to shw the animation before stopping

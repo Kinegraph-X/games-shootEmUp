@@ -5,7 +5,6 @@
 /**
  * @typedef {import('@pixi/core/lib/index')} PIXI					<= not usable
  * @typedef {import('@pixi/text/lib/index')} PIXI.Text
- * @typedef {import('src/GameTypes/interfaces/Damageable')} Damageable
  */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
@@ -85,7 +84,7 @@ StatusBarSprite.prototype.getTextForLevelSprite = function(windowSize, margin, t
  * @return {Array<PIXI.Text>}
  */
 StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize, margin, textColor) {
-	// @ts-ignore
+	// @ts-ignore PIXI
 	const scoreText = new PIXI.Text('Score:', {
 			fontFamily: '"Showcard Gothic"',
 			fontSize: 24,
@@ -96,7 +95,7 @@ StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize, margin, t
 	scoreText.x = windowSize.x.value - (204 + margin);
 	scoreText.y = windowSize.y.value - (44 + margin);
 	
-	// @ts-ignore
+	// @ts-ignore PIXI
 	const currentScoreText = new PIXI.Text('0000', {
 			fontFamily: '"Showcard Gothic"',
 			fontSize: 32,
@@ -108,6 +107,15 @@ StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize, margin, t
 	currentScoreText.y = windowSize.y.value - (50 + margin);
 	
 	return [scoreText, currentScoreText];
+}
+
+/**
+ * @method decrementHealth
+ * @return Void
+ */
+StatusBarSprite.prototype.decrementHealth = function() {
+	// @ts-ignore tilePositionX is inherited
+	this.gameStatusSpriteObj.tilePositionX = this.gameStatusSpriteObj.tilePositionX - 470; 
 }
  
  

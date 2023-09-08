@@ -372,9 +372,7 @@ var classConstructor = function() {
 				gameLogic.handleMainSpaceShipDamaged(
 					e.data[1],
 					loadedAssets,
-					statusBar.gameStatusSpriteObj,
-					statusBar.textForLevelSpriteObj,
-					statusBar.textForScoreSpriteObj[1]
+					statusBar
 				);
 
 			});
