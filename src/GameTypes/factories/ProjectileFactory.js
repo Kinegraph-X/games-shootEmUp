@@ -125,6 +125,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		);
 	CoreTypes.fireballsTweensRegister.push(fireballTween);
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().addAnimatedSpriteToScene(spriteObj, fireballTween);
 	
 	return fireballTween;
@@ -140,6 +141,7 @@ ProjectileFactory.prototype.prepareCollisions = function(spriteObj, fireballTwee
 	// @ts-ignore Player expects 1 argument
 	Object.values(Player().foeSpaceShipsRegister.cache).forEach(function(foeSpaceShipSpriteObj) {
 		fireBallCollisionTest = new fireBallCollisionTester(spriteObj, foeSpaceShipSpriteObj);
+		// @ts-ignore GameLoop() expects 1 argument 
 		GameLoop().pushCollisionTest(fireBallCollisionTest);
 		// collisionTestsRegister is a partial copy of the global collisionTest list
 		// it's used to clean the collision tests when a foeSpaceShip goes out of the screen

@@ -132,6 +132,16 @@ Object.defineProperty(Sprite.prototype, 'zoom', {
 	}
 });
 
+
+Object.defineProperty(Sprite.prototype, 'alpha', {
+	get : function() {
+		return this.spriteObj.alpha;
+	},
+	set : function(newVal) {
+		this.spriteObj.alpha = newVal;
+	}
+});
+
 Object.defineProperty(Sprite.prototype, 'tilePositionX', {
 	get : function() {
 		return this.spriteObj.tilePosition.x;
@@ -258,6 +268,15 @@ Sprite.prototype._definePropsOnSelf = function() {
 		},
 		set : function(newVal) {
 			this.spriteObj.zoom = newVal;
+		}
+	});
+	
+	Object.defineProperty(this, 'alpha', {
+		get : function() {
+			return this.spriteObj.alpha;
+		},
+		set : function(newVal) {
+			this.spriteObj.alpha = newVal;
 		}
 	});
 }

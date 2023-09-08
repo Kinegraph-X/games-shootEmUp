@@ -70,6 +70,7 @@ var classConstructor = function() {
 				null
 			);
 			const worldMapBackTween = new TileTween(windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1, false);
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().addAnimatedSpriteToScene(worldMapBack, worldMapBackTween);
 			
 			const worldMapMiddle = new TilingSprite(
@@ -82,6 +83,7 @@ var classConstructor = function() {
 			// @ts-ignore blendMode
 			worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 			const worldMapMiddleTween = new TileTween(windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1, false);
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().addAnimatedSpriteToScene(worldMapMiddle, worldMapMiddleTween);
 			
 			const worldMapFront = new TilingSprite(
@@ -94,6 +96,7 @@ var classConstructor = function() {
 			// @ts-ignore blendMode
 			worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 			const worldMapFrontTween = new TileTween(windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1, false);
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().addAnimatedSpriteToScene(worldMapFront, worldMapFrontTween);
 			
 			
@@ -123,6 +126,7 @@ var classConstructor = function() {
 				'',
 				false
 			);
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().addAnimatedSpriteToScene(mainSpaceShipSprite, flameTween);
 			
 			
@@ -179,6 +183,7 @@ var classConstructor = function() {
 					// @ts-ignore UID is inherited
 					player.foeSpaceShipsTweensRegister.setItem(foeSpaceShip.UID, foeSpaceShipTween);
 					
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().addAnimatedSpriteToScene(foeSpaceShip, foeSpaceShipTween);
 					foeCount++;
 				}
@@ -188,6 +193,7 @@ var classConstructor = function() {
 					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, foeSpaceShipSpriteObj, 'hostile');
 					// @ts-ignore UID is inherited
 					Player().foeSpaceShipsCollisionTestsRegister.setItem(foeSpaceShipSpriteObj.UID, mainSpaceShipCollisionTest)
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().pushCollisionTest(mainSpaceShipCollisionTest);
 					// @ts-ignore UID is inherited
 					Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
@@ -239,20 +245,28 @@ var classConstructor = function() {
 			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
 					mainSpaceShipSprite.rollWingsLeft();
+					// @ts-ignore GameLoop() expects 1 argument 
 					mainSpaceShipeLeftTween.lastStepTimestamp = GameLoop().currentTime;
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().pushTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
 					mainSpaceShipSprite.rollWingsRight();
+					// @ts-ignore GameLoop() expects 1 argument 
 					mainSpaceShipeRightTween.lastStepTimestamp = GameLoop().currentTime;
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().pushTween(mainSpaceShipeRightTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {
+					// @ts-ignore GameLoop() expects 1 argument 
 					mainSpaceShipeUpTween.lastStepTimestamp = GameLoop().currentTime;
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().pushTween(mainSpaceShipeUpTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('DOWN') || keyCode === KeyboardEvents.indexOf('S')) {
+					// @ts-ignore GameLoop() expects 1 argument 
 					mainSpaceShipeDownTween.lastStepTimestamp = GameLoop().currentTime;
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().pushTween(mainSpaceShipeDownTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
@@ -267,22 +281,27 @@ var classConstructor = function() {
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
 					mainSpaceShipSprite.rollWingsFlat();
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().removeTween(mainSpaceShipeLeftTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('RIGHT') || keyCode === KeyboardEvents.indexOf('D')) {
 					mainSpaceShipSprite.rollWingsFlat();
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().removeTween(mainSpaceShipeRightTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('UP') || keyCode === KeyboardEvents.indexOf('Z')) {
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().removeTween(mainSpaceShipeUpTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('DOWN') || keyCode === KeyboardEvents.indexOf('S')) {
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().removeTween(mainSpaceShipeDownTween);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
 					clearInterval(interval);
 				}
 				else if (keyCode === KeyboardEvents.indexOf('Q') && ctrlKey) {
+					// @ts-ignore GameLoop() expects 1 argument 
 					GameLoop().stop()
 				}
 			});
@@ -297,8 +316,11 @@ var classConstructor = function() {
 				loadedAssets[0].statusBarLeft,
 				null
 			)
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().addSpriteToScene(statusBar.gameStatusSpriteObj);
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().stage.addChild(statusBar.textForLevelSpriteObj);
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().stage.addChild.apply(GameLoop().stage, statusBar.textForScoreSpriteObj);
 			
 			
@@ -367,7 +389,9 @@ var classConstructor = function() {
 			
 			
 			// GAME LAUNCH
+			// @ts-ignore GameLoop() expects 1 argument 
 			document.querySelector(rootNodeSelector).appendChild(GameLoop().renderer.view);
+			// @ts-ignore GameLoop() expects 1 argument 
 			GameLoop().start();
 		}
 		

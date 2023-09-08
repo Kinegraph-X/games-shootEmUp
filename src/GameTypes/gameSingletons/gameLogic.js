@@ -114,7 +114,7 @@ const handleFoeSpaceShipDestroyed = function(
 	GameLoop().markCollisionTestsForRemoval(Player().foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip.UID).collisionTestsRegister);
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
-	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().removeSpriteFromScene(damagedFoeSpaceShip);
 	
 	if (Math.random() <= damagedFoeSpaceShip.lootChance) {
@@ -129,7 +129,7 @@ const handleFoeSpaceShipDestroyed = function(
 	GameState().currentScore += gameConstants.foeDescriptors[damagedFoeSpaceShip.foeType].pointsPrize;
 	// @ts-ignore PIXI.Text is a mocked type
 	scoreTextSprite.text = GameState().currentScore.toString().padStart(4, '0')
-	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().trigger('foeSpaceShipDestroyed');
 }
 
@@ -143,9 +143,11 @@ const removeFireBallFromStage = function(
 	) {
 	let spritePos = CoreTypes.fireballsRegister.indexOf(explodedFireball);
 	CoreTypes.fireballsRegister.splice(spritePos, 1);
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().removeTween(CoreTypes.fireballsTweensRegister[spritePos]);
 	CoreTypes.fireballsTweensRegister.splice(spritePos, 1);
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().removeSpriteFromScene(explodedFireball, true);		// might fail if already collided => noError
 }
 
@@ -200,6 +202,10 @@ const handleMainSpaceShipDamaged = function(
 	// @ts-ignore Player expects 1 argument
 	Player().mainSpaceShip.decrementHealth();
 	
+	handleInvicibleMainSpaceShip(
+		// @ts-ignore Player expects 1 argument
+		Player().mainSpaceShip
+	);
 	createBlinkingSpaceShip(
 		// @ts-ignore Player expects 1 argument
 		Player().mainSpaceShip
@@ -273,6 +279,7 @@ const handleMainSpaceShipDestroyed = function(
 	
 	// Temporary hack to shw the animation before stopping
 	setTimeout(function() {
+		// @ts-ignore GameLoop() expects 1 argument 
 		GameLoop().stop();
 	},1024)
 	
@@ -301,8 +308,10 @@ const handlePowerUp = function(
 	// @ts-ignore
 	const tween = CoreTypes.disposableTweensRegister.findObjectByValue('lootSprite', lootSprite).lootTween;
 	if (tween)		// let's assume that can fail...  for now...
+		// @ts-ignore GameLoop() expects 1 argument 
 		GameLoop().removeTween(tween);
-		
+	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().removeSpriteFromScene(lootSprite);
 	
 	switch(lootSprite.lootType) {
@@ -339,6 +348,7 @@ const handleFoeSpaceShipOutOfScreen = function(
 	// @ts-ignore UID is inherited
 	GameLoop().removeTween(Player().foeSpaceShipsTweensRegister.getItem(spaceShipSprite.UID));
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().removeSpriteFromScene(spaceShipSprite, true);		// might fail if already destroyed => noError
 }
 
@@ -382,21 +392,71 @@ const handleMainSpaceShipOutOfScreen = function(
 
 /**
  * @method handleDisposableSpriteAnimationEnded
- * @param {Sprite} sprite
+ * @param {Tween} tween
  * @return Void
  */
-const handleDisposableSpriteAnimationEnded = function(sprite) {
-	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(sprite);
+const handleDisposableSpriteAnimationEnded = function(tween) {
+	// CooldownTweens don't imply removing the sprite from the scene
+	// @ts-ignore objectType: implicit inheritance
+	if (tween.objectType === 'CoolDownTween')
+		return;
+	
+	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(tween.target);
 	
 	if (spritePos === -1) {
-		console.warn('a disposable FX wasn\'t found in the register for deletion', spritePos, sprite);
+		console.warn('a disposable FX wasn\'t found in the register for deletion', spritePos, tween.target);
 		return;
 	}
 	CoreTypes.disposableSpritesRegister.splice(spritePos, 1);
 	
-	GameLoop().removeSpriteFromScene(sprite, true); // noError: we found a weird bug on destructing the mainSpaceShip
+	// @ts-ignore  GameLoop expects 1 argument
+	GameLoop().removeSpriteFromScene(tween.target, true); // noError: we found a weird bug on destructing the mainSpaceShip
 }
 
+/**
+ * @mthod handleInvicibleSpaceShip
+ */
+const handleInvicibleMainSpaceShip = function() {
+	// @ts-ignore Player() expects 1 argument 
+	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
+	// @ts-ignore Player() expects 1 argument 
+	Player().foeSpaceShipsCollisionTestsRegister.reset();
+}
+
+/**
+ * @mthod handleDamageableSpaceShip
+ */
+const handleDamageableMainSpaceShip = function() {
+	let mainSpaceShipCollisionTest;
+	// @ts-ignore Player() expects 1 argument 
+	for (let foeSpaceShipSpriteObj of Object.values(Player().foeSpaceShipsRegister.cache)) {
+		// /!\ WARNING We should have cleaned all hostile tests from the caches 
+		// in the handleInvicibleMainSpaceShip(), but that would have meant looping twice.
+		// So there is an unstable state in the game while the tests are not anymore applied
+		// in the game loop, but still presents in the caches : Let's keep that in mind and watch out...
+		
+		// @ts-ignore Player() expects 1 argument 
+		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister = 
+			// We'll loop through all the tests, including those against projectiles.
+			// It's not efficient, but do we have a reference to the specific test in the scope ? Seems not...
+			// @ts-ignore Player() expects 1 argument 
+			Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.filter(function(test) {
+				if (test.type === 'hostile')
+					return false;
+				return true;
+			});
+		// @ts-ignore Player() expects 1 argument 
+		mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, foeSpaceShipSpriteObj, 'hostile');
+		// @ts-ignore Player() expects 1 argument 
+		Player().foeSpaceShipsCollisionTestsRegister.setItem(foeSpaceShipSpriteObj.UID, mainSpaceShipCollisionTest);
+		// @ts-ignore GameLoop() expects 1 argument 
+		GameLoop().pushCollisionTest(mainSpaceShipCollisionTest);
+		// @ts-ignore     Player() expects 1 argument     UID is inherited
+		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
+	}
+	// @ts-ignore Player() expects 1 argument 
+	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));	
+}
 
 /**
  * @method createBlinkingSpaceShip
@@ -409,13 +469,13 @@ const createBlinkingSpaceShip = function(
 	const blinkTween = new CooledDownPropFadeToggleTween(
 		spaceShip,
 		CoreTypes.TweenTypes.add,
-		'opacity',
+		'alpha',
 		-1,
-		120,
-		function() {},
-		20
+		90,
+		handleDamageableMainSpaceShip,
+		15
 	);
-	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().pushTween(blinkTween);
 }
 
@@ -452,6 +512,7 @@ const createSmallExplosion = function(
 		true
 	);
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().addAnimatedSpriteToScene(explosion, explosionTween);
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
@@ -497,6 +558,7 @@ const createGreenExplosion = function(
 		true
 	);
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().addAnimatedSpriteToScene(explosion, explosionTween);
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
@@ -540,6 +602,7 @@ const createYellowExplosion = function(
 		true
 	);
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().addAnimatedSpriteToScene(explosion, explosionTween);
 	CoreTypes.disposableSpritesRegister.push(explosion);
 }
@@ -597,6 +660,7 @@ const activateShield = function(
 		true
 	);
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().addAnimatedSpriteToScene(shield, shieldTween);
 	CoreTypes.disposableSpritesRegister.push(shield);
 }
@@ -637,6 +701,7 @@ const createLoot = function(
 		.1,
 		false
 	);
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().addAnimatedSpriteToScene(loot, lootTween);
 	
 	CoreTypes.disposableTweensRegister.push({
@@ -729,6 +794,7 @@ function addUIDMarkerToEntity(
 	currentLevelText.x = sprite.x - 49 + offset;
 	currentLevelText.y = sprite.y - 49;
 	currentLevelText.name = 'debugText';
+	// @ts-ignore PIXI types are mocked
 	currentLevelText.text = counter++ + ' ' + sprite.UID + ' ' + (GameLoop().currentTime / 1000).toString().slice(0, 4) + ' ' + text;
 	
 	
@@ -741,7 +807,9 @@ function addUIDMarkerToEntity(
 		false
 	);
 	
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().pushTween(textTween);
+	// @ts-ignore GameLoop() expects 1 argument 
 	GameLoop().addSpriteToScene(currentLevelText);
 }
 

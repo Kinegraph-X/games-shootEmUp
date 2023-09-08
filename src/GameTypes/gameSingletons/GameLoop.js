@@ -1,24 +1,42 @@
+ /**
+ * @typedef {Object} PIXI.Sprite
+ * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
+ * @typedef {import('src/GameTypes/tweens/Tween')} Tween
+ * @typedef {import('src/GameTypes/collisionTests/fireballCollisionTester')} FireballCollisionTester
+ * @typedef {import('src/GameTypes/collisionTests/mainSpaceShipCollisionTester')} MainSpaceShipCollisionTester
+ * @typedef {import('src/GameTypes/collisionTests/spaceShipCollisionTester')} SpaceShipCollisionTester
+ */
+
 const {EventEmitter} = require('src/core/CoreTypes');
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const ruleSet = require('src/GameTypes/gameSingletons/gameRules');
 
 /**
  * @constructor GameLoop
- * 
+ * @param {CoreTypes.Dimension} windowSize
  */
 const GameLoop = function(windowSize) {
+	// @ts-ignore  PIXI
 	if (typeof PIXI === 'undefined') {
 		console.warn('The PIXI lib must be present in the global scope of the page');
 		return;
 	}
 	EventEmitter.call(this);
+	// @ts-ignore inherited method
 	this.createEvent('mainSpaceShipOutOfScreen');
+	// @ts-ignore inherited method
 	this.createEvent('mainSpaceShipDamaged');
+	// @ts-ignore inherited method
 	this.createEvent('mainSpaceShipPowerUp');
+	// @ts-ignore inherited method
 	this.createEvent('foeSpaceShipDamaged');
+	// @ts-ignore inherited method
 	this.createEvent('foeSpaceShipDestroyed');
+	// @ts-ignore inherited method
 	this.createEvent('foeSpaceShipOutOfScreen');
+	// @ts-ignore inherited method
 	this.createEvent('fireballOutOfScreen');
+	// @ts-ignore inherited method
 	this.createEvent('disposableSpriteAnimationEnded');
 	
 	this.loopStarted = false;
@@ -28,19 +46,23 @@ const GameLoop = function(windowSize) {
 		groups : []
 	};
 	this.currentTime = 0;
-	this.tweens = [];
-	this.collisionTests = [];
+	this.tweens = new Array();
+	this.collisionTests = new Array();
+	// @ts-ignore  PIXI
 	this.renderer = new PIXI.Renderer({width : windowSize.x.value, height : windowSize.y.value});
+	// @ts-ignore PIXI
 	this.stage = new PIXI.Container();
 }
 GameLoop.prototype = Object.create(EventEmitter.prototype);
 
 /**
- * @static FrameGroup
+ * @constructor as a static method FrameGroup
+ * @param {Number} initialVal
  */
 GameLoop.prototype.FrameGroup = function(initialVal) {
 	this.rounded = Math.round(initialVal);
-	this.values = [];
+	this.values = new Array();
+	// @ts-ignore inherited method
 	this.values.average(initialVal);
 }
  
@@ -56,7 +78,8 @@ GameLoop.prototype.start = function() {
 	
 //	console.log("requestAnimationFrame", loop);
 	requestAnimationFrame(loop);
-	 
+	
+	/** @param  {Number} timestamp */
 	function loop(timestamp) {
 		
 		if (!self.loopStarted)
@@ -98,7 +121,8 @@ GameLoop.prototype.start = function() {
 				
 				if (tween.ended) {
 					self.removeTween(tween);
-					self.trigger('disposableSpriteAnimationEnded', tween.target);
+					// @ts-ignore inherited method
+					self.trigger('disposableSpriteAnimationEnded', tween);
 				}
 				
 //				console.log(stdFrameDuration)
@@ -117,6 +141,7 @@ GameLoop.prototype.start = function() {
 					// trigger an event for the app router to be able to clean the registers
 					ruleSet.testOutOfScreen.forEach(function(rule) {
 						if (rule.targetName === tween.target.name) {
+							// @ts-ignore implicitly inherited method
 							self[rule.action](rule.params[0], tween[rule.params[1]]);
 						}
 					})
@@ -155,7 +180,10 @@ GameLoop.prototype.stop = function() {
 	console.log("stop : this.loopStarted", this.loopStarted);
 }
 
-
+/**
+ * @method getFrameDuration
+ * @param {Number} duration
+ */
 GameLoop.prototype.getFrameDuration = function(duration) {
 	if (this.firstFramesDuration.chosen)
 		return this.firstFramesDuration.chosen;
@@ -219,9 +247,11 @@ GameLoop.prototype.addAnimatedSpriteToScene = function(sprite, tween) {
  * Self-explanatory
  * 
  * @param {Sprite} sprite
+ * @param {Boolean} noError
  * 
  */
 GameLoop.prototype.removeSpriteFromScene = function(sprite, noError) {
+	// @ts-ignore PIXI
 	if (!(this.stage.removeChild(sprite.spriteObj) instanceof PIXI.Container)) {
 		if (noError)
 			return;
@@ -286,7 +316,7 @@ GameLoop.prototype.removeTween = function(tween) {
  * 
  * Self-explanatory
  * 
- * @param {fireballCollisionTester|spaceShipCollisionTester|mainSpaceShipCollisionTester} test
+ * @param {FireballCollisionTester|SpaceShipCollisionTester|MainSpaceShipCollisionTester} test
  * 
  */
 GameLoop.prototype.pushCollisionTest = function(test) {
@@ -298,7 +328,7 @@ GameLoop.prototype.pushCollisionTest = function(test) {
  * 
  * Self-explanatory
  * 
- * @param {fireballCollisionTester|spaceShipCollisionTester|mainSpaceShipCollisionTester} test
+ * @param {FireballCollisionTester|SpaceShipCollisionTester|MainSpaceShipCollisionTester} test
  *
  */
 GameLoop.prototype.removeCollisionTest = function(test) {
@@ -312,7 +342,7 @@ GameLoop.prototype.removeCollisionTest = function(test) {
  * 
  * Self-explanatory
  * 
- * @param {Array} tests
+ * @param {Array<FireballCollisionTester|SpaceShipCollisionTester|MainSpaceShipCollisionTester>} tests
  *
  */
 GameLoop.prototype.removeCollisionTests = function(tests) {
@@ -330,7 +360,7 @@ GameLoop.prototype.removeCollisionTests = function(tests) {
  * 
  * Self-explanatory
  * 
- * @param {Array} tests
+ * @param {Array<FireballCollisionTester|SpaceShipCollisionTester|MainSpaceShipCollisionTester>} tests
  *
  */
 GameLoop.prototype.markCollisionTestsForRemoval = function(tests) {
@@ -348,9 +378,6 @@ GameLoop.prototype.markCollisionTestsForRemoval = function(tests) {
  * @method removeAllCollisionTests
  * 
  *  * Self-explanatory
- * 
- * @param {fireballCollisionTester|spaceShipCollisionTester|mainSpaceShipCollisionTester} test
- * 
  */
 GameLoop.prototype.removeAllCollisionTests = function() {
 	this.collisionTests.length = 0;
@@ -366,6 +393,7 @@ GameLoop.prototype.removeAllCollisionTests = function() {
  * and then updates it, removing all the tests which are not anymore relevant.
  */
 GameLoop.prototype.testAndCleanCollisions = function() {
+	/** @type {FireballCollisionTester|SpaceShipCollisionTester|MainSpaceShipCollisionTester} */
 	let collisionTest,
 		deletedTests = new Uint8Array(this.collisionTests.length),
 		clearedTests = CoreTypes.clearedCollisionTests;
@@ -385,18 +413,25 @@ GameLoop.prototype.testAndCleanCollisions = function() {
 		collisionTest = this.collisionTests[i];
 		
 		if (collisionTest.testCollision()) {	// , collisionTest[rule.params[1]].name, collisionTest[rule.params[2]]
+			// @ts-ignore objectType: implicit inheritance
 			if (collisionTest.objectType === this.collisionTestNamesConstants.fireballCollisionTest) {
 				ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
 					if (rule.targetName === collisionTest.referenceObj.name) {
+						// @ts-ignore implicit inheritance
 						this[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
+						// @ts-ignore implicit inheritance
 						this.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]], deletedTests, clearedTests);
 					}
 				}, this);
 			}
+			// @ts-ignore objectType: implicit inheritance
 			else if (collisionTest.objectType === this.collisionTestNamesConstants.mainSpaceShipCollisionTest) {
 				ruleSet.mainSpaceShipTestCollision.forEach(function(rule) {
+					// @ts-ignore type: implicit inheritance
 					if (collisionTest.type === rule.type) {
+						// @ts-ignore implicit inheritance
 						this[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
+						// @ts-ignore implicit inheritance
 						this.cleanCollisionTests(collisionTest[rule.params[1]], collisionTest[rule.params[2]], deletedTests, clearedTests);
 					}
 				}, this);
@@ -425,7 +460,7 @@ GameLoop.prototype.testAndCleanCollisions = function() {
  * 
  * @param {PIXI.Sprite} targetedSprite
  * @param {Uint8Array} deletedTests
- * @param {Set} clearedTests
+ * @param {Set<Number>} clearedTests
  */
 GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprite, deletedTests, clearedTests) {
 	let test;
@@ -437,15 +472,18 @@ GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprit
 		if (test.fireballSprite === collidingSprite) {
 			clearedTests.add(i);
 		}
+		// @ts-ignore hasShield : implicit inheritance
 		else if (test.referenceObj === targetedSprite && targetedSprite.hasShield) {
 			clearedTests.add(i);
-		}	
+		}
+		// @ts-ignore lifePoints : implicit inheritance
 		else if (test.referenceObj === targetedSprite && targetedSprite.lifePoints === 0) {
 			clearedTests.add(i);
 		}
 		// This last condition works both on a collision between a foe ship and the main ship, and on a collision between the main ship and a loot
 		// FIXME: there's a bug : a foe collided once with the main spaceShip won't collide anymore
 		// Fix : wait for a while in the event's callback, and recreate the collision test (the main spaceShip could blink while it's not collidable)
+		// @ts-ignore name : implicit inheritance
 		else if (test.referenceObj === targetedSprite && collidingSprite.name === this.spriteNamesConstants.mainSpaceShipSprite) {
 			clearedTests.add(i);
 		}
@@ -455,7 +493,7 @@ GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprit
 /**
  * @method updateDeletedTests
  * @param {Uint8Array} deletedTests
- * @param {Set} clearedTests
+ * @param {Set<Number>} clearedTests
  */
 GameLoop.prototype.updateDeletedTests = function(deletedTests, clearedTests) {
 	clearedTests.forEach(function(testIdx) {
@@ -466,7 +504,7 @@ GameLoop.prototype.updateDeletedTests = function(deletedTests, clearedTests) {
 
 /**
  * @method effectivelySpliceDeletedTests
- * @param {Set} clearedTests
+ * @param {Set<Number>} clearedTests
  */
 GameLoop.prototype.effectivelySpliceDeletedTests = function(clearedTests) {
 	let testIdx = 0, setAsArray = Array.from(clearedTests).sort(this.sortingFunction);
@@ -494,6 +532,8 @@ GameLoop.prototype.spriteNamesConstants = {
 
 /**
  * @static @method sortingFunction
+ * @param {Number} a
+ * @param {Number} b
  */
 GameLoop.prototype.sortingFunction = function(a, b){
 	if (a < b) {
@@ -505,11 +545,16 @@ GameLoop.prototype.sortingFunction = function(a, b){
 	return 0;
 }
  
- 
+// @ts-ignore singleton pattern
 var gameLoop;
 
+/**
+ * @param {CoreTypes.Dimension} refsToGameProps
+ */
 module.exports = function(refsToGameProps) {
+	// @ts-ignore singleton pattern
 	if (typeof gameLoop !== 'undefined')
+		// @ts-ignore singleton pattern
 		return gameLoop;
 	else
 		return (gameLoop = new GameLoop(refsToGameProps));

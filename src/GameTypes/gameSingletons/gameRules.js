@@ -5,7 +5,7 @@
  * @constructor GameRule
  * @param {String} targetName
  * @param {String} action
- * @param {Array} params
+ * @param {Array<String>} params
  * @param {String} type
  */
 const GameRule = function(targetName, action, params, type) {
@@ -17,16 +17,16 @@ const GameRule = function(targetName, action, params, type) {
  
 const ruleSet = {
 	testOutOfScreen : [
-		new GameRule('foeSpaceShipSprite', 'trigger', ['foeSpaceShipOutOfScreen', 'target']),
-		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipOutOfScreen', 'target']),
-		new GameRule('fireballSprite', 'trigger', ['fireballOutOfScreen', 'target'])
+		new GameRule('foeSpaceShipSprite', 'trigger', ['foeSpaceShipOutOfScreen', 'target'], null),
+		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipOutOfScreen', 'target'], null),
+		new GameRule('fireballSprite', 'trigger', ['fireballOutOfScreen', 'target'], null)
 	],
 	mainSpaceShipTestCollision : [
 		new GameRule('lootSprite', 'trigger', ['mainSpaceShipPowerUp',  'mainSpaceShipSprite', 'referenceObj'], 'powerUp'),
 		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipDamaged', 'mainSpaceShipSprite', 'referenceObj'], 'hostile')
 		
 	],
-	foeSpaceShipTestCollision : [new GameRule('foeSpaceShipSprite', 'trigger', ['foeSpaceShipDamaged', 'fireballSprite', 'referenceObj'])],
+	foeSpaceShipTestCollision : [new GameRule('foeSpaceShipSprite', 'trigger', ['foeSpaceShipDamaged', 'fireballSprite', 'referenceObj'], null)],
 }
 
 
