@@ -202,15 +202,6 @@ const handleMainSpaceShipDamaged = function(
 	// @ts-ignore Player expects 1 argument
 	Player().mainSpaceShip.decrementHealth();
 	
-	handleInvicibleMainSpaceShip(
-		// @ts-ignore Player expects 1 argument
-		Player().mainSpaceShip
-	);
-	createBlinkingSpaceShip(
-		// @ts-ignore Player expects 1 argument
-		Player().mainSpaceShip
-	);
-
 	activateShield(
 		// @ts-ignore Player expects 1 argument
 		Player().mainSpaceShip,
@@ -252,6 +243,15 @@ const handleMainSpaceShipDamaged = function(
 			},
 			loadedAssets,
 			scoreTextSprite
+		);
+		
+		handleInvicibleMainSpaceShip(
+			// @ts-ignore Player expects 1 argument
+			Player().mainSpaceShip
+		);
+		createBlinkingSpaceShip(
+			// @ts-ignore Player expects 1 argument
+			Player().mainSpaceShip
 		);
 	}
 }
