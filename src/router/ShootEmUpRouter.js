@@ -73,7 +73,7 @@ var classConstructor = function() {
 			const mainSpaceShipSprite = GameObjectsFactory().newObject(objectTypes.mainSpaceShip);
 			
 			// PLAYER INSTANCIATION : After Having got our mainSpaceShip
-			const player = Player({
+			Player({
 				foeSpaceShipsRegister : new PropertyCache('foeSpaceShipsRegister'),
 				foeSpaceShipsTweensRegister : new PropertyCache('foeSpaceShipsTweensRegister'),
 				foeSpaceShipsCollisionTestsRegister : new PropertyCache('foeSpaceShipsCollisionTestsRegister'),
@@ -154,7 +154,6 @@ var classConstructor = function() {
 				}
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
 					launchFireball();
-					
 					GameLoop().pushTween(fireTween);
 				}
 			});
@@ -229,10 +228,8 @@ var classConstructor = function() {
 			GameLoop().addEventListener('mainSpaceShipDamaged', function(e) {
 				gameLogic.handleMainSpaceShipDamaged(
 					e.data[1],
-					loadedAssets,
 					statusBar
 				);
-
 			});
 			// @ts-ignore don't know how to type callbacks
 			GameLoop().addEventListener('disposableSpriteAnimationEnded', function(e) {

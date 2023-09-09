@@ -158,13 +158,11 @@ const handleLoot = function(
 /**
  * @method handleMainSpaceShipDamaged
  * @param {FoeSpaceShip} damagedFoeSpaceShip
- * @param {Array<Object>} loadedAssets
  * @param {StatusBarSprite} statusBar
  * @return Void
  */
 const handleMainSpaceShipDamaged = function(
 		damagedFoeSpaceShip,
-		loadedAssets,
 		statusBar
 	) {
 	Player().mainSpaceShip.decrementHealth();
