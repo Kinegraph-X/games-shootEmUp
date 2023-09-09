@@ -43,8 +43,7 @@ const manifest = {
 		
 		
 		
-module.exports = function() {
-	return new Promise(function(resolve, reject) {
+module.exports = new Promise(function(resolve, reject) {
 		// @ts-ignore
 		PIXI.Assets.init({manifest}).then(function() {
 			Promise.all([
@@ -59,4 +58,3 @@ module.exports = function() {
 			});
 		});
 	});
-}

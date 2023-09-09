@@ -199,13 +199,29 @@ const weapons = {
 }
 
 
+const objectTypes = {
+	background : 'background',
+	statusBar : 'statusBar',
+	mainSpaceShip : 'mainSpaceShip',
+	foeSpaceShip : 'foeSpaceShip',
+	projectile : 'projectile',
+	projectiles : 'projectiles',
+	shield : 'shield',
+	smallExplosion : 'smallExplosion',
+	greenExplosion : 'greenExplosion',
+	yellowExplosion : 'yellowExplosion',
+	loot : 'loot',
+}
+
+
 const gameConstants = {
-	levels : levels,
-	foeDescriptors : foeDescriptors,
-	mainSpaceShipLifePoints : mainSpaceShipLifePoints,
-	maxLootsByType : maxLootsByType,
-	weapons : weapons,
-	lootSpritesTextures : lootSpritesTextures
+	levels,
+	foeDescriptors,
+	mainSpaceShipLifePoints,
+	maxLootsByType,
+	weapons,
+	lootSpritesTextures,
+	objectTypes
 }
 
 module.exports = gameConstants

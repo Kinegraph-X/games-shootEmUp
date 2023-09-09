@@ -117,6 +117,15 @@ StatusBarSprite.prototype.decrementHealth = function() {
 	// @ts-ignore tilePositionX is inherited
 	this.gameStatusSpriteObj.tilePositionX = this.gameStatusSpriteObj.tilePositionX - 470; 
 }
+
+/**
+ * @method incrementHealth
+ * @return Void
+ */
+StatusBarSprite.prototype.incrementHealth = function() {
+	// @ts-ignore tilePositionX is inherited
+	this.gameStatusSpriteObj.tilePositionX = this.gameStatusSpriteObj.tilePositionX + 470; 
+}
  
  
  

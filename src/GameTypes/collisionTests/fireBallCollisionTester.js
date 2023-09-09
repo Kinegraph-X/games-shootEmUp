@@ -9,14 +9,17 @@
  * @constructor fireballCollisionTester
  * @param {Sprite} fireballSprite
  * @param {Sprite} referenceObj
+ * @param {Object} type	
  */
-const fireballCollisionTester = function(fireballSprite, referenceObj) {
+const fireballCollisionTester = function(fireballSprite, referenceObj, type = null) {
 	this.fireballSprite = fireballSprite;
 	this.referenceObj = referenceObj;
+	this.type = type;
 }
 //fireballCollisionTester.prototype = {};
 /**
- * @static name
+ * @memberof fireballCollisionTester
+ * @static {String} objectType
  */
 fireballCollisionTester.prototype.objectType = 'fireballCollisionTest';
 
@@ -24,8 +27,6 @@ fireballCollisionTester.prototype.objectType = 'fireballCollisionTest';
  * @method testCollision
  */
 fireballCollisionTester.prototype.testCollision = function() {
-//	console.log(this.referenceObj.x + this.referenceObj.width / 2, this.fireballSprite.x  + this.fireballSprite.width * 6 / 12);
-//	console.log(this.referenceObj.x - this.referenceObj.width / 2, this.fireballSprite.x + this.fireballSprite.width * 6 / 12);
 	if (this.referenceObj.y + this.referenceObj.height / 2 > this.fireballSprite.y
 		&& this.referenceObj.y < this.fireballSprite.y + this.fireballSprite.height / 2 
 		&& this.referenceObj.x + this.referenceObj.width / 2 > this.fireballSprite.x  - this.fireballSprite.width * 1 / 3

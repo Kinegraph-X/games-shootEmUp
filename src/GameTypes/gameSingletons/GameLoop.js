@@ -16,6 +16,7 @@ const ruleSet = require('src/GameTypes/gameSingletons/gameRules');
  * @param {CoreTypes.Dimension} windowSize
  */
 const GameLoop = function(windowSize) {
+	this.windowSize = windowSize;
 	// @ts-ignore  PIXI
 	if (typeof PIXI === 'undefined') {
 		console.warn('The PIXI lib must be present in the global scope of the page');
@@ -549,13 +550,13 @@ GameLoop.prototype.sortingFunction = function(a, b){
 var gameLoop;
 
 /**
- * @param {CoreTypes.Dimension} refsToGameProps
+ * @param {CoreTypes.Dimension} windowSize
  */
-module.exports = function(refsToGameProps) {
+module.exports = function(windowSize = null) {
 	// @ts-ignore singleton pattern
 	if (typeof gameLoop !== 'undefined')
 		// @ts-ignore singleton pattern
 		return gameLoop;
 	else
-		return (gameLoop = new GameLoop(refsToGameProps));
+		return (gameLoop = new GameLoop(windowSize));
 };

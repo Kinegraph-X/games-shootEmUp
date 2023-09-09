@@ -8,7 +8,7 @@
 		"src/core/*": ["../../jsCore/src/core/*"],
 		"src/events/*": ["../../jsKeyboardEvents/src/events/*"]
 	},
-	"lib" : ["es2017", "dom"],
+	"lib" : ["es2022", "dom"],
     "noImplicitAny": true,
     "preserveConstEnums": true
   }

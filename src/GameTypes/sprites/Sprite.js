@@ -25,14 +25,25 @@ const Sprite = function(lifePoints) {
 Sprite.prototype = Object.create(Wounder.prototype);
 
 /**
- * @method @virtual getSprite
+ * @method getSprite
+ * @virtual 
  */
-Sprite.prototype.getSprite = function() {}			// VIRTUAL
+Sprite.prototype.getSprite = function() {}
 
 /**
- * @virtual name
+ * @static name
+ * @virtual
  */
-Sprite.prototype.name = 'Sprite'					// VIRTUAL
+Sprite.prototype.name = 'Sprite'
+
+/**
+ * @method getHealth
+ * @return {Number}
+ */
+Sprite.prototype.getHealth = function() {
+	// @ts-ignore lifePoints is inherited
+	return this.lifePoints;
+}
 
 /**
  * @method incrementHealth

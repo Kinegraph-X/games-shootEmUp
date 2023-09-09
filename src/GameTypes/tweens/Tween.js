@@ -34,6 +34,7 @@ const Tween = function(windowSize, target, type, transform, speed, oneShot) {
 	this.collisionTestsRegister = new Array();
 }
 //Tween.prototype = {};
+Tween.prototype.objectType = 'Tween';
 
 /**
  * @method nextStep

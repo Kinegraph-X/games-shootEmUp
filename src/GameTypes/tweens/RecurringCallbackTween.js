@@ -31,19 +31,17 @@ RecurringCallbackTween.prototype.objectType = 'RecurringCallbackTween';
  * @return Void
  */
 RecurringCallbackTween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
-	// @ts-ignore baseFrameDuration is inherited
 	stepCount *= frameDuration / this.baseFrameDuration;
-	
-	// @ts-ignore currentPartialStep is inherited
 	this.currentPartialStep += stepCount;
 	
-	// @ts-ignore currentPartialStep is inherited
 	if (this.currentPartialStep >= this.interval) {
 		if (this.scope)
 			// @ts-ignore cause we can't explicitly declare the type of "scope"
 			this.cb(this.scope[this.propName]);
-		else
+		else if (this.argsAsArray)
 			this.cb.apply(null, this.argsAsArray);
+		else
+			this.cb();
 			
 		this.currentPartialStep = 0;
 	}

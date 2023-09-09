@@ -24,7 +24,7 @@ var player;
 /**
  * @param {{[key:String] : Object}} referencesToGame
  */
-module.exports = function(referencesToGame) {
+module.exports = function(referencesToGame = null) {
 	// @ts-ignore implicit type is "Any" (still the same a not OOP-friendly pattern)
 	if (typeof player !== 'undefined')
 		// @ts-ignore implicit type is "Any" (still the same a not OOP-friendly pattern)

@@ -13,6 +13,31 @@ const GameState = function() {
 		'weapon' : 0
 	};
 }
+//GameState.prototype = {};
+
+/**
+ * @method getCurrentScore
+ */
+GameState.prototype.getCurrentScore = function() {
+	return this.currentScore;
+}
+
+/**
+ * @method getCurrentScore
+ */
+GameState.prototype.getCurrentScoreAsString = function() {
+	return this.currentScore.toString().padStart(4, '0');
+}
+
+/**
+ * @method incrementScore
+ * @param {Number} amount
+ */
+GameState.prototype.incrementScore = function(amount) {
+	this.currentScore += amount;
+}
+
+
 
 
 
