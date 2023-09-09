@@ -21,6 +21,7 @@ const Player = require('src/GameTypes/gameSingletons/Player');
  * @param {Number} projectileType
  */
 const ProjectileFactory = function(windowSize, loadedAssets, startPosition, projectileType) {
+	this.projectileType = projectileType;
 	this.moveTiles = weapons[projectileType].moveTiles;
 	/** @type {Array<Number>} */
 	this.horizontalTweenValues = [];
@@ -117,7 +118,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		new CoreTypes.Point(!this.moveTiles ? this.horizontalTweenValues[idx] : 0, -25),
 		.4,
 		false,
-		12,
+		weapons[this.projectileType].tileCount,
 		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] / 2 : 0, 70),
 		11,
 		'invert',

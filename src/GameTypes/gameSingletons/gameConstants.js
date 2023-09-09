@@ -131,13 +131,15 @@ const maxLootsByType = {
  * @param  {Number} damage
  * @param  {Number} projectileCount
  * @param {Array<String>} spriteTexture
+ * @param {Number} tileCount
  * @param {Boolean} moveTiles
  */
-const WeaponDescriptor = function(name, damage, projectileCount, spriteTexture, moveTiles) {
+const WeaponDescriptor = function(name, damage, projectileCount, spriteTexture, tileCount, moveTiles) {
 	this.name = name;
 	this.damage= damage;
 	this.projectileCount = projectileCount;
 	this.spriteTexture = spriteTexture;
+	this.tileCount = tileCount;
 	this.moveTiles = moveTiles
 }
 
@@ -154,6 +156,7 @@ const weapons = {
 		[
 			'fireballsTilemap'
 		],
+		12,
 		false
 	),
 	1 : new WeaponDescriptor(
@@ -161,8 +164,9 @@ const weapons = {
 		2,
 		1,
 		[
-			'fireballsTilemap'
+			'redFireballsTilemap'
 		],
+		7,
 		false
 	),
 	2 : new WeaponDescriptor(
@@ -171,9 +175,10 @@ const weapons = {
 		3,
 		[
 			'fireballsTilemap',
-			'fireballsTilemap',
+			'redFireballsTilemap',
 			'fireballsTilemap'
 		],
+		7,
 		true
 	),
 	3 : new WeaponDescriptor(
@@ -182,9 +187,10 @@ const weapons = {
 		3,
 		[
 			'fireballsTilemap',
-			'fireballsTilemap',
+			'blueFireballSprite',
 			'fireballsTilemap'
 		],
+		12,
 		false
 	),
 	4 : new WeaponDescriptor(
@@ -192,8 +198,9 @@ const weapons = {
 		3,
 		1,
 		[
-			'fireballsTilemap'
+			'multiFireSpearsSprite'
 		],
+		6,
 		false
 	)
 }

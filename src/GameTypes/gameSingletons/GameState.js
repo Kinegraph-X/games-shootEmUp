@@ -4,9 +4,9 @@
  * @constructor GameState
  */
 const GameState = function() {
-	this.currentLevel = 1;
+	this.currentLevel = 3;
 	this.currentScore = 0;
-	this.currentWeapon = 0;
+	this.currentWeapon = 4;
 	/** @type {{[key:String] : Number}} */
 	this.currentLootCount = {
 		'medikit' : 0,

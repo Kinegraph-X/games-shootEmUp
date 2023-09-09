@@ -101,11 +101,8 @@ const handleFoeSpaceShipDestroyed = function(
 	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
 	GameLoop().removeSpriteFromScene(damagedFoeSpaceShip);
 	
-	if (Math.random() <= damagedFoeSpaceShip.lootChance) {
-		handleLoot(
-			damagedFoeSpaceShip
-		);
-	}
+	if (Math.random() <= damagedFoeSpaceShip.lootChance)
+		handleLoot(damagedFoeSpaceShip);
 	
 	// prepare to load more foeSpaceShips
 	occupiedCells[damagedFoeSpaceShip.cell.x][damagedFoeSpaceShip.cell.y] = false;

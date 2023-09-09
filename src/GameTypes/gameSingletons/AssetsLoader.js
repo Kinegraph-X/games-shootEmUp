@@ -29,6 +29,9 @@ const manifest = {
 			assets : [
 				{name : 'flamesTilemap', srcs : 'plugins/ShootEmUp/assets/ships/Flames_tilemap.png'},
 				{name : 'fireballsTilemap', srcs : 'plugins/ShootEmUp/assets/Fireball_sprite_v2.png'},
+				{name : 'redFireballsTilemap', srcs : 'plugins/ShootEmUp/assets/RedFireballSprite.png'},
+				{name : 'multiFireSpearsSprite', srcs : 'plugins/ShootEmUp/assets/MultiFireSpearsSprite.png'},
+				{name : 'blueFireballSprite', srcs : 'plugins/ShootEmUp/assets/BlueFireballSprite.png'},
 				{name : 'impactTilemap', srcs : 'plugins/ShootEmUp/assets/Impact_sprite.png'},
 				{name : 'greenExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Explosion_Sprite.png'},
 				{name : 'yellowExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Yellow_Explosion_Sprite.png'},
