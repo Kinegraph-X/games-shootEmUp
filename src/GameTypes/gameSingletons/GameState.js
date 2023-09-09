@@ -17,15 +17,17 @@ const GameState = function() {
 
 /**
  * @method getCurrentScore
+ * @return {Number}
  */
 GameState.prototype.getCurrentScore = function() {
 	return this.currentScore;
 }
 
 /**
- * @method getCurrentScore
+ * @method getCurrentScoreAsFormattedString
+ * @return {String}
  */
-GameState.prototype.getCurrentScoreAsString = function() {
+GameState.prototype.getCurrentScoreAsFormattedString = function() {
 	return this.currentScore.toString().padStart(4, '0');
 }
 
@@ -35,6 +37,29 @@ GameState.prototype.getCurrentScoreAsString = function() {
  */
 GameState.prototype.incrementScore = function(amount) {
 	this.currentScore += amount;
+}
+
+/**
+ * @method incrementLevel
+ * @return {Number}
+ */
+GameState.prototype.getCurrentLevel = function() {
+	return this.currentLevel;
+}
+
+/**
+ * @method getCurrentLevelAsString
+ * @return {String}
+ */
+GameState.prototype.getCurrentLevelAsString = function() {
+	return this.currentLevel.toString();
+}
+
+/**
+ * @method incrementLevel
+ */
+GameState.prototype.incrementLevel = function() {
+	this.currentLevel++;
 }
 
 

@@ -111,7 +111,7 @@ const handleFoeSpaceShipDestroyed = function(
 	occupiedCells[damagedFoeSpaceShip.cell.x][damagedFoeSpaceShip.cell.y] = false;
 	GameState().incrementScore(foeDescriptors[damagedFoeSpaceShip.foeType].pointsPrize);
 	// @ts-ignore PIXI.Text is a mocked type
-	scoreTextSprite.text = GameState().getCurrentScoreAsString();
+	scoreTextSprite.text = GameState().getCurrentScoreAsFormattedString();
 	GameLoop().trigger('foeSpaceShipDestroyed');
 }
 
@@ -408,14 +408,14 @@ const createBlinkingSpaceShip = function(
  */
 const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 	if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 1
-		&& GameState().currentLevel < 6) {
+		&& GameState().getCurrentLevel() < 6) {
 		
-		if (GameState().currentScore >= levels[GameState().currentLevel.toString()].requiredPointsToStepUp) {
-			GameState().currentLevel++;
+		if (GameState().getCurrentScore() >= levels[GameState().getCurrentLevelAsString()].requiredPointsToStepUp) {
+			GameState().incrementLevel();
 			GameState().currentLootCount.medikit = 0;
 			GameState().currentLootCount.weapon = 0;
 			// @ts-ignore PIXI.Text is a mocked type
-			currentLevelText.text = GameState().currentLevel;
+			currentLevelText.text = GameState().getCurrentLevelAsString();
 			addFoeSpaceShips();
 		}
 		else
@@ -477,7 +477,6 @@ function addUIDMarkerToEntity(
 
 
 module.exports = {
-	ruleSet,
 	handleFoeSpaceShipDamaged,
 	handleFoeSpaceShipOutOfScreen,
 	handleMainSpaceShipDamaged,
