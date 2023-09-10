@@ -29,10 +29,8 @@ const ProjectileFactory = require('src/GameTypes/factories/ProjectileFactory');
 
 /** 
  * @constructor GameObjectFactory
- * @param {CoreTypes.Dimension} windowSize
 */
-const GameObjectFactory = function(windowSize) {
-	this.windowSize = windowSize;
+const GameObjectFactory = function() {
 	this.loadedAssets = new Array();
 	const self = this;
 	AssetsLoader.then(function(loadedAssets) {
@@ -88,7 +86,7 @@ GameObjectFactory.prototype.newObject = function(objectType, addToScene = true, 
  */
 GameObjectFactory.prototype.createStatusBar = function() {
 	const statusBar = new StatusBarSprite(
-		this.windowSize,
+		GameLoop().windowSize,
 		// @ts-ignore loadedAssets.prop unknown
 		this.loadedAssets[0].statusBarLeft,
 		null
@@ -113,7 +111,7 @@ GameObjectFactory.prototype.createProjectiles = function() {
 		Player().mainSpaceShip.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
 	);
 	new ProjectileFactory(
-		this.windowSize,
+		GameLoop().windowSize,
 		this.loadedAssets,
 		startPosition,
 		GameState().currentWeapon
@@ -148,7 +146,7 @@ GameObjectFactory.prototype.createFoeSpaceShip = function(metadata) {
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsRegister.setItem(foeSpaceShip.UID, foeSpaceShip);
 	// @ts-ignore : TS doesn't understand anything to prototypal inheritance (foeSpaceShip IS an instance of a Sprite)
-	const foeSpaceShipTween = new Tween(this.windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1, false);
+	const foeSpaceShipTween = new Tween(GameLoop().windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1, false);
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsTweensRegister.setItem(foeSpaceShip.UID, foeSpaceShipTween);
 	
@@ -174,7 +172,7 @@ GameObjectFactory.prototype.createMainSpaceShip = function() {
 		mainSpaceShipLifePoints['1']
 	);
 	const flameTween = new TileToggleTween(
-		this.windowSize,
+		GameLoop().windowSize,
 		mainSpaceShipSprite.flameTileSprite,
 		CoreTypes.TweenTypes.add,
 		new CoreTypes.Point(0, 83),
@@ -197,7 +195,7 @@ GameObjectFactory.prototype.createMainSpaceShip = function() {
 GameObjectFactory.prototype.createBg = function() {
 	const bgZoom = 1.8;
 	const worldMapBack = new TilingSprite(
-		new CoreTypes.Dimension(this.windowSize.x.value, this.windowSize.y.value),
+		new CoreTypes.Dimension(GameLoop().windowSize.x.value, GameLoop().windowSize.y.value),
 		// @ts-ignore loadedAssets.prop unknown
 		this.loadedAssets[0].bgBack,
 		bgZoom,
@@ -205,7 +203,7 @@ GameObjectFactory.prototype.createBg = function() {
 	);
 	
 	const worldMapMiddle = new TilingSprite(
-		new CoreTypes.Dimension(this.windowSize.x.value, this.windowSize.y.value),
+		new CoreTypes.Dimension(GameLoop().windowSize.x.value, GameLoop().windowSize.y.value),
 		// @ts-ignore loadedAssets.prop unknown
 		this.loadedAssets[0].bgMiddle,
 		1,
@@ -215,7 +213,7 @@ GameObjectFactory.prototype.createBg = function() {
 	worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 	
 	const worldMapFront = new TilingSprite(
-		new CoreTypes.Dimension(this.windowSize.x.value, this.windowSize.y.value),
+		new CoreTypes.Dimension(GameLoop().windowSize.x.value, GameLoop().windowSize.y.value),
 		// @ts-ignore loadedAssets.prop unknown
 		this.loadedAssets[0].bgFront,
 		.3,
@@ -224,9 +222,9 @@ GameObjectFactory.prototype.createBg = function() {
 	// @ts-ignore blendMode
 	worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 	
-	const worldMapBackTween = new TileTween(this.windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1, false);
-	const worldMapMiddleTween = new TileTween(this.windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1, false);
-	const worldMapFrontTween = new TileTween(this.windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1, false);
+	const worldMapBackTween = new TileTween(GameLoop().windowSize, worldMapBack, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 25), .1, false);
+	const worldMapMiddleTween = new TileTween(GameLoop().windowSize, worldMapMiddle, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 12), .1, false);
+	const worldMapFrontTween = new TileTween(GameLoop().windowSize, worldMapFront, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 3), .1, false);
 	
 	GameLoop().addAnimatedSpriteToScene(worldMapBack, worldMapBackTween);
 	GameLoop().addAnimatedSpriteToScene(worldMapMiddle, worldMapMiddleTween);
@@ -268,7 +266,7 @@ GameObjectFactory.prototype.createShield = function(spaceShip) {
 	shield.zoom = zoom;
 	
 	const shieldTween = new TileToggleTween(
-		this.windowSize,
+		GameLoop().windowSize,
 		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		shield,
 		CoreTypes.TweenTypes.add,
@@ -301,7 +299,7 @@ GameObjectFactory.prototype.createSmallExplosion = function(spaceShip) {
 		new CoreTypes.Dimension(32, 32)
 	);
 	const explosionTween = new TileToggleTween(
-		this.windowSize,
+		GameLoop().windowSize,
 		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		explosion,
 		CoreTypes.TweenTypes.add,
@@ -341,7 +339,7 @@ GameObjectFactory.prototype.createGreenExplosion = function(spaceShip) {
 	explosion.scaleY = 1.5;
 	
 	const explosionTween = new TileToggleTween(
-		this.windowSize,
+		GameLoop().windowSize,
 		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		explosion,
 		CoreTypes.TweenTypes.add,
@@ -379,7 +377,7 @@ GameObjectFactory.prototype.createYellowExplosion = function(spaceShip) {
 	explosion.scaleY = 2;
 	
 	const explosionTween = new TileToggleTween(
-		this.windowSize,
+		GameLoop().windowSize,
 		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		explosion,
 		CoreTypes.TweenTypes.add,
@@ -419,7 +417,7 @@ GameObjectFactory.prototype.createLoot = function(spaceShip) {
 	);
 	
 	const lootTween = new Tween(
-		this.windowSize,
+		GameLoop().windowSize,
 		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
 		loot,
 		CoreTypes.TweenTypes.add,
@@ -472,13 +470,13 @@ GameObjectFactory.prototype.getRandomLootType = function () {
 var gameObjectsFactory;
 
 /**
- * @param {CoreTypes.Dimension} windowSize
+ *
  */
-module.exports = function(windowSize = null) {
+module.exports = function() {
 	// @ts-ignore singleton pattern
 	if (typeof gameObjectsFactory !== 'undefined')
 		// @ts-ignore singleton pattern
 		return gameObjectsFactory;
 	else
-		return (gameObjectsFactory = new GameObjectFactory(windowSize));
+		return (gameObjectsFactory = new GameObjectFactory());
 };

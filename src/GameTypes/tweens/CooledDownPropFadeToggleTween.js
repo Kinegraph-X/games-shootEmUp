@@ -22,6 +22,7 @@ const CooledDownPropFadeToggleTween = function(target, type, affectedProp, offse
 	this.transformInterval = transformInterval;
 }
 CooledDownPropFadeToggleTween.prototype = Object.create(CoolDownTween.prototype);
+CoolDownTween.prototype.objectType = 'CooledDownPropFadeToggleTween';
 
 /**
  * @method nextStep

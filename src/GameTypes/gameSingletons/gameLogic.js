@@ -53,7 +53,7 @@ const handleFoeSpaceShipDamaged = function(
 		
 	// Avoid potential double deletion when collided twice in the same frame
 	// @ts-ignore lifePoints is inherited
-	if (damagedFoeSpaceShip.lifePoints <= 0
+	if (damagedFoeSpaceShip.hasBeenDestroyed()
 		&& explodedFireball.name === 'fireballSprite') {	// Test the "name" prop : the mainSpaceShip may also collide a foe
 		removeFireBallFromStage(explodedFireball);			// (then the mainSpaceShipSprite is positionned
 		return;
@@ -67,7 +67,7 @@ const handleFoeSpaceShipDamaged = function(
 	GameObjectsFactory().newObject(objectTypes.smallExplosion, true, [], damagedFoeSpaceShip);
 	
 	// @ts-ignore lifePoints is inherited
-	if (damagedFoeSpaceShip.lifePoints <= 0)
+	if (damagedFoeSpaceShip.hasBeenDestroyed())
 		 handleFoeSpaceShipDestroyed(
 			damagedFoeSpaceShip,
 			scoreTextSprite
@@ -95,8 +95,12 @@ const handleFoeSpaceShipDestroyed = function(
 	// foeSpaceShipSprite removal from the gameLoop & scene
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsRegister.deleteItem(damagedFoeSpaceShip.UID);
+	
 	// @ts-ignore UID is inherited
 	GameLoop().markCollisionTestsForRemoval(Player().foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip.UID).collisionTestsRegister);
+	
+	// @ts-ignore UID is inherited
+	Player().foeSpaceShipsCollisionTestsRegister.deleteItem(damagedFoeSpaceShip.UID);
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
 	GameLoop().removeSpriteFromScene(damagedFoeSpaceShip);
@@ -104,7 +108,7 @@ const handleFoeSpaceShipDestroyed = function(
 	if (Math.random() <= damagedFoeSpaceShip.lootChance)
 		handleLoot(damagedFoeSpaceShip);
 	
-	// prepare to load more foeSpaceShips
+	// clean grid cell to be able to load more foeSpaceShips
 	occupiedCells[damagedFoeSpaceShip.cell.x][damagedFoeSpaceShip.cell.y] = false;
 	GameState().incrementScore(foeDescriptors[damagedFoeSpaceShip.foeType].pointsPrize);
 	// @ts-ignore PIXI.Text is a mocked type
@@ -112,47 +116,7 @@ const handleFoeSpaceShipDestroyed = function(
 	GameLoop().trigger('foeSpaceShipDestroyed');
 }
 
-/**
- * @method handleFoeSpaceShipDestroyed
- * @param {Projectile} explodedFireball
- * @return Void
- */
-const removeFireBallFromStage = function(
-		explodedFireball
-	) {
-	let spritePos = CoreTypes.fireballsRegister.indexOf(explodedFireball);
-	CoreTypes.fireballsRegister.splice(spritePos, 1);
-	GameLoop().removeTween(CoreTypes.fireballsTweensRegister[spritePos]);
-	CoreTypes.fireballsTweensRegister.splice(spritePos, 1);
-	
-	GameLoop().removeSpriteFromScene(explodedFireball, true);		// might fail if already collided => noError
-}
 
-/**
- * @method handleFoeSpaceShipDestroyed
- * @param {FoeSpaceShip} damagedFoeSpaceShip
- * @return Void
- */
-const handleLoot = function(
-		damagedFoeSpaceShip
-	) {
-	
-	let lootSprite = GameObjectsFactory().newObject(objectTypes.loot, true, [], damagedFoeSpaceShip);
-	
-	// There has already been enough loots of a certain type
-	if (typeof lootSprite === 'undefined')
-		return;
-	else
-		// @ts-ignore FIXME: lootType should be Union {'madikit' | 'powerUp'}
-		GameState().currentLootCount[lootSprite.lootType]++;
-	
-	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototype inheritance...
-	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, lootSprite, 'powerUp');
-	// we chose not to append the new collisionTest synchronously,
-	// but raher to wait for the next frame : appending it synchronlously 
-	// has caused us a lot of false tracks when debugging
-	CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
-}
 
 
 /**
@@ -182,12 +146,23 @@ const handleMainSpaceShipDamaged = function(
 	);
 	
 	
-	if (Player().mainSpaceShip.hasBeenDestroyed())
-		 handleMainSpaceShipDestroyed(statusBar);
+	if (Player().mainSpaceShip.hasBeenDestroyed()) {
+		handleInvicibleMainSpaceShip();
+		handleFoeSpaceShipDamaged(
+			damagedFoeSpaceShip,
+			// @ts-ignore FIXME: HACK
+			{
+				damage : 1
+			},
+			statusBar.textForScoreSpriteObj
+		);
+		handleMainSpaceShipDestroyed(statusBar);
+	}
 	else {
 		// only if we're not dead, visually decrement the life-bar
 		// @ts-ignore tilePositionX is inherited
 		statusBar.decrementHealth();
+		handleInvicibleMainSpaceShip();
 		
 		handleFoeSpaceShipDamaged(
 			damagedFoeSpaceShip,
@@ -198,7 +173,6 @@ const handleMainSpaceShipDamaged = function(
 			statusBar.textForScoreSpriteObj
 		);
 		
-		handleInvicibleMainSpaceShip();
 		createBlinkingSpaceShip(Player().mainSpaceShip);
 	}
 }
@@ -212,10 +186,11 @@ const handleMainSpaceShipDamaged = function(
 const handleMainSpaceShipDestroyed = function(
 		statusBar
 	) {
-	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);
+	GameLoop().gameOver = true;
+	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
+	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);		// noError: seems we have a bug, unknown after a round of exploring the code
 	GameLoop().removeSpriteFromScene(statusBar.gameStatusSpriteObj);
 	GameLoop().stage.removeChild(statusBar.textForLevelSpriteObj);
-		// noError: hard to say why the level-text isn't anymore in the scene sometimes...
 	
 	// Temporary hack to shw the animation before stopping
 	setTimeout(function() {
@@ -230,9 +205,42 @@ const handleMainSpaceShipDestroyed = function(
 }
 
 /**
+ * @mthod handleInvicibleSpaceShip
+ */
+const handleInvicibleMainSpaceShip = function() {
+	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
+	Player().foeSpaceShipsCollisionTestsRegister.reset();
+	
+	for (let foeSpaceShipSpriteObj of Object.values(Player().foeSpaceShipsRegister.cache)) {
+		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister = 
+			// We'll loop through all the tests, including those against projectiles.
+			// It's not efficient, but do we have a reference to the specific test in the scope ? Seems not...
+			Player().foeSpaceShipsTweensRegister.getItem(foeSpaceShipSpriteObj.UID).collisionTestsRegister.filter(function(/** @type {mainSpaceShipCollisionTester}*/test) {
+				if (test.type === 'hostile')
+					return false;
+				return true;
+			});
+	}
+}
+
+/**
+ * @mthod handleDamageableSpaceShip
+ */
+const handleDamageableMainSpaceShip = function() {
+	let mainSpaceShipCollisionTest;
+	for (let foeSpaceShipSpriteObj of Object.values(Player().foeSpaceShipsRegister.cache)) {
+		mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, foeSpaceShipSpriteObj, 'hostile');
+		Player().foeSpaceShipsCollisionTestsRegister.setItem(foeSpaceShipSpriteObj.UID, mainSpaceShipCollisionTest);
+		CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
+		// @ts-ignore  UID is inherited
+		Player().foeSpaceShipsTweensRegister.getItem(foeSpaceShipSpriteObj.UID).collisionTestsRegister.push(mainSpaceShipCollisionTest);
+	}
+}
+
+/**
  * @method handlePowerUp
  * @param {LootSprite} lootSprite
- * @param {TilingSprite} statusBarSprite
+ * @param {StatusBarSprite} statusBarSprite
  * @return Void
  */
 const handlePowerUp = function(
@@ -246,7 +254,6 @@ const handlePowerUp = function(
 		GameLoop().removeTween(tween);
 	
 	GameLoop().removeSpriteFromScene(lootSprite);
-	
 	switch(lootSprite.lootType) {
 		case 'medikit':
 			if (Player().mainSpaceShip.getHealth() < mainSpaceShipLifePoints[GameState().currentLevel]) {
@@ -300,6 +307,8 @@ const handleFireballOutOfScreen = function(
 
 /**
  * @method handleMainSpaceShipOutOfScreen
+ * Funny solution to handle the spaceShip being to away from the scene
+ * => just replace it back at a potentially dangerous position in game
  * @return Void
  */
 const handleMainSpaceShipOutOfScreen = function() {
@@ -309,6 +318,48 @@ const handleMainSpaceShipOutOfScreen = function() {
 		Player().mainSpaceShip.x += Player().mainSpaceShip.width * 2;
 	else if (Player().mainSpaceShip.y > GameLoop().windowSize.y.value)
 		Player().mainSpaceShip.y -= Player().mainSpaceShip.height * 2;
+}
+
+
+/**
+ * @method handleFoeSpaceShipDestroyed
+ * @param {Projectile} explodedFireball
+ * @return Void
+ */
+const removeFireBallFromStage = function(
+		explodedFireball
+	) {
+	let spritePos = CoreTypes.fireballsRegister.indexOf(explodedFireball);
+	CoreTypes.fireballsRegister.splice(spritePos, 1);
+	GameLoop().removeTween(CoreTypes.fireballsTweensRegister[spritePos]);
+	CoreTypes.fireballsTweensRegister.splice(spritePos, 1);
+	
+	GameLoop().removeSpriteFromScene(explodedFireball, true);		// might fail if already collided => noError
+}
+
+/**
+ * @method handleFoeSpaceShipDestroyed
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @return Void
+ */
+const handleLoot = function(
+		damagedFoeSpaceShip
+	) {
+	
+	let lootSprite = GameObjectsFactory().newObject(objectTypes.loot, true, [], damagedFoeSpaceShip);
+	
+	// There has already been enough loots of a certain type
+	if (typeof lootSprite === 'undefined')
+		return;
+	else
+		// @ts-ignore FIXME: lootType should be Union {'madikit' | 'powerUp'}
+		GameState().currentLootCount[lootSprite.lootType]++;
+	
+	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototype inheritance...
+	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, lootSprite, 'powerUp');
+	// we chose to wait for the next frame : appending it synchronlously 
+	// has caused us a lot of false tracks when debugging
+	CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
 }
 
 
@@ -334,41 +385,7 @@ const handleDisposableSpriteAnimationEnded = function(tween) {
 	GameLoop().removeSpriteFromScene(tween.target, true); // noError: we found a weird bug on destructing the mainSpaceShip
 }
 
-/**
- * @mthod handleInvicibleSpaceShip
- */
-const handleInvicibleMainSpaceShip = function() {
-	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
-	Player().foeSpaceShipsCollisionTestsRegister.reset();
-}
 
-/**
- * @mthod handleDamageableSpaceShip
- */
-const handleDamageableMainSpaceShip = function() {
-	let mainSpaceShipCollisionTest;
-	for (let foeSpaceShipSpriteObj of Object.values(Player().foeSpaceShipsRegister.cache)) {
-		// /!\ WARNING We should have cleaned all hostile tests from the caches 
-		// in the handleInvicibleMainSpaceShip(), but that would have meant looping twice.
-		// So there is an unstable state in the game while the tests are not anymore applied
-		// in the game loop, but still presents in the caches : Let's keep that in mind and watch out...
-		
-		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister = 
-			// We'll loop through all the tests, including those against projectiles.
-			// It's not efficient, but do we have a reference to the specific test in the scope ? Seems not...
-			Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.filter(function(/** @type {mainSpaceShipCollisionTester}*/test) {
-				if (test.type === 'hostile')
-					return false;
-				return true;
-			});
-		mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, foeSpaceShipSpriteObj, 'hostile');
-		Player().foeSpaceShipsCollisionTestsRegister.setItem(foeSpaceShipSpriteObj.UID, mainSpaceShipCollisionTest);
-		GameLoop().pushCollisionTest(mainSpaceShipCollisionTest);
-		// @ts-ignore     Player() expects 1 argument     UID is inherited
-		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
-	}
-	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));	
-}
 
 /**
  * @method createBlinkingSpaceShip
@@ -425,7 +442,7 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 let counter = 0;
 /**
  * @method addUIDMarkerToEntity
- * Helper method for debug
+ * Helper method for debugging
  * @param {Sprite} sprite
  * @param {Number} offset
  * @param {String} text
@@ -433,8 +450,8 @@ let counter = 0;
  */
 function addUIDMarkerToEntity(
 		sprite,
-		offset,
-		text
+		offset = 0,
+		text = ''
 	) {
 	
 	offset = offset || 0;
@@ -464,7 +481,7 @@ function addUIDMarkerToEntity(
 	);
 	
 	GameLoop().pushTween(textTween);
-	GameLoop().addSpriteToScene(currentLevelText);
+	GameLoop().stage.addChild(currentLevelText);
 }
 
 

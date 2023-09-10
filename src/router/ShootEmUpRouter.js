@@ -23,7 +23,7 @@ const gameLogic = require('src/GameTypes/gameSingletons/gameLogic');
 
 const GameObjectsFactory = require('src/GameTypes/factories/GameObjectsFactory');
 // Singleton init
-GameObjectsFactory(windowSize);
+GameObjectsFactory();
 
 const Sprite = require('src/GameTypes/sprites/Sprite');
 const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
@@ -100,9 +100,9 @@ var classConstructor = function() {
 					
 					// FIXME: we don't ensure that we add collision-tests at a time where the game loop isn't looping on them
 					// It may break (encoutered only once until now)
-					GameLoop().pushCollisionTest(mainSpaceShipCollisionTest);
+					CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
 					// @ts-ignore UID is inherited
-					Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister.push(mainSpaceShipCollisionTest);
+					Player().foeSpaceShipsTweensRegister.getItem(foeSpaceShipSpriteObj.UID).collisionTestsRegister.push(mainSpaceShipCollisionTest);
 				});
 			}
 			addFoeSpaceShips();
@@ -132,7 +132,7 @@ var classConstructor = function() {
 			
 			const fireTween = new RecurringCallbackTween(launchFireball, fireballThrottling, null, null, '');
 
-			// @ts-ignore : I don't know how to type callbacks
+			// @ts-ignore : I don't want to type callbacks
 			keyboardListener.addOnPressedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
 					mainSpaceShipSprite.rollWingsLeft();
@@ -157,7 +157,7 @@ var classConstructor = function() {
 					GameLoop().pushTween(fireTween);
 				}
 			});
-			// @ts-ignore : I don't know how to type callbacks
+			// @ts-ignore : I don't want to type callbacks
 			keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 				if ((keyCode === KeyboardEvents.indexOf('LEFT') || keyCode === KeyboardEvents.indexOf('Q')) && !ctrlKey) {
 					mainSpaceShipSprite.rollWingsFlat();
@@ -186,13 +186,13 @@ var classConstructor = function() {
 			
 			
 			// GAME LOOP EVENTS
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('foeSpaceShipOutOfScreen', function(e) {
 				gameLogic.handleFoeSpaceShipOutOfScreen(
 					e.data
 				);
 			});
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('foeSpaceShipDamaged', function(e) {
 				gameLogic.handleFoeSpaceShipDamaged(
 					e.data[1],
@@ -200,42 +200,46 @@ var classConstructor = function() {
 					statusBar.textForScoreSpriteObj[1]
 				);
 			});
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('foeSpaceShipDestroyed', function(e) {
 				gameLogic.shouldChangeLevel(
 					statusBar.textForLevelSpriteObj,
 					addFoeSpaceShips
 				);
 			});
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('mainSpaceShipPowerUp', function(e) {
 				gameLogic.handlePowerUp(
 					e.data[1],
-					statusBar.gameStatusSpriteObj
+					statusBar
 				);
 			});
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('fireballOutOfScreen', function(e) {
 				gameLogic.handleFireballOutOfScreen(
 					e.data
 				);
 			});
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('mainSpaceShipOutOfScreen', function(e) {
 				gameLogic.handleMainSpaceShipOutOfScreen();
 			});
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('mainSpaceShipDamaged', function(e) {
 				gameLogic.handleMainSpaceShipDamaged(
 					e.data[1],
 					statusBar
 				);
 			});
-			// @ts-ignore don't know how to type callbacks
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('disposableSpriteAnimationEnded', function(e) {
 				gameLogic.handleDisposableSpriteAnimationEnded(
 					e.data
 				);
+			});
+			// @ts-ignore don't want to type callbacks
+			GameLoop().addEventListener('resize', function(e) {
+				statusBar.onResize(e.data)
 			});
 
 			

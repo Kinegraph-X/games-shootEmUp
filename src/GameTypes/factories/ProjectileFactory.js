@@ -120,7 +120,7 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 		false,
 		weapons[this.projectileType].tileCount,
 		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] / 2 : 0, 70),
-		11,
+		14,
 		'invert',
 		false
 		);

@@ -21,12 +21,12 @@ const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
  */
 const StatusBarSprite = function(windowSize, textureLeft, textureRight) {
 	this.UID = UIDGenerator.newUID();
-	const margin = 15,
-		textColor = 0xffd338;
+	this.margin = 15;
+	this.textColor = 0xffd338;
 	
-	this.gameStatusSpriteObj = this.getGameStatusSprite(windowSize, textureLeft, margin);
-	this.textForLevelSpriteObj = this.getTextForLevelSprite(windowSize, margin, textColor);
-	this.textForScoreSpriteObj = this.getTextForScoreSprite(windowSize, margin, textColor);
+	this.gameStatusSpriteObj = this.getGameStatusSprite(windowSize, textureLeft);
+	this.textForLevelSpriteObj = this.getTextForLevelSprite(windowSize);
+	this.textForScoreSpriteObj = this.getTextForScoreSprite(windowSize);
 }
 //StatusBarSprite.prototype = {};
 
@@ -34,9 +34,8 @@ const StatusBarSprite = function(windowSize, textureLeft, textureRight) {
  * @method getGameStatusSprite
  * @param {CoreTypes.Dimension} windowSize
  * @param {PIXI.Texture} texture
- * @param {Number} margin
  */
-StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture, margin) {
+StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture) {
 	// @ts-ignore
 	const statusBar = new TilingSprite(
 		new CoreTypes.Dimension(235, 74),
@@ -44,9 +43,9 @@ StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture, ma
 		.5
 	);
 	// @ts-ignore
-	statusBar.x = margin + 10;
+	statusBar.x = this.margin + 10;
 	// @ts-ignore
-	statusBar.y = windowSize.y.value - (74 + margin);
+	statusBar.y = windowSize.y.value - (74 + this.margin);
 	// @ts-ignore
 	statusBar.tilePositionX = 942;
 	// @ts-ignore
@@ -58,55 +57,78 @@ StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture, ma
 /**
  * @method getTextForLevelSprite
  * @param {CoreTypes.Dimension} windowSize
- * @param {Number} margin
- * @param {Number} textColor
  * @return {PIXI.Text}
  */
-StatusBarSprite.prototype.getTextForLevelSprite = function(windowSize, margin, textColor) {
+StatusBarSprite.prototype.getTextForLevelSprite = function(windowSize) {
 	// @ts-ignore
 	const currentLevelText = new PIXI.Text('1', {
 			fontFamily: '"Showcard Gothic"',
 			fontSize: 32,
-			fill: textColor,
+			fill: this.textColor,
 			align: 'center'
 		}
 	);
-	currentLevelText.x = 36 + margin;
-	currentLevelText.y = windowSize.y.value - (74 + margin) + 7;
+	currentLevelText.x = 36 + this.margin;
+	currentLevelText.y = windowSize.y.value - (74 + this.margin) + 7;
 	return currentLevelText;
 }
 
 /**
  * @method getTextForScoreSprite
  * @param {CoreTypes.Dimension} windowSize
- * @param {Number} margin
- * @param {Number} textColor
  * @return {Array<PIXI.Text>}
  */
-StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize, margin, textColor) {
+StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize) {
 	// @ts-ignore PIXI
 	const scoreText = new PIXI.Text('Score:', {
 			fontFamily: '"Showcard Gothic"',
 			fontSize: 24,
-			fill: textColor,
+			fill: this.textColor,
 			align: 'Score'
 		}
 	);
-	scoreText.x = windowSize.x.value - (204 + margin);
-	scoreText.y = windowSize.y.value - (44 + margin);
+	scoreText.x = windowSize.x.value - (204 + this.margin);
+	scoreText.y = windowSize.y.value - (44 + this.margin);
 	
 	// @ts-ignore PIXI
 	const currentScoreText = new PIXI.Text('0000', {
 			fontFamily: '"Showcard Gothic"',
 			fontSize: 32,
-			fill: textColor,
+			fill: this.textColor,
 			align: 'center'
 		}
 	);
-	currentScoreText.x = windowSize.x.value - (112 + margin);
-	currentScoreText.y = windowSize.y.value - (50 + margin);
+	currentScoreText.x = windowSize.x.value - (112 + this.margin);
+	currentScoreText.y = windowSize.y.value - (50 + this.margin);
 	
 	return [scoreText, currentScoreText];
+}
+
+/**
+ * @method onResize
+ * @param {CoreTypes.Dimension} windowSize
+ */
+StatusBarSprite.prototype.onResize = function(windowSize) {
+	
+	// @ts-ignore PIXI objects are not typed
+	this.gameStatusSpriteObj.x = this.margin + 10;
+	// @ts-ignore PIXI objects are not typed
+	this.gameStatusSpriteObj.y = windowSize.y.value - (74 + this.margin);
+	
+	// @ts-ignore PIXI objects are not typed
+	this.textForLevelSpriteObj.x = 36 + this.margin;
+	// @ts-ignore PIXI objects are not typed
+	this.textForLevelSpriteObj.y = windowSize.y.value - (74 + this.margin) + 7;
+	
+		// @ts-ignore PIXI objects are not typed
+	this.textForScoreSpriteObj[0].x = windowSize.x.value - (204 + this.margin);
+	// @ts-ignore PIXI objects are not typed
+	this.textForScoreSpriteObj[0].y = windowSize.y.value - (44 + this.margin);
+	
+	// @ts-ignore PIXI objects are not typed
+	this.textForScoreSpriteObj[1].x = windowSize.x.value - (112 + this.margin);
+	// @ts-ignore PIXI objects are not typed
+	this.textForScoreSpriteObj[1].y = windowSize.y.value - (50 + this.margin);
 }
 
 /**
@@ -124,7 +146,7 @@ StatusBarSprite.prototype.decrementHealth = function() {
  */
 StatusBarSprite.prototype.incrementHealth = function() {
 	// @ts-ignore tilePositionX is inherited
-	this.gameStatusSpriteObj.tilePositionX = this.gameStatusSpriteObj.tilePositionX + 470; 
+	this.gameStatusSpriteObj.tilePositionX = this.gameStatusSpriteObj.tilePositionX + 470;
 }
  
  

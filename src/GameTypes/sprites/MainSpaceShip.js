@@ -48,6 +48,8 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 	);
 	this.mainSpaceShipSprite.spriteObj.tileTransform.scale.x = .4;
 	this.mainSpaceShipSprite.spriteObj.tileTransform.scale.y = .4;
+	// @ts-ignore
+	this.mainSpaceShipSprite.tilePositionY = 400;
 	mainSpaceShipContainer.addChild(this.mainSpaceShipSprite.spriteObj);
 	
 	// @ts-ignore

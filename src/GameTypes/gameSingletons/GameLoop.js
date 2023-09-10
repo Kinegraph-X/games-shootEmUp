@@ -9,6 +9,7 @@
 
 const {EventEmitter} = require('src/core/CoreTypes');
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
+const gridManager = require('src/GameTypes/grids/gridManager');
 const ruleSet = require('src/GameTypes/gameSingletons/gameRules');
 
 /**
@@ -17,6 +18,7 @@ const ruleSet = require('src/GameTypes/gameSingletons/gameRules');
  */
 const GameLoop = function(windowSize) {
 	this.windowSize = windowSize;
+	this.totalWindowSize = new CoreTypes.Dimension(window.innerWidth, window.innerHeight);
 	// @ts-ignore  PIXI
 	if (typeof PIXI === 'undefined') {
 		console.warn('The PIXI lib must be present in the global scope of the page');
@@ -39,7 +41,10 @@ const GameLoop = function(windowSize) {
 	this.createEvent('fireballOutOfScreen');
 	// @ts-ignore inherited method
 	this.createEvent('disposableSpriteAnimationEnded');
+	// @ts-ignore inherited method
+	this.createEvent('resize');
 	
+	this.gameOver = false;
 	this.loopStarted = false;
 	this.loopStartedTime = 0;
 	this.firstFramesDuration = {
@@ -53,8 +58,35 @@ const GameLoop = function(windowSize) {
 	this.renderer = new PIXI.Renderer({width : windowSize.x.value, height : windowSize.y.value});
 	// @ts-ignore PIXI
 	this.stage = new PIXI.Container();
+	
+	window.onresize = this.applyResize.bind(this);
 }
 GameLoop.prototype = Object.create(EventEmitter.prototype);
+
+/**
+ * @method checkForResize
+ */
+GameLoop.prototype.applyResize = function() {
+	let windowSizeChanged = false;
+	this.totalWindowSize = new CoreTypes.Dimension(window.innerWidth, window.innerHeight);
+	
+	if (this.totalWindowSize.y.value !== this.windowSize.y.value) {
+		this.windowSize.y.value = this.totalWindowSize.y.value;
+		windowSizeChanged = true;
+	}
+	if (this.totalWindowSize.x.value !== this.windowSize.x.value) {
+		if (this.totalWindowSize.x.value < gridManager.maxWindowWidth) 
+			this.windowSize.x.value = this.totalWindowSize.x.value;
+		else
+			this.windowSize.x.value = gridManager.maxWindowWidth;
+		windowSizeChanged = true;
+	}
+	if (windowSizeChanged) {
+		this.renderer.resize(this.windowSize.x.value, this.windowSize.y.value);
+		// @ts-ignore trigger is inherited
+		this.trigger('resize', this.windowSize);
+	}
+}
 
 /**
  * @constructor as a static method FrameGroup
@@ -115,12 +147,6 @@ GameLoop.prototype.start = function() {
 				if (!tween.lastStepTimestamp)
 					tween.lastStepTimestamp = self.currentTime;
 				
-				if (tween.ended) {
-					self.removeTween(tween);
-					// @ts-ignore inherited method
-					self.trigger('disposableSpriteAnimationEnded', tween);
-				}
-				
 				stepCount = Math.round((self.currentTime - tween.lastStepTimestamp) / stdFrameDuration);
 				
 				if (!stepCount)
@@ -140,6 +166,12 @@ GameLoop.prototype.start = function() {
 							self[rule.action](rule.params[0], tween[rule.params[1]]);
 						}
 					})
+				}
+				
+				if (tween.ended) {
+					self.removeTween(tween);
+					// @ts-ignore inherited method
+					self.trigger('disposableSpriteAnimationEnded', tween);
 				}
 			}
 		}
@@ -388,26 +420,28 @@ GameLoop.prototype.removeAllCollisionTests = function() {
  * and then updates it, removing all the tests which are not anymore relevant.
  */
 GameLoop.prototype.testAndCleanCollisions = function() {
+	// For "loot" collisionTests, or when adding more "spaceships",
+	// it could cause a bug if we were adding the tests synchronously to the loop
+	// while the collisionTests loop is running.
+	// So, we add them on the next frame.
+	// (Even true if we add them to a registry, so always add new foes as the last step of the event handling) 
+	Array.prototype.push.apply(this.collisionTests, CoreTypes.tempAsyncCollisionsTests);
+	CoreTypes.tempAsyncCollisionsTests.length = 0;
+	
 	/** @type {FireballCollisionTester|SpaceShipCollisionTester|MainSpaceShipCollisionTester} */
 	let collisionTest,
 		deletedTests = new Uint8Array(this.collisionTests.length),
 		clearedTests = CoreTypes.clearedCollisionTests;
 		clearedTests.clear();
 	
-	// For "loot" collisionTests, we seem to have a bug when there are many projectiles,
-	// many spaceChips, etc. So, we avoid adding the collision test while looping,
-	// and we add  it on the next frame
-	Array.prototype.push.apply(this.collisionTests, CoreTypes.tempAsyncCollisionsTests);
-	CoreTypes.tempAsyncCollisionsTests.length = 0;
-	
 	for (let i = this.collisionTests.length - 1; i >= 0; i--) {
 				
-		if (deletedTests.at(i) === 1)
+		if (deletedTests.at(i) === 1 || this.gameOver)
 			continue;
 		
 		collisionTest = this.collisionTests[i];
 		
-		if (collisionTest.testCollision()) {	// , collisionTest[rule.params[1]].name, collisionTest[rule.params[2]]
+		if (collisionTest.testCollision()) {
 			// @ts-ignore objectType: implicit inheritance
 			if (collisionTest.objectType === this.collisionTestNamesConstants.fireballCollisionTest) {
 				ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
@@ -435,7 +469,8 @@ GameLoop.prototype.testAndCleanCollisions = function() {
 		}
 	}
 	
-	this.effectivelySpliceDeletedTests(clearedTests);
+	if (deletedTests.byteLength)		// weird case where we have no colisionTests in the loop yet, but already marked tests in clearedTests => wait for the next call
+		this.effectivelySpliceDeletedTests(clearedTests);
 }
 
 /**
@@ -490,7 +525,6 @@ GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprit
  */
 GameLoop.prototype.updateDeletedTests = function(deletedTests, clearedTests) {
 	clearedTests.forEach(function(testIdx) {
-//		console.log(testIdx)
 		deletedTests.set([1], testIdx);
 	});
 }

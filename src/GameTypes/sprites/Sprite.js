@@ -62,11 +62,21 @@ Sprite.prototype.decrementHealth = function() {
 }
 
 /**
+ * @method handleDamage
+ * @param {Wounder} sprite
+ * @return Void
+ */
+Sprite.prototype.handleDamage = function(sprite) {
+	// @ts-ignore
+	this.lifePoints -= sprite.damage;
+}
+
+/**
  * @method hasBeenDestroyed
  * @return {boolean}
  */
 Sprite.prototype.hasBeenDestroyed = function() {
-	return this.lifePoints === 0;
+	return this.lifePoints <= 0;
 }
 
 

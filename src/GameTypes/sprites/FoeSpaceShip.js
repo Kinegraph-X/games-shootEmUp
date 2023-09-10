@@ -53,12 +53,11 @@ FoeSpaceShip.prototype.getSprite = function(texture) {
 /**
  * @method handleDamage
  * @param {Wounder} sprite
- * @return {Boolean}
+ * @return Void
  */
 FoeSpaceShip.prototype.handleDamage = function(sprite) {
 	// @ts-ignore
 	this.lifePoints -= sprite.damage;
-	return this.hasBeenDestroyed();
 }
 
 /**
