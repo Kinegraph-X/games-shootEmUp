@@ -8,7 +8,7 @@ const CoolDownTween = require('src/GameTypes/tweens/CoolDownTween');
 
 
 /**
- * @constructor CooledDownPropFadeToggleTween
+ * @class CooledDownPropFadeToggleTween
  * @param {Sprite} target
  * @param {CoreTypes.TweenTypes} type
  * @param {String} affectedProp
@@ -51,14 +51,11 @@ CooledDownPropFadeToggleTween.prototype.nextStep = function(stepCount, frameDura
 		this.offset = -this.offset;
 		this.currentPartialStep = 0;
 	}
-//	else
-//		return;
 
 	// @ts-ignore currentFrame is inherited
 	this.currentFrame += stepCount;
 	// @ts-ignore transformInterval is inherited
 	let offset = this.offset / this.transformInterval;
-//	console.log(offset);
 	
 	// @ts-ignore target is inherited
 	this.target[this.affectedProp] = (new CoreTypes.Coord(this.target[this.affectedProp]))[this.type](offset);
