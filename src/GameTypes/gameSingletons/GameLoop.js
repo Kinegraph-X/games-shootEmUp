@@ -68,16 +68,15 @@ GameLoop.prototype.FrameGroup = function(initialVal) {
 }
  
 GameLoop.prototype.start = function() {
-	var self= this,
+	let self= this,
 		stepCount = 0,
 		previousTimeStamp = 0,
 		frameDuration = 0,
 		stdFrameDuration = 0;
-	this.loopStarted = true;
+	// Benchmark related
 //	let loopLastTimestamp = 0;
+	this.loopStarted = true;
 	
-	
-//	console.log("requestAnimationFrame", loop);
 	requestAnimationFrame(loop);
 	
 	/** @param  {Number} timestamp */
@@ -94,15 +93,11 @@ GameLoop.prototype.start = function() {
 		
 		frameDuration = timestamp - previousTimeStamp;
 		if (!(stdFrameDuration = self.getFrameDuration(frameDuration))) {
-//			console.log(frameDuration, stdFrameDuration, self.firstFramesDuration);
 			previousTimeStamp = timestamp;
 			requestAnimationFrame(loop);
 			return;
 		}
-//		else {
-//			console.log(stdFrameDuration);
-//			return;
-//		}
+		
 		previousTimeStamp = timestamp;
 		
 //		performance.mark('benchmark');
@@ -126,9 +121,8 @@ GameLoop.prototype.start = function() {
 					self.trigger('disposableSpriteAnimationEnded', tween);
 				}
 				
-//				console.log(stdFrameDuration)
 				stepCount = Math.round((self.currentTime - tween.lastStepTimestamp) / stdFrameDuration);
-//				console.log(stepCount)
+				
 				if (!stepCount)
 					continue;
 				tween.nextStep(stepCount, stdFrameDuration, self.currentTime);
@@ -482,8 +476,6 @@ GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprit
 			clearedTests.add(i);
 		}
 		// This last condition works both on a collision between a foe ship and the main ship, and on a collision between the main ship and a loot
-		// FIXME: there's a bug : a foe collided once with the main spaceShip won't collide anymore
-		// Fix : wait for a while in the event's callback, and recreate the collision test (the main spaceShip could blink while it's not collidable)
 		// @ts-ignore name : implicit inheritance
 		else if (test.referenceObj === targetedSprite && collidingSprite.name === this.spriteNamesConstants.mainSpaceShipSprite) {
 			clearedTests.add(i);
