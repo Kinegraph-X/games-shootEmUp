@@ -217,6 +217,9 @@ const handleMainSpaceShipDestroyed = function(
 		statusBar
 	) {
 	GameLoop().gameOver = true;
+	// GAME OVER TITLE
+	GameObjectsFactory().newObject(objectTypes.title, true, ['Game Over']);
+	
 	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
 	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);		// noError: seems we have a bug, unknown after a round of exploring the code
 	GameLoop().removeSpriteFromScene(statusBar.gameStatusSpriteObj);
@@ -465,6 +468,10 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 		else
 			addFoeSpaceShips();
 	}
+	else if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 0
+		&& GameState().getCurrentLevel() === 6)
+		// YOU WIN TITLE
+		GameObjectsFactory().newObject(objectTypes.title, true, ['YOU WIN']);
 }
 
 

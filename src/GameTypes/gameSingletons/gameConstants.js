@@ -255,6 +255,7 @@ const plasmaBlastDescriptors = {
 
 const objectTypes = {
 	background : 'background',
+	title : 'title',
 	statusBar : 'statusBar',
 	mainSpaceShip : 'mainSpaceShip',
 	foeSpaceShip : 'foeSpaceShip',

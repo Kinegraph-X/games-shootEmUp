@@ -15,6 +15,7 @@ const GameLoop = require('src/GameTypes/gameSingletons/GameLoop');
 const Sprite = require('src/GameTypes/sprites/Sprite');
 const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
 
+const GameTitleSprite = require('src/GameTypes/sprites/GameTitleSprite');
 const MainSpaceShip = require('src/GameTypes/sprites/MainSpaceShip');
 const FoeSpaceShip = require('src/GameTypes/sprites/FoeSpaceShip');
 const StatusBarSprite = require('src/GameTypes/sprites/StatusBarSprite');
@@ -45,7 +46,7 @@ const GameObjectFactory = function() {
  * @method newObject
  * @param {String} objectType
  * @param {boolean} addToScene
- * @param {Array<Number>} metadata
+ * @param {Array<Number|String|Boolean>} metadata
  * @param {Sprite} refToSprite
  * @return Void
  */
@@ -54,6 +55,9 @@ GameObjectFactory.prototype.newObject = function(objectType, addToScene = true, 
 		case objectTypes.background:
 			this.createBg();
 			break;
+		case objectTypes.title:
+			// @ts-ignore: metadata[0] is {String}, not Union type 		// HACK: FIXME
+			return this.createTitle(metadata[0], metadata[1]);
 		case objectTypes.statusBar:
 			return this.createStatusBar();
 		case objectTypes.mainSpaceShip:
@@ -82,6 +86,40 @@ GameObjectFactory.prototype.newObject = function(objectType, addToScene = true, 
 		default:
 			console.error('Attempting to create a game object with a name that has not been defined: ' + objectType)
 	}
+}
+
+/**
+ * @method createTitle
+ * @param {String} text	
+ * @param {Number|String|Boolean} fadeOut		// HACK: FIXME
+ * @return {GameTitleSprite}
+ */
+GameObjectFactory.prototype.createTitle = function(text, fadeOut) {
+	const title = new GameTitleSprite(
+		GameLoop().windowSize,
+		text
+	);
+	
+	if (fadeOut) {
+		const titleTween = new DelayedCooledDownPropFadeToggleTween(
+			// @ts-ignore TS doesn't know a thing to prototypal inheritance
+			title.spriteObj,
+			CoreTypes.TweenTypes.add,
+			'alpha',
+			-1,
+			120,
+			function() {
+				GameLoop().removeSpriteFromScene(title);
+			},
+			120,
+			0
+		);
+		GameLoop().addAnimatedSpriteToScene(title, titleTween);
+	}
+	else
+		GameLoop().addSpriteToScene(title);
+	
+	return title;
 }
 
 /**
@@ -129,7 +167,7 @@ GameObjectFactory.prototype.createProjectiles = function(fromFoe = false, foeUID
 
 /**
  * @method createFoeSpaceShip
- * @param {Array<Number>} metadata
+ * @param {Array<Number|String|Boolean>} metadata		// HACK: FIXME
  * The index 0 of metadata contains the number of shielded foes we've already created
  * @return {FoeSpaceShip}
  */
@@ -159,7 +197,7 @@ GameObjectFactory.prototype.createFoeSpaceShip = function(metadata) {
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsTweensRegister.setItem(foeSpaceShip.UID, foeSpaceShipTween);
 	
-	if (parseInt(randomFoe) > 0)
+	if (parseInt(randomFoe) % 2 === 1)
 		// @ts-ignore UID is inherited
 		this.createProjectiles(true, foeSpaceShip.UID);
 	

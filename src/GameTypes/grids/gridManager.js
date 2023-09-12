@@ -5,7 +5,7 @@
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 
-const maxWindowWidth = 950;
+const maxWindowWidth = 1280;
 const windowSize = new CoreTypes.Dimension(
 	window.innerWidth < maxWindowWidth 
 		? window.innerWidth 
@@ -14,7 +14,7 @@ const windowSize = new CoreTypes.Dimension(
 );
  
 // GRID CELLS UTILITIES FOR FOE SPACESHIPS
-const gridCells = new CoreTypes.Dimension(8, 4);
+const gridCells = new CoreTypes.Dimension(10, 4);
 const cellSize = windowSize.x.value / gridCells.x.value;
 let occupiedCells = Array(gridCells.x.value);
 for (let c = 0, l = gridCells.x.value; c < l; c++) {

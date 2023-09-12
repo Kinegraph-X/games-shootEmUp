@@ -69,6 +69,9 @@ var classConstructor = function() {
 			// BACKGROUND
 			GameObjectsFactory().newObject(objectTypes.background);
 			
+			// INTRO TITLE
+			GameObjectsFactory().newObject(objectTypes.title, true, ['Space Fleet', true]);
+			
 			// MAIN SPACESHIP
 			const mainSpaceShipSprite = GameObjectsFactory().newObject(objectTypes.mainSpaceShip);
 			
