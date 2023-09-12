@@ -6,8 +6,10 @@
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const Projectile = require('src/GameTypes/sprites/Projectile');
 const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
+const RecurringCallbackTween = require('src/GameTypes/tweens/RecurringCallbackTween');
 const fireBallCollisionTester = require('src/GameTypes/collisionTests/fireBallCollisionTester');
-const {weapons} = require('src/GameTypes/gameSingletons/gameConstants');
+const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
+const {weapons, foeWeapons} = require('src/GameTypes/gameSingletons/gameConstants');
 
 const GameLoop = require('src/GameTypes/gameSingletons/GameLoop');
 const Player = require('src/GameTypes/gameSingletons/Player');
@@ -19,25 +21,54 @@ const Player = require('src/GameTypes/gameSingletons/Player');
  * @param {Array<Object>} loadedAssets
  * @param {CoreTypes.Point} startPosition
  * @param {Number} projectileType
+ * @param {Boolean} fromFoe
  */
-const ProjectileFactory = function(windowSize, loadedAssets, startPosition, projectileType) {
+const ProjectileFactory = function(windowSize, loadedAssets, startPosition, projectileType, fromFoe = false, foeUID = '') {
+	this.weaponDescriptors = fromFoe ? foeWeapons : weapons;
+	
 	this.projectileType = projectileType;
-	this.moveTiles = weapons[projectileType].moveTiles;
+	this.moveTiles = this.weaponDescriptors[projectileType].moveTiles;
+	this.fromFoe = fromFoe;
+	this.foeUID = foeUID;
 	/** @type {Array<Number>} */
 	this.horizontalTweenValues = [];
-	const projectileCount = weapons[projectileType].spriteTexture.length;
+	const projectileCount = this.weaponDescriptors[projectileType].spriteTexture.length;
 	this.setHorizontalValues(projectileCount);
 	
-	weapons[projectileType].spriteTexture.forEach(function(textureName, key) {
-		this.createSprite(
-			key,
-			projectileCount,
-			windowSize,
-			loadedAssets,
-			startPosition,
-			textureName,
-			projectileType
-		);
+	this.weaponDescriptors[projectileType].spriteTexture.forEach(function(textureName, key) {
+		if (!this.fromFoe) {
+			this.createSprite(
+				key,
+				projectileCount,
+				windowSize,
+				loadedAssets,
+				startPosition,
+				textureName,
+				projectileType
+			);
+		}
+		else {
+			// @ts-ignore
+			const recurringTween = new RecurringCallbackTween(
+				this.createSprite.bind(
+					this,
+					key,
+					projectileCount,
+					windowSize,
+					loadedAssets,
+					startPosition,
+					textureName,
+					projectileType
+				),
+				200
+			);
+			
+			CoreTypes.fromFoesFireballRecurringTweensRegister.newItem(
+				this.foeUID,
+				recurringTween
+			);
+			GameLoop().pushTween(recurringTween);
+		}
 	}, this)
 }
 //ProjectileFactory.prototype = {}
@@ -75,17 +106,50 @@ ProjectileFactory.prototype.setHorizontalValues = function(len) {
  * @param {Number} projectileType
  */
 ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loadedAssets, startPosition, textureName, projectileType) {
-	/** @type {Sprite} */ // @ts-ignore
+	// HACK to be able to launch projectiles automatically from the foe ships
+	//=> we get their position when creating the sprite, instead of getting it upfront,
+	// as we do usually, when we press the trigger on the mainSpaceShip
+	let realStartPosition = this.fromFoe
+		? new CoreTypes.Point(
+			// @ts-ignore x is inherited
+			Player().foeSpaceShipsRegister.getItem(this.foeUID).x,
+			// @ts-ignore y is inherited
+			Player().foeSpaceShipsRegister.getItem(this.foeUID).y + Player().foeSpaceShipsRegister.getItem(this.foeUID).width / 2 - ProjectileFactory.prototype.projectileDimensions.y.value / 2
+		)
+		: startPosition;
+	
 	const fireball = new Projectile(
-		startPosition,
+		realStartPosition,
 		this.projectileDimensions,
 		// @ts-ignore loadedAssets.prop unknown
 		loadedAssets[2][textureName],
 		projectileType
 	)
+	if (this.fromFoe)
+		// @ts-ignore rotation is inherited
+		fireball.rotation = 180;
+		
 	CoreTypes.fireballsRegister.push(fireball.spriteObj);
 	
-	/** @type {Tween} */ // @ts-ignore
+	this.prepareAddToScene(
+		idx,
+		len,
+		windowSize,
+		realStartPosition,
+		fireball
+	);
+}
+
+/**
+ * @method addToScene
+ * @param {Number} idx
+ * @param {Number} len
+ * @param {CoreTypes.Dimension} windowSize
+ * @param {CoreTypes.Point} startPosition
+ * @param {Projectile} fireball 
+ */
+ProjectileFactory.prototype.prepareAddToScene = function(idx, len, windowSize, startPosition, fireball) {
+	/** @type {Tween} */ // @ts-ignore TileToggleMovingTween IS a Tween
 	const fireballTween = this.addToScene(
 		idx,
 		len,
@@ -93,6 +157,7 @@ ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loaded
 		startPosition,
 		fireball
 	);
+	
 	this.prepareCollisions(
 		fireball,
 		fireballTween
@@ -105,20 +170,20 @@ ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loaded
  * @param {Number} len
  * @param {CoreTypes.Dimension} windowSize
  * @param {CoreTypes.Point} startPosition
- * @param {Sprite}spriteObj 
+ * @param {Projectile} spriteObj 
  */
 ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPosition, spriteObj) {
 	
-	
 	const fireballTween = new TileToggleMovingTween(
 		windowSize,
+		// @ts-ignore TS doesn't know a thing about prototypal inheritance: Projectile IS a Sprite
 		spriteObj,
 		CoreTypes.TweenTypes.add,
 		startPosition,
-		new CoreTypes.Point(!this.moveTiles ? this.horizontalTweenValues[idx] : 0, -25),
+		new CoreTypes.Point(!this.moveTiles ? this.horizontalTweenValues[idx] : 0, this.fromFoe ? 25 : -25),
 		.4,
 		false,
-		weapons[this.projectileType].tileCount,
+		this.weaponDescriptors[this.projectileType].tileCount,
 		new CoreTypes.Point(this.moveTiles ? this.horizontalTweenValues[idx] / 2 : 0, 70),
 		14,
 		'invert',
@@ -133,18 +198,28 @@ ProjectileFactory.prototype.addToScene = function(idx, len, windowSize, startPos
 
 /**
  * @method prepareCollisions
- * @param {Sprite}spriteObj
+ * @param {Projectile} spriteObj
  * @param {Tween} fireballTween 
  */
 ProjectileFactory.prototype.prepareCollisions = function(spriteObj, fireballTween) {
 	let fireBallCollisionTest;
-	Object.values(Player().foeSpaceShipsRegister.cache).forEach(function(foeSpaceShipSpriteObj) {
-		fireBallCollisionTest = new fireBallCollisionTester(spriteObj, foeSpaceShipSpriteObj);
+	if (!this.fromFoe) {
+		Object.values(Player().foeSpaceShipsRegister.cache).forEach(function(foeSpaceShipSpriteObj) {
+			// @ts-ignore TS doesn't know a thing about prototypal inheritance: Projectile IS a Sprite
+			fireBallCollisionTest = new fireBallCollisionTester(spriteObj, foeSpaceShipSpriteObj);
+			GameLoop().pushCollisionTest(fireBallCollisionTest);
+			// collisionTestsRegister is a partial copy of the global collisionTest list
+			// it's used to clean the collision tests when a foeSpaceShip goes out of the screen
+			fireballTween.collisionTestsRegister.push(fireBallCollisionTest);
+		});
+	}
+	else {
+		// @ts-ignore TS doesn't know a thing about prototypal inheritance: Projectile IS a Sprite
+		fireBallCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, spriteObj, 'hostileHit');
+//		console.log('fireBallCollisionTest', fireBallCollisionTest);
 		GameLoop().pushCollisionTest(fireBallCollisionTest);
-		// collisionTestsRegister is a partial copy of the global collisionTest list
-		// it's used to clean the collision tests when a foeSpaceShip goes out of the screen
 		fireballTween.collisionTestsRegister.push(fireBallCollisionTest);
-	});
+	}
 }
 
 ProjectileFactory.prototype.projectileDimensions = new CoreTypes.Dimension(70, 70);

@@ -1,7 +1,7 @@
 /**
  * CoreTypes
  */
-//var PropertyCache = require('src/core/PropertyCache').ObjectCache;
+var PropertyCache = require('src/core/PropertyCache').ObjectCache;
 
 /**
  * @constructor Coord
@@ -130,6 +130,7 @@ const CoreTypes = {
 	fireballsTweensRegister : new Array(),
 	disposableSpritesRegister : new Array(),
 	disposableTweensRegister : new Array(),
+	fromFoesFireballRecurringTweensRegister : new PropertyCache('fromFoesFireballRecurringTweensRegister'),
 	tempAsyncCollisionsTests : new Array(),
 	clearedCollisionTests : new Set()				
 };

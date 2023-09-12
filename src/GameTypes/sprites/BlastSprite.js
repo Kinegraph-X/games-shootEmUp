@@ -7,14 +7,11 @@ const Sprite = require('src/GameTypes/sprites/Sprite');
 
 
 /**
- * @constructor LootSprite
+ * @constructor BlastSprite
  * @param {CoreTypes.Point} position
  * @param {PIXI.Texture} texture
- * FIXME: Explicitly type that :
- * @param {String} lootType		// {medikit | weapon}
  */
-const LootSprite = function(position, texture, lootType) {
-	 this.lootType = lootType;
+const BlastSprite = function(position, texture) {
 	 
 	 Sprite.call(this);
 	 
@@ -24,30 +21,32 @@ const LootSprite = function(position, texture, lootType) {
 	 this.width = this.defaulSpriteDimensions.x.value;
 	 this.height = this.defaulSpriteDimensions.y.value;
 }
-LootSprite.prototype = Object.create(Sprite.prototype);
+BlastSprite.prototype = Object.create(Sprite.prototype);
 
 /**
  * @static {String} name
  */
-LootSprite.prototype.name = 'LootSprite';
+BlastSprite.prototype.name = 'BlastSprite';
 
 /**
  * @method getSprite
  * @param {PIXI.Texture} texture
  * //@return {PIXI.Sprite}
  */
-LootSprite.prototype.getSprite = function(texture) {
-	// @ts-ignore
+BlastSprite.prototype.getSprite = function(texture) {
+	// @ts-ignore PIXI
 	const sprite = PIXI.Sprite.from(texture);
 	sprite.anchor.set(0.5);
+	// @ts-ignore blendMode
+	sprite.blendMode = PIXI.BLEND_MODES.ADD;
 	return sprite;
 }
 
 
-LootSprite.prototype.defaulSpriteDimensions = new CoreTypes.Dimension(64, 64);
+BlastSprite.prototype.defaulSpriteDimensions = new CoreTypes.Dimension(950, 950);
 
  
  
  
  
- module.exports = LootSprite;
+ module.exports = BlastSprite;

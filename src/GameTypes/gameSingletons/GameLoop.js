@@ -28,6 +28,8 @@ const GameLoop = function(windowSize) {
 	// @ts-ignore inherited method
 	this.createEvent('mainSpaceShipOutOfScreen');
 	// @ts-ignore inherited method
+	this.createEvent('mainSpaceShipHit');
+	// @ts-ignore inherited method
 	this.createEvent('mainSpaceShipDamaged');
 	// @ts-ignore inherited method
 	this.createEvent('mainSpaceShipPowerUp');
@@ -151,7 +153,8 @@ GameLoop.prototype.start = function() {
 				
 				if (!stepCount)
 					continue;
-				tween.nextStep(stepCount, stdFrameDuration, self.currentTime);
+				
+				let linkedTween = tween.nextStep(stepCount, stdFrameDuration, self.currentTime);
 				
 				if (tween.testOutOfScreen()) {
 					self.removeTween(tween);
@@ -165,7 +168,7 @@ GameLoop.prototype.start = function() {
 							// @ts-ignore implicitly inherited method
 							self[rule.action](rule.params[0], tween[rule.params[1]]);
 						}
-					})
+					});
 				}
 				
 				if (tween.ended) {

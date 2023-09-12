@@ -225,6 +225,13 @@ var classConstructor = function() {
 				gameLogic.handleMainSpaceShipOutOfScreen();
 			});
 			// @ts-ignore don't want to type callbacks
+			GameLoop().addEventListener('mainSpaceShipHit', function(e) {
+				gameLogic.handleMainSpaceShipHit(
+					e.data[1],
+					statusBar
+				);
+			});
+			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('mainSpaceShipDamaged', function(e) {
 				gameLogic.handleMainSpaceShipDamaged(
 					e.data[1],

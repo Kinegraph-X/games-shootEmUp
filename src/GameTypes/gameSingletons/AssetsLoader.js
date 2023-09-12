@@ -10,6 +10,12 @@ const manifest = {
 				{name : 'bgBack', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Blue Nebula/Blue Nebula 1 - 1024x1024.png'},
 				{name : 'bgMiddle', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Blue Nebula/Blue Nebula 6 - 1024x1024.png'},
 				{name : 'bgFront', srcs : 'plugins/ShootEmUp/assets/tileMaps/world/Starfields/Starfield-9 - 1024x1024.png'},
+				{name : 'plasmaOrange01', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Orange Plasma/Orange_Plasma_01.png'},
+				{name : 'plasmaOrange02', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Orange Plasma/Orange_Plasma_02.png'},
+				{name : 'plasmaOrange03', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Orange Plasma/Orange_Plasma_03.png'},
+				{name : 'plasmaGreen01', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Green Plasma/Green_Plasma_01.png'},
+				{name : 'plasmaGreen02', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Green Plasma/Green_Plasma_02.png'},
+				{name : 'plasmaGreen03', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Green Plasma/Green_Plasma_03.png'},
 				{name : 'statusBarLeft', srcs : 'plugins/ShootEmUp/assets/Status_Bar_Left.png'}
 			]
 		},
@@ -28,6 +34,7 @@ const manifest = {
 			name : 'flames',
 			assets : [
 				{name : 'flamesTilemap', srcs : 'plugins/ShootEmUp/assets/ships/Flames_tilemap.png'},
+				{name : 'foeFireballTilemap', srcs : 'plugins/ShootEmUp/assets/Foe_Fireball_Sprite.png'},
 				{name : 'fireballsTilemap', srcs : 'plugins/ShootEmUp/assets/Fireball_sprite_v2.png'},
 				{name : 'redFireballsTilemap', srcs : 'plugins/ShootEmUp/assets/RedFireballSprite.png'},
 				{name : 'multiFireSpearsSprite', srcs : 'plugins/ShootEmUp/assets/MultiFireSpearsSprite.png'},

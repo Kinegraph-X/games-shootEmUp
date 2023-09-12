@@ -65,7 +65,7 @@ Tween.prototype.testOutOfScreen = function() {
 	}
 	
 	if (this.target.name === 'fireballSprite') {		// fireballSprite must test the upper bound of the window
-		if (this.target.y - this.target.height / 2 < 0
+		if (this.target.y - this.target.height / 2 < -30
 			|| this.target.x - this.target.width / 2 < 0
 			|| this.target.x + this.target.width / 2 > this.windowSize.x.value) {
 			return true;

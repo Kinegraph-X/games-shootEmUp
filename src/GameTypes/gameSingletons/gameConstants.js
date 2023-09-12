@@ -206,6 +206,53 @@ const weapons = {
 }
 
 
+/**
+ * @type {{[key:Number] : WeaponDescriptor}} foeWeapons
+ * weapon types for foes in relation to damage
+ */
+const foeWeapons = {
+	0 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
+			'foeFireballTilemap'
+		],
+		6,
+		false
+	)
+}
+
+
+/**
+ * Plasma colors
+ * @type {{[key:String] : String}}
+ */
+const plasmaColors = {
+	'0' : 'Orange',
+	'1' : 'Green'
+}
+
+
+/**
+ * PlasmaBlast Descriptors
+ * @type {{[key:String] : Array<String>}}
+ */
+const plasmaBlastDescriptors = {
+	'Orange' : [
+		'plasmaOrange01',
+		'plasmaOrange02',
+		'plasmaOrange03'
+	],
+	'Green' : [
+		'plasmaGreen01',
+		'plasmaGreen02',
+		'plasmaGreen03'
+	]
+}
+
+
+
 const objectTypes = {
 	background : 'background',
 	statusBar : 'statusBar',
@@ -218,6 +265,7 @@ const objectTypes = {
 	greenExplosion : 'greenExplosion',
 	yellowExplosion : 'yellowExplosion',
 	loot : 'loot',
+	plasmaBlast : 'plasmaBlast'
 }
 
 
@@ -227,8 +275,11 @@ const gameConstants = {
 	mainSpaceShipLifePoints,
 	maxLootsByType,
 	weapons,
+	foeWeapons,
 	lootSpritesTextures,
-	objectTypes
+	objectTypes,
+	plasmaColors,
+	plasmaBlastDescriptors
 }
 
 module.exports = gameConstants

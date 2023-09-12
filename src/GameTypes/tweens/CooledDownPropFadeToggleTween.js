@@ -22,7 +22,7 @@ const CooledDownPropFadeToggleTween = function(target, type, affectedProp, offse
 	this.transformInterval = transformInterval;
 }
 CooledDownPropFadeToggleTween.prototype = Object.create(CoolDownTween.prototype);
-CoolDownTween.prototype.objectType = 'CooledDownPropFadeToggleTween';
+CooledDownPropFadeToggleTween.prototype.objectType = 'CooledDownPropFadeToggleTween';
 
 /**
  * @method nextStep
@@ -37,6 +37,8 @@ CooledDownPropFadeToggleTween.prototype.nextStep = function(stepCount, frameDura
 	
 	// @ts-ignore currentPartialStep is inherited
 	this.currentPartialStep += stepCount;
+	// @ts-ignore currentFrame is inherited
+	this.currentFrame += stepCount;
 	
 	// @ts-ignore currentPartialStep is inherited
 	if (this.currentPartialStep >= this.transformInterval) {
@@ -53,8 +55,6 @@ CooledDownPropFadeToggleTween.prototype.nextStep = function(stepCount, frameDura
 		this.currentPartialStep = 0;
 	}
 
-	// @ts-ignore currentFrame is inherited
-	this.currentFrame += stepCount;
 	// @ts-ignore transformInterval is inherited
 	let offset = this.offset / this.transformInterval;
 	

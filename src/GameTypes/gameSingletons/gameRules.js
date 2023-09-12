@@ -23,8 +23,8 @@ const ruleSet = {
 	],
 	mainSpaceShipTestCollision : [
 		new GameRule('lootSprite', 'trigger', ['mainSpaceShipPowerUp',  'mainSpaceShipSprite', 'referenceObj'], 'powerUp'),
-		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipDamaged', 'mainSpaceShipSprite', 'referenceObj'], 'hostile')
-		
+		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipDamaged', 'mainSpaceShipSprite', 'referenceObj'], 'hostile'),
+		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipHit', 'mainSpaceShipSprite', 'referenceObj'], 'hostileHit')
 	],
 	foeSpaceShipTestCollision : [new GameRule('foeSpaceShipSprite', 'trigger', ['foeSpaceShipDamaged', 'fireballSprite', 'referenceObj'], null)],
 }

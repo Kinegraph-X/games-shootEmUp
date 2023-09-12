@@ -4,7 +4,7 @@ const AssetsLoader = require('src/GameTypes/gameSingletons/AssetsLoader');
 /** @type {Array<Object>} */
 let loadedAssets;
 
-const {levels, foeDescriptors, mainSpaceShipLifePoints, lootSpritesTextures, maxLootsByType, weapons, objectTypes} = require('src/GameTypes/gameSingletons/gameConstants');
+const {levels, foeDescriptors, mainSpaceShipLifePoints, lootSpritesTextures, maxLootsByType, weapons, objectTypes, plasmaColors, plasmaBlastDescriptors} = require('src/GameTypes/gameSingletons/gameConstants');
 const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell} = require('src/GameTypes/grids/gridManager');
 const gameLogic = require('src/GameTypes/gameSingletons/gameLogic');
 
@@ -20,10 +20,12 @@ const FoeSpaceShip = require('src/GameTypes/sprites/FoeSpaceShip');
 const StatusBarSprite = require('src/GameTypes/sprites/StatusBarSprite');
 const ExplosionSprite = require('src/GameTypes/sprites/ExplosionSprite');
 const LootSprite = require('src/GameTypes/sprites/LootSprite');
+const BlastSprite = require('src/GameTypes/sprites/BlastSprite');
 
 const Tween = require('src/GameTypes/tweens/Tween');
 const TileTween = require('src/GameTypes/tweens/TileTween');
 const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
+const DelayedCooledDownPropFadeToggleTween = require('src/GameTypes/tweens/DelayedCooledDownPropFadeToggleTween');
 
 const ProjectileFactory = require('src/GameTypes/factories/ProjectileFactory');
 
@@ -75,8 +77,10 @@ GameObjectFactory.prototype.newObject = function(objectType, addToScene = true, 
 			break;
 		case objectTypes.loot:
 			return this.createLoot(refToSprite);
+		case objectTypes.plasmaBlast:
+			return this.createPlasmaBlast(refToSprite);
 		default:
-			console.error('Attempting to create a game object with a name that has not been defined.')
+			console.error('Attempting to create a game object with a name that has not been defined: ' + objectType)
 	}
 }
 
@@ -101,20 +105,25 @@ GameObjectFactory.prototype.createStatusBar = function() {
 
 /**
  * @method createProjectiles
+ * @param {boolean} fromFoe
+ * @param {String} foeUID
  * @return Void
  */
-GameObjectFactory.prototype.createProjectiles = function() {
+GameObjectFactory.prototype.createProjectiles = function(fromFoe = false, foeUID = '') {
 	const startPosition = new CoreTypes.Point(
-		// @ts-ignore x is inherited
-		Player().mainSpaceShip.x + Player().mainSpaceShip.defaultSpaceShipDimensions.x.value / 2,
-		// @ts-ignore y is inherited
-		Player().mainSpaceShip.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
-	);
+			// @ts-ignore x is inherited
+			Player().mainSpaceShip.x + Player().mainSpaceShip.defaultSpaceShipDimensions.x.value / 2,
+			// @ts-ignore y is inherited
+			Player().mainSpaceShip.y - ProjectileFactory.prototype.projectileDimensions.y.value + 92		// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
+		);
+	
 	new ProjectileFactory(
 		GameLoop().windowSize,
 		this.loadedAssets,
 		startPosition,
-		GameState().currentWeapon
+		fromFoe ? 0 : GameState().currentWeapon,
+		fromFoe,
+		foeUID
 	);
 }
 
@@ -149,6 +158,10 @@ GameObjectFactory.prototype.createFoeSpaceShip = function(metadata) {
 	const foeSpaceShipTween = new Tween(GameLoop().windowSize, foeSpaceShip, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 7), .1, false);
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsTweensRegister.setItem(foeSpaceShip.UID, foeSpaceShipTween);
+	
+	if (parseInt(randomFoe) > 0)
+		// @ts-ignore UID is inherited
+		this.createProjectiles(true, foeSpaceShip.UID);
 	
 	GameLoop().addAnimatedSpriteToScene(foeSpaceShip, foeSpaceShipTween);
 	return foeSpaceShip;
@@ -201,6 +214,7 @@ GameObjectFactory.prototype.createBg = function() {
 		bgZoom,
 		null
 	);
+	worldMapBack.name = 'bgLayer';
 	
 	const worldMapMiddle = new TilingSprite(
 		new CoreTypes.Dimension(GameLoop().windowSize.x.value, GameLoop().windowSize.y.value),
@@ -209,6 +223,7 @@ GameObjectFactory.prototype.createBg = function() {
 		1,
 		null
 	);
+	worldMapMiddle.name = 'bgLayer';
 	// @ts-ignore blendMode
 	worldMapMiddle.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 	
@@ -219,6 +234,7 @@ GameObjectFactory.prototype.createBg = function() {
 		.3,
 		null
 	);
+	worldMapFront.name = 'bgLayer';
 	// @ts-ignore blendMode
 	worldMapFront.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 	
@@ -264,6 +280,8 @@ GameObjectFactory.prototype.createShield = function(spaceShip) {
 	shield.name = 'shieldSprite';
 	// @ts-ignore zoom is inherited
 	shield.zoom = zoom;
+	// @ts-ignore blendMode
+	shield.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 	
 	const shieldTween = new TileToggleTween(
 		GameLoop().windowSize,
@@ -435,6 +453,61 @@ GameObjectFactory.prototype.createLoot = function(spaceShip) {
 	return loot;
 }
 
+/**
+ * @method createPlasmaBlast
+ * @param {Sprite} spaceShip
+ * @return Void
+ */
+GameObjectFactory.prototype.createPlasmaBlast = function(spaceShip) {
+	const rotation = Math.random() * 360;
+	for (let i = 0; i < 2; i++) {
+		/** @type {BlastSprite} */
+		let blast,
+		/** @type {DelayedCooledDownPropFadeToggleTween} */
+		blastTween;
+		blast = new BlastSprite(
+			new CoreTypes.Point(
+				spaceShip.x,
+				spaceShip.y
+			),
+			// @ts-ignore loadedAssets.prop unknown
+			this.loadedAssets[0][plasmaBlastDescriptors[this.getBlastColor(spaceShip.foeType)][i]]
+		);
+		// @ts-ignore TS doesn't know a thing to prototypal inheritance
+		blast.scaleX = 1 + i;
+		// @ts-ignore TS doesn't know a thing to prototypal inheritance
+		blast.scaleY = 1 + i;
+		// @ts-ignore TS doesn't know a thing to prototypal inheritance
+		blast.rotation = rotation;
+		blastTween = new DelayedCooledDownPropFadeToggleTween(
+			// @ts-ignore TS doesn't know a thing to prototypal inheritance
+			blast,
+			CoreTypes.TweenTypes.add,
+			'alpha',
+			-1,
+			15,
+			function() {
+				GameLoop().removeSpriteFromScene(blast);
+			},
+			15,
+			i * 15
+		);
+		GameLoop().addAnimatedSpriteToScene(blast, blastTween);
+	}
+	
+//	GameLoop().stage.addChild(blast.spriteObj);
+	
+//	CoreTypes.disposableSpritesRegister.push(explosion);
+}
+
+
+/**
+ * @method getBlastColor
+ * @param {Number} foeType
+ */
+GameObjectFactory.prototype.getBlastColor = function(foeType) {
+	return foeType % 2 === 0 ? 'Orange' : 'Green';
+}
 
 /**
  * @method getRandomFoe

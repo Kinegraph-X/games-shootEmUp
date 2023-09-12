@@ -28,7 +28,9 @@ const GameObjectsFactory = require('src/GameTypes/factories/GameObjectsFactory')
 
 const Tween = require('src/GameTypes/tweens/Tween');
 const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
+const CoolDownTween = require('src/GameTypes/tweens/CoolDownTween'); 
 const CooledDownPropFadeToggleTween = require('src/GameTypes/tweens/CooledDownPropFadeToggleTween');
+const DelayedCooledDownPropFadeToggleTween = require('src/GameTypes/tweens/DelayedCooledDownPropFadeToggleTween');
 
 const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
 
@@ -91,6 +93,7 @@ const handleFoeSpaceShipDestroyed = function(
 	) {
 	
 	GameObjectsFactory().newObject(objectTypes.greenExplosion, true, [], damagedFoeSpaceShip);
+	GameObjectsFactory().newObject(objectTypes.plasmaBlast, true, [], damagedFoeSpaceShip);
 	
 	// foeSpaceShipSprite removal from the gameLoop & scene
 	// @ts-ignore UID is inherited
@@ -103,6 +106,15 @@ const handleFoeSpaceShipDestroyed = function(
 	Player().foeSpaceShipsCollisionTestsRegister.deleteItem(damagedFoeSpaceShip.UID);
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
+	
+	// Remove recurring fireball tween
+	if (parseInt(damagedFoeSpaceShip.foeType) > 0) {
+		// @ts-ignore UID is inherited
+		GameLoop().removeTween(CoreTypes.fromFoesFireballRecurringTweensRegister.getItem(damagedFoeSpaceShip.UID))
+		// @ts-ignore UID is inherited
+		CoreTypes.fromFoesFireballRecurringTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
+	}
+	
 	GameLoop().removeSpriteFromScene(damagedFoeSpaceShip);
 	
 	if (Math.random() <= damagedFoeSpaceShip.lootChance)
@@ -118,6 +130,35 @@ const handleFoeSpaceShipDestroyed = function(
 
 
 
+
+/**
+ * @method handleMainSpaceShipHit
+ * A different method than the handleMainSpaceShipDamaged,
+ * as the "damaged" method expects the collided Sprite
+ * to be a FoeSpaceShip (and hence, to be damageable...)
+ * @param {Projectile} foeFireball
+ * @param {StatusBarSprite} statusBar
+ * @return Void
+ */
+const handleMainSpaceShipHit = function(
+		foeFireball,
+		statusBar
+	) {
+	removeFireBallFromStage(foeFireball);
+	Player().mainSpaceShip.decrementHealth();
+	GameObjectsFactory().newObject(objectTypes.shield, true, [], Player().mainSpaceShip);
+	handleInvicibleMainSpaceShip();
+	
+	if (Player().mainSpaceShip.hasBeenDestroyed()) {
+		handleMainSpaceShipDestroyed(statusBar);
+	}
+	else {
+		// only if we're NOT dead, visually decrement the life-bar (else we hide it, for now)
+		// @ts-ignore tilePositionX is inherited
+		statusBar.decrementHealth();
+		createBlinkingSpaceShip(Player().mainSpaceShip);
+	}
+}
 
 /**
  * @method handleMainSpaceShipDamaged
@@ -145,34 +186,23 @@ const handleMainSpaceShipDamaged = function(
 		}
 	);
 	
+	handleInvicibleMainSpaceShip();
+	handleFoeSpaceShipDamaged(
+		damagedFoeSpaceShip,
+		// @ts-ignore FIXME: HACK
+		{
+			damage : 1
+		},
+		statusBar.textForScoreSpriteObj[1]
+	);
 	
 	if (Player().mainSpaceShip.hasBeenDestroyed()) {
-		handleInvicibleMainSpaceShip();
-		handleFoeSpaceShipDamaged(
-			damagedFoeSpaceShip,
-			// @ts-ignore FIXME: HACK
-			{
-				damage : 1
-			},
-			statusBar.textForScoreSpriteObj
-		);
 		handleMainSpaceShipDestroyed(statusBar);
 	}
 	else {
-		// only if we're not dead, visually decrement the life-bar
+		// only if we're NOT dead, visually decrement the life-bar (else we hide it, for now)
 		// @ts-ignore tilePositionX is inherited
 		statusBar.decrementHealth();
-		handleInvicibleMainSpaceShip();
-		
-		handleFoeSpaceShipDamaged(
-			damagedFoeSpaceShip,
-			// @ts-ignore FIXME: HACK
-			{
-				damage : 1
-			},
-			statusBar.textForScoreSpriteObj
-		);
-		
 		createBlinkingSpaceShip(Player().mainSpaceShip);
 	}
 }
@@ -371,7 +401,7 @@ const handleLoot = function(
 const handleDisposableSpriteAnimationEnded = function(tween) {
 	// CooldownTweens don't imply removing the sprite from the scene
 	// @ts-ignore objectType: implicit inheritance
-	if (tween.objectType === 'CoolDownTween')
+	if (tween instanceof CoolDownTween)
 		return;
 	
 	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(tween.target);
@@ -406,6 +436,8 @@ const createBlinkingSpaceShip = function(
 	);
 	GameLoop().pushTween(blinkTween);
 }
+
+
 
 
 
@@ -491,6 +523,7 @@ function addUIDMarkerToEntity(
 module.exports = {
 	handleFoeSpaceShipDamaged,
 	handleFoeSpaceShipOutOfScreen,
+	handleMainSpaceShipHit,
 	handleMainSpaceShipDamaged,
 	handleFireballOutOfScreen,
 	handleMainSpaceShipOutOfScreen,
