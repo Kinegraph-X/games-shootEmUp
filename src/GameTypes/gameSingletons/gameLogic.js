@@ -241,8 +241,12 @@ const handleMainSpaceShipDestroyed = function(
  * @mthod handleInvicibleSpaceShip
  */
 const handleInvicibleMainSpaceShip = function() {
-	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
+	const testsToRemove = Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache);
+	Array.prototype.push.apply(testsToRemove, Object.values(CoreTypes.fromFoesFireballsCollisionTestsRegister.cache));
+	GameLoop().markCollisionTestsForRemoval(testsToRemove);
+	
 	Player().foeSpaceShipsCollisionTestsRegister.reset();
+	CoreTypes.fromFoesFireballsCollisionTestsRegister.reset();
 	
 	for (let foeSpaceShipSpriteObj of Object.values(Player().foeSpaceShipsRegister.cache)) {
 		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister = 
@@ -366,6 +370,11 @@ const removeFireBallFromStage = function(
 	CoreTypes.fireballsRegister.splice(spritePos, 1);
 	GameLoop().removeTween(CoreTypes.fireballsTweensRegister[spritePos]);
 	CoreTypes.fireballsTweensRegister.splice(spritePos, 1);
+	
+	// @ts-ignore UID is inherited
+	if (CoreTypes.fromFoesFireballsCollisionTestsRegister.hasItem(explodedFireball.UID))
+		// @ts-ignore UID is inherited
+		CoreTypes.fromFoesFireballsCollisionTestsRegister.deleteItem(explodedFireball.UID)
 	
 	GameLoop().removeSpriteFromScene(explodedFireball, true);		// might fail if already collided => noError
 }

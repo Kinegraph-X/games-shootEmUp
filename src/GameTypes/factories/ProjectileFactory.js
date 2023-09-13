@@ -63,7 +63,7 @@ const ProjectileFactory = function(windowSize, loadedAssets, startPosition, proj
 				200
 			);
 			
-			CoreTypes.fromFoesFireballRecurringTweensRegister.newItem(
+			CoreTypes.fromFoesFireballRecurringTweensRegister.setItem(
 				this.foeUID,
 				recurringTween
 			);
@@ -216,9 +216,11 @@ ProjectileFactory.prototype.prepareCollisions = function(spriteObj, fireballTwee
 	else {
 		// @ts-ignore TS doesn't know a thing about prototypal inheritance: Projectile IS a Sprite
 		fireBallCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, spriteObj, 'hostileHit');
-//		console.log('fireBallCollisionTest', fireBallCollisionTest);
 		GameLoop().pushCollisionTest(fireBallCollisionTest);
+		
 		fireballTween.collisionTestsRegister.push(fireBallCollisionTest);
+		// @ts-ignore UID is inherited
+		CoreTypes.fromFoesFireballsCollisionTestsRegister.setItem(spriteObj.UID, fireBallCollisionTest);
 	}
 }
 

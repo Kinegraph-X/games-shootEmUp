@@ -130,6 +130,7 @@ const CoreTypes = {
 	fireballsTweensRegister : new Array(),
 	disposableSpritesRegister : new Array(),
 	disposableTweensRegister : new Array(),
+	fromFoesFireballsCollisionTestsRegister : new PropertyCache('fromFoesFireballsCollisionTestsRegister'),
 	fromFoesFireballRecurringTweensRegister : new PropertyCache('fromFoesFireballRecurringTweensRegister'),
 	tempAsyncCollisionsTests : new Array(),
 	clearedCollisionTests : new Set()				
