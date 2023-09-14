@@ -537,7 +537,7 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 			// @ts-ignore levelTheme isn't typed
 			loadedAssets[4].levelTheme.stop();
 			// @ts-ignore levelTheme isn't typed
-			loadedAssets[4].bossTheme.play({volume : .5, loop : true});
+			loadedAssets[4].bossTheme.play({volume : .2, loop : true});
 			GameObjectsFactory().newObject(objectTypes.bossSpaceShip);
 		}
 		else
@@ -549,7 +549,7 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 			GameObjectsFactory().newObject(objectTypes.title, true, ['YOU WIN']);
 		else {
 			// @ts-ignore levelTheme isn't typed
-			loadedAssets[4].levelTheme.play({volume : .5, loop : true});
+			loadedAssets[4].levelTheme.play({volume : .2, loop : true});
 			// @ts-ignore levelTheme isn't typed
 			loadedAssets[4].bossTheme.stop();
 			GameState().incrementLevel();
