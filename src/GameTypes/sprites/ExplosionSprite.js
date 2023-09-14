@@ -15,23 +15,27 @@ const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
  */
 const ExplosionSprite = function(position, texture, dimensions) {
 	Sprite.call(this);
+	this.objectType = 'ExplosionSprite';
 	this.spriteObj = this.getSprite(dimensions, texture);
 	 
 	this.x = position.x.value;
 	this.y = position.y.value;
 }
 ExplosionSprite.prototype = Object.create(Sprite.prototype);
+/**
+ * @static {String} objectType
+ */
+ExplosionSprite.prototype.objectType = 'ExplosionSprite';
 
 /**
  * @method getSprite
  * @param {CoreTypes.Dimension} dimensions
  * @param {PIXI.Texture} texture
-  * //@return {PIXI.Sprite}
+ * @return {TilingSprite}
  */
 ExplosionSprite.prototype.getSprite = function(dimensions, texture) {
 	 // Not sure we'll keep this "TilingSprite" type.
 	 // As it inherits from Sprite, it looks quite redundant, structurally talking
-	 // @ts-ignore
 	const sprite = new TilingSprite(
 		dimensions || this.defaultExplosionDimensions,
 		texture
@@ -41,10 +45,7 @@ ExplosionSprite.prototype.getSprite = function(dimensions, texture) {
 	return sprite.spriteObj;
 }
 
-/**
- * @static {String} objectType
- */
-ExplosionSprite.prototype.objectType = 'explosionSprite';
+
 
 /**
  * @static {CoreTypes.Dimension} objectType

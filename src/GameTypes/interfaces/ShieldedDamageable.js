@@ -39,10 +39,12 @@ ShieldedDamageable.prototype.decrementShield = function() {
 
 /**
  * @method handleDamage
+ * Handles damages, or healings when colliding with a Sprite with negative damages
  * @param {Wounder} sprite
  * @return Void
  */
 ShieldedDamageable.prototype.handleDamage = function(sprite) {
+	// Case of a "healer" damage: don't grow beyond the max
 	if (this.shieldCharge - sprite.damage > mainSpaceShipLifePoints[GameState().currentLevel])
 		return;
 	
@@ -51,8 +53,10 @@ ShieldedDamageable.prototype.handleDamage = function(sprite) {
 		return;
 	}
 	else if (this.shieldCharge === 1) {
-		if (sprite.damage > 0)
+		if (sprite.damage > 0) {
 			this.shieldCharge = 0;
+			this.healthPoints -= 1;
+		}
 		else {
 			this.shieldCharge -= sprite.damage;
 			return;

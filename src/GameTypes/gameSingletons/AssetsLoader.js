@@ -55,6 +55,8 @@ const manifest = {
 				{name : 'greenExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Explosion_Sprite.png'},
 				{name : 'yellowExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Yellow_Explosion_Sprite.png'},
 				{name : 'shieldTilemap', srcs : 'plugins/ShootEmUp/assets/Shield_Sprite.png'},
+				{name : 'bigShieldTilemap', srcs : 'plugins/ShootEmUp/assets/Big_Shield_Sprite.png'},
+				{name : 'bigExplosionTilemap', srcs : 'plugins/ShootEmUp/assets/Big_Explosion_Sprite.png'},
 				{name : 'medikitTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Medikit_Sprite.png'},
 				{name : 'weaponTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Weapon_Sprite.png'}
 			]

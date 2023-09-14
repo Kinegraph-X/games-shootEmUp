@@ -27,7 +27,6 @@ const LootSprite = function(position, texture, lootType) {
 	 this.height = this.defaulSpriteDimensions.y.value;
 }
 LootSprite.prototype = Object.create(Sprite.prototype);
-
 /**
  * @static {String} objectType
  */

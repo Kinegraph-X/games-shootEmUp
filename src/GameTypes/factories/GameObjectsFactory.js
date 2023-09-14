@@ -2,7 +2,10 @@ const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 
 const AssetsLoader = require('src/GameTypes/gameSingletons/AssetsLoader');
 /** @type {Array<Object>} */
-let loadedAssets;
+let loadedAssets = null;
+AssetsLoader.then(function(loadedBundles) {
+	loadedAssets = loadedBundles;
+});
 
 const {levels, foeDescriptors, mainSpaceShipLifePoints, lootSpritesTextures, maxLootsByType, weapons, objectTypes, plasmaColors, plasmaBlastDescriptors} = require('src/GameTypes/gameSingletons/gameConstants');
 const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell} = require('src/GameTypes/grids/gridManager');
@@ -22,6 +25,8 @@ const StatusBarSprite = require('src/GameTypes/sprites/StatusBarSprite');
 const ExplosionSprite = require('src/GameTypes/sprites/ExplosionSprite');
 const LootSprite = require('src/GameTypes/sprites/LootSprite');
 const BlastSprite = require('src/GameTypes/sprites/BlastSprite');
+const BigShield = require('src/GameTypes/sprites/BigShield');
+const BigExplosion = require('src/GameTypes/sprites/BigExplosion');
 
 const Tween = require('src/GameTypes/tweens/Tween');
 const TileTween = require('src/GameTypes/tweens/TileTween');
@@ -34,11 +39,7 @@ const ProjectileFactory = require('src/GameTypes/factories/ProjectileFactory');
  * @constructor GameObjectFactory
 */
 const GameObjectFactory = function() {
-	this.loadedAssets = new Array();
-	const self = this;
-	AssetsLoader.then(function(loadedAssets) {
-		self.loadedAssets = loadedAssets;
-	});
+
 }
 //GameObjectFactory.prototype = {};
 
@@ -70,8 +71,7 @@ GameObjectFactory.prototype.newObject = function(objectType, addToScene, metadat
 		case objectTypes.bossSpaceShip:
 			return this.createBossSpaceShip(metadata);
 		case objectTypes.shield:
-			// @ts-ignore: metadata[0] is {Boolean}, not Union type 		// HACK: FIXME
-			this.createShield(refToSprite, metadata[0]);
+			this.createShield(refToSprite);
 			break;
 		case objectTypes.smallExplosion:
 			this.createSmallExplosion(refToSprite);
@@ -81,6 +81,12 @@ GameObjectFactory.prototype.newObject = function(objectType, addToScene, metadat
 			break;
 		case objectTypes.yellowExplosion:
 			this.createYellowExplosion(refToSprite);
+			break;
+		case objectTypes.bigShield:
+			this.createBigShield(refToSprite);
+			break;
+		case objectTypes.bigExplosion:
+			this.createBigExplosion(refToSprite);
 			break;
 		case objectTypes.loot:
 			return this.createLoot(refToSprite);
@@ -135,8 +141,8 @@ GameObjectFactory.prototype.createStatusBar = function() {
 	const statusBar = new StatusBarSprite(
 		GameLoop().windowSize,
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[0].statusBarHealth,
-		this.loadedAssets[0].statusBarShield
+		loadedAssets[0].statusBarHealth,
+		loadedAssets[0].statusBarShield
 	);
 	
 	GameLoop().addSpriteToScene(statusBar.gameStatusHealthSpriteObj);
@@ -165,7 +171,7 @@ GameObjectFactory.prototype.createProjectiles = function(fromFoe, foeUID, isBoss
 	
 	new ProjectileFactory(
 		GameLoop().windowSize,
-		this.loadedAssets,
+		loadedAssets,
 		startPosition,
 		fromFoe ? GameState().currentLevel - 1 : GameState().currentWeapon,
 		fromFoe,
@@ -186,14 +192,14 @@ GameObjectFactory.prototype.createFoeSpaceShip = function(metadata) {
 		gridCoords.x[foeCell.x] + cellSize / 2,
 		gridCoords.y[foeCell.y] - cellSize * 2
 	);
-	const randomFoeSeed = GameState().currentLevel < 3 ? Object.keys(this.loadedAssets[1]).length - 4 : Object.keys(this.loadedAssets[1]).length - 3;
+	const randomFoeSeed = GameState().currentLevel < 3 ? Object.keys(loadedAssets[1]).length - 4 : Object.keys(loadedAssets[1]).length - 3;
 	const randomFoe = this.getRandomFoe(randomFoeSeed);
 	const hasShield = parseInt(randomFoe) > 0 && metadata[0] <= levels[GameState().currentLevel].shieldedFoeCount - 1;
 	
 	const foeSpaceShip = new FoeSpaceShip(
 		foePosition,
 		foeCell,
-		this.loadedAssets[1]['foeSpaceShip0' + randomFoe + (hasShield ? 'Shielded' : '')],
+		loadedAssets[1]['foeSpaceShip0' + randomFoe + (hasShield ? 'Shielded' : '')],
 		randomFoe
 	);
 	if (hasShield) {
@@ -235,13 +241,14 @@ GameObjectFactory.prototype.createBossSpaceShip = function(metadata) {
 	};
 	const foePosition = new CoreTypes.Point(
 		gridCoords.x[foeCell.x] + cellSize / 2,
-		gridCoords.y[foeCell.y] - cellSize * 2
+		gridCoords.y[foeCell.y] - cellSize * 2 + 100	// MAGIC NUMBER to go lower than the grid (Boss is too big to fit in)
 	);
 	
 	const bossSpaceShip = new BossSpaceShip(
 		foePosition,
 		foeCell,
-		this.loadedAssets[2]['bossSpaceShip0' + GameState().currentLevel.toString()],
+		// @ts-ignore prop unknown
+		loadedAssets[2]['bossSpaceShip0' + GameState().currentLevel.toString()],
 		(GameState().currentLevel + 1).toString() 		// foeType is minimum 2 as the Sprite can fire projectiles (auto removal of the recurring tween)
 	);
 	
@@ -281,9 +288,9 @@ GameObjectFactory.prototype.createMainSpaceShip = function() {
 	const mainSpaceShipSprite = new MainSpaceShip(
 		mainSpaceShipStartPosition,
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[1].mainSpaceShip,
+		loadedAssets[1].mainSpaceShip,
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[3].flamesTilemap,
+		loadedAssets[3].flamesTilemap,
 		mainSpaceShipLifePoints['1']
 	);
 	const flameTween = new TileToggleTween(
@@ -312,7 +319,7 @@ GameObjectFactory.prototype.createBg = function() {
 	const worldMapBack = new TilingSprite(
 		new CoreTypes.Dimension(GameLoop().windowSize.x.value, GameLoop().windowSize.y.value),
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[0].bgBack,
+		loadedAssets[0].bgBack,
 		bgZoom,
 		null
 	);
@@ -322,7 +329,7 @@ GameObjectFactory.prototype.createBg = function() {
 	const worldMapMiddle = new TilingSprite(
 		new CoreTypes.Dimension(GameLoop().windowSize.x.value, GameLoop().windowSize.y.value),
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[0].bgMiddle,
+		loadedAssets[0].bgMiddle,
 		1,
 		null
 	);
@@ -334,7 +341,7 @@ GameObjectFactory.prototype.createBg = function() {
 	const worldMapFront = new TilingSprite(
 		new CoreTypes.Dimension(GameLoop().windowSize.x.value, GameLoop().windowSize.y.value),
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[0].bgFront,
+		loadedAssets[0].bgFront,
 		.3,
 		null
 	);
@@ -355,11 +362,9 @@ GameObjectFactory.prototype.createBg = function() {
 /**
  * @method createShield
  * @param {Sprite} spaceShip
- * @param {Boolean} isBoss
  * @return Void
  */
-GameObjectFactory.prototype.createShield = function(spaceShip, isBoss) {
-	let zoom = 1;
+GameObjectFactory.prototype.createShield = function(spaceShip) {
 	let shieldPosition;
 	
 	if (spaceShip.objectType === 'MainSpaceShip') {
@@ -379,12 +384,11 @@ GameObjectFactory.prototype.createShield = function(spaceShip, isBoss) {
 	const shield = new ExplosionSprite(
 		shieldPosition,
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[3].shieldTilemap,
+		loadedAssets[3].shieldTilemap,
 		new CoreTypes.Dimension(200, 200)
 	);
 	shield.objectType = 'ShieldSprite';
-	// @ts-ignore zoom is inherited
-	shield.zoom = zoom;
+
 	// @ts-ignore blendMode
 	shield.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
 	
@@ -407,6 +411,81 @@ GameObjectFactory.prototype.createShield = function(spaceShip, isBoss) {
 }
 
 /**
+ * @method createBigShield
+ * @param {Sprite} spaceShip
+ * @return Void
+ */
+GameObjectFactory.prototype.createBigShield = function(spaceShip) {
+	let shieldPosition;
+	
+	shieldPosition = new CoreTypes.Point(
+		spaceShip.x,
+		spaceShip.y + 20  	// MAGIC NUMBER: shield is not quite centered on actual sprite images
+	);
+	
+	const shield = new BigShield(
+		shieldPosition
+	);
+
+	// @ts-ignore blendMode
+	shield.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
+	
+	const shieldTween = new TileToggleTween(
+		GameLoop().windowSize,
+		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
+		shield,
+		CoreTypes.TweenTypes.add,
+		new CoreTypes.Point(0, 560),
+		1,
+		false,
+		4,
+		7,
+		null,
+		true
+	);
+	
+	GameLoop().addAnimatedSpriteToScene(shield, shieldTween);
+	CoreTypes.disposableSpritesRegister.push(shield);
+}
+
+/**
+ * @method createBigExplosion
+ * @param {Sprite} spaceShip
+ * @return Void
+ */
+GameObjectFactory.prototype.createBigExplosion = function(spaceShip) {
+
+	let explosionPosition = new CoreTypes.Point(
+		spaceShip.x,
+		spaceShip.y + 20  	// MAGIC NUMBER: explosion is not quite centered on actual sprite images
+	);
+	
+	const explosion = new BigExplosion(
+		explosionPosition
+	);
+
+	// @ts-ignore blendMode
+	explosion.spriteObj.blendMode = PIXI.BLEND_MODES.ADD;
+	
+	const explosionTween = new TileToggleTween(
+		GameLoop().windowSize,
+		// @ts-ignore : TS doesn't understand anything to prototypal inheritance
+		explosion,
+		CoreTypes.TweenTypes.add,
+		new CoreTypes.Point(640, 0),
+		1,
+		false,
+		9,
+		15,
+		null,
+		true
+	);
+	
+	GameLoop().addAnimatedSpriteToScene(explosion, explosionTween);
+	CoreTypes.disposableSpritesRegister.push(explosion);
+}
+
+/**
  * @method createSmallExplosion
  * @param {Sprite} spaceShip
  * @return Void
@@ -418,7 +497,7 @@ GameObjectFactory.prototype.createSmallExplosion = function(spaceShip) {
 			spaceShip.y + spaceShip.height - this.getRandomExplosionOffset(spaceShip.height) - 84								// WARNING: magic number : the mainSpaceShip's sprite doesn't occupy the whole height of its container
 		),
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[3].impactTilemap,
+		loadedAssets[3].impactTilemap,
 		new CoreTypes.Dimension(32, 32)
 	);
 	const explosionTween = new TileToggleTween(
@@ -453,7 +532,7 @@ GameObjectFactory.prototype.createGreenExplosion = function(spaceShip) {
 	const explosion = new ExplosionSprite(
 		startPosition,
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[3].greenExplosionTilemap,
+		loadedAssets[3].greenExplosionTilemap,
 		null
 	);
 	// @ts-ignore scaleX is inherited
@@ -491,7 +570,7 @@ GameObjectFactory.prototype.createYellowExplosion = function(spaceShip) {
 			spaceShip.y + spaceShip.height / 2 - this.getRandomExplosionOffset(spaceShip.height / 8)
 		),
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[3].yellowExplosionTilemap,
+		loadedAssets[3].yellowExplosionTilemap,
 		null
 	);
 	// @ts-ignore
@@ -535,7 +614,7 @@ GameObjectFactory.prototype.createLoot = function(spaceShip) {
 			spaceShip.y
 		),
 		// @ts-ignore loadedAssets.prop unknown
-		this.loadedAssets[3][lootTextureName + 'Tilemap'],
+		loadedAssets[3][lootTextureName + 'Tilemap'],
 		lootTextureName
 	);
 	
@@ -577,7 +656,7 @@ GameObjectFactory.prototype.createPlasmaBlast = function(spaceShip, isBoss) {
 				spaceShip.y
 			),
 			// @ts-ignore loadedAssets.prop unknown
-			this.loadedAssets[0][plasmaBlastDescriptors[this.getBlastColor(spaceShip.foeType)][i]]
+			loadedAssets[0][plasmaBlastDescriptors[this.getBlastColor(spaceShip.foeType)][i]]
 		);
 		if (isBoss)
 			blast.spriteObj.alpha = 1.75;

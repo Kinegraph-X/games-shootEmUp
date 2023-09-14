@@ -98,7 +98,19 @@ const TweenTypes = {
 
 
 
-
+const typeNames = {
+	BlastSprite : 'BlastSprite',
+	BossSpaceShip : 'BossSpaceShip',
+	ExplosionSprite : 'ExplosionSprite',
+	FoeSpaceShip : 'FoeSpaceShip',
+	GameTitleSprite : 'GameTitleSprite',
+	LootSprite : 'LootSprite',
+	MainSpaceShip : 'MainSpaceShip',
+	Projectile : 'Projectile',
+	Sprite : 'Sprite',
+	StatusBarSprite : 'StatusBarSprite',
+	TilingSprite : 'TilingSprite'
+};
 
 
 
@@ -121,6 +133,7 @@ const TweenTypes = {
  * @typedef {Set<Number>} CoreTypes.clearedCollisionTests 
  */
 const CoreTypes = {
+	typeNames : typeNames,
 	Coord : Coord,
 	Point : Point,
 	Dimension : Dimension,

@@ -31,6 +31,10 @@ const StatusBarSprite = function(windowSize, textureHealth, textureShield) {
 	this.textForScoreSpriteObj = this.getTextForScoreSprite(windowSize);
 }
 //StatusBarSprite.prototype = {};
+/**
+ * @static {String} objectType
+ */
+StatusBarSprite.prototype.objectType = 'StatusBarSprite';
 
 /**
  * @method getGameStatusHealthSprite
@@ -137,9 +141,14 @@ StatusBarSprite.prototype.getTextForScoreSprite = function(windowSize) {
 StatusBarSprite.prototype.onResize = function(windowSize) {
 	
 	// @ts-ignore PIXI objects are not typed
-	this.gameStatusSpriteObj.x = this.margin + 10;
+	this.gameStatusHealthSpriteObj.x = this.margin + 10;
 	// @ts-ignore PIXI objects are not typed
-	this.gameStatusSpriteObj.y = windowSize.y.value - (74 + this.margin);
+	this.gameStatusHealthSpriteObj.y = windowSize.y.value - (74 + this.margin);
+	
+	// @ts-ignore PIXI objects are not typed
+	this.gameStatusShieldSpriteObj.x = this.margin + 10;
+	// @ts-ignore PIXI objects are not typed
+	this.gameStatusShieldSpriteObj.y = windowSize.y.value - (74 + this.margin);
 	
 	// @ts-ignore PIXI objects are not typed
 	this.textForLevelSpriteObj.x = 36 + this.margin;

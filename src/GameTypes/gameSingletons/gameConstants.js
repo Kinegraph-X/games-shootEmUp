@@ -3,6 +3,24 @@
 */
 
 /**
+* @type {{[key:String] : String}}
+* dictionay of event names
+*/
+const eventNames = {
+	mainSpaceShipOutOfScreen : 'mainSpaceShipOutOfScreen',
+	mainSpaceShipHit : 'mainSpaceShipHit',
+	mainSpaceShipDamaged : 'mainSpaceShipDamaged',
+	mainSpaceShipPowerUp : 'mainSpaceShipPowerUp',
+	foeSpaceShipDamaged : 'foeSpaceShipDamaged',
+	foeSpaceShipDestroyed : 'foeSpaceShipDestroyed',
+	foeSpaceShipOutOfScreen : 'foeSpaceShipOutOfScreen',
+	fireballOutOfScreen : 'fireballOutOfScreen',
+	lootOutOfScreen : 'lootOutOfScreen',
+	disposableSpriteAnimationEnded : 'disposableSpriteAnimationEnded',
+	resize : 'resize'
+}
+
+/**
  * @type {{[key:String] : {
  * 		foeCount : Number,
  * 		shieldedFoeCount : Number,
@@ -142,11 +160,31 @@ const mainSpaceShipLifePoints = {
 
 /**
 * @type {{[key:String] : String}}
+* dictionay of collision types
+*/
+const mainSpaceShipCollisionTypes = {
+	hostile : 'hostile',
+	powerUp : 'powerUp'
+}
+
+
+
+/**
+* @type {{[key:String] : String}}
+* dictionay of loot types
+*/
+const lootSpritesTypes = {
+	medikit : 'medikit',
+	weapon : 'weapon'
+}
+
+/**
+* @type {{[key:String] : String}}
 * lootSprite depending on lootType
 */
 const lootSpritesTextures = {
-	'0' : 'medikit',
-	'1' : 'weapon',
+	'0' : lootSpritesTypes.medikit,
+	'1' : lootSpritesTypes.weapon,
 	'2' : '',
 	'3' : ''
 }
@@ -377,6 +415,8 @@ const objectTypes = {
 	projectile : 'projectile',
 	projectiles : 'projectiles',
 	shield : 'shield',
+	bigShield : 'bigShield',
+	bigExplosion : 'bigExplosion',
 	smallExplosion : 'smallExplosion',
 	greenExplosion : 'greenExplosion',
 	yellowExplosion : 'yellowExplosion',
@@ -386,6 +426,7 @@ const objectTypes = {
 
 
 const gameConstants = {
+	eventNames,
 	levels,
 	foeDescriptors,
 	bossDescriptors,
@@ -394,6 +435,8 @@ const gameConstants = {
 	weapons,
 	foeWeapons,
 	bossWeapons,
+	mainSpaceShipCollisionTypes,
+	lootSpritesTypes,
 	lootSpritesTextures,
 	objectTypes,
 	plasmaColors,

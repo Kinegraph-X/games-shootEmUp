@@ -52,9 +52,23 @@ var classConstructor = function() {
 	function init(rootNodeSelector) {
 		const keyboardListener = new KeyboardListener();
 		
+		// @ts-ignore style isn't a prop of Element ? wtf! https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style
+		document.querySelector('#ready').style.visibility = 'visible';
+		const spinner = document.querySelector('#loading_spinner_2');
+		// @ts-ignore style isn't a prop of Element ? wtf! https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style
+		spinner.style.opacity = 1;
+		// @ts-ignore style isn't a prop of Element ? wtf! https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style
+		spinner.style.display = 'flex';
+		const loadingText = document.createElement('span');
+		loadingText.textContent = "Loading Assets..."
+		spinner.append(loadingText);
+		
 		AssetsLoader.then(function(loadedAssets) {
 			(new FontFaceObserver('Showcard Gothic'))
 				.load().then(function() {
+					
+					// @ts-ignore
+					document.querySelector('#ready').style.visibility = 'hidden';
 					
 					// FIRST INTERACT FOR WEB AUDIO
 					let firstInteract = false;

@@ -25,7 +25,10 @@ const GameTitleSprite = function(windowSize, text) {
 	this.spriteObj = this.getSprite(windowSize, text);
 }
 //GameTitleSprite.prototype = {};
-
+/**
+ * @static {String} objectType
+ */
+GameTitleSprite.prototype.objectType = 'GameTitleSprite';
 
 
 /**

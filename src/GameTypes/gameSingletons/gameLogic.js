@@ -1,6 +1,6 @@
  
  /**
- * @typedef {Object} PIXI.Text
+ * @typedef {Object} PIXI.Text										// Mock
  * @typedef {import('src/GameTypes/interfaces/Wounder')} Wounder
  * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
  * @typedef {import('src/GameTypes/sprites/TilingSprite')} TilingSprite
@@ -17,17 +17,12 @@ AssetsLoader.then(function(loadedBundles) {
 	loadedAssets = loadedBundles;
 });
 
-/**
- * @singleton
- * Rules for the actual game
- */
-
-const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
-// lootSpritesTextures, maxLootsByType, 
-const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons, objectTypes} = require('src/GameTypes/gameSingletons/gameConstants');
+const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes'); 
+const {eventNames, levels, foeDescriptors, weapons, mainSpaceShipCollisionTypes, lootSpritesTypes, objectTypes} = require('src/GameTypes/gameSingletons/gameConstants');
 const {windowSize, occupiedCells} = require('src/GameTypes/grids/gridManager');
 const GameState = require('src/GameTypes/gameSingletons/GameState');
 const GameLoop = require('src/GameTypes/gameSingletons/GameLoop');
+const Player = require('src/GameTypes/gameSingletons/Player');
 
 const LootSprite = require('src/GameTypes/sprites/LootSprite');
 
@@ -39,11 +34,14 @@ const CooledDownPropFadeToggleTween = require('src/GameTypes/tweens/CooledDownPr
 
 const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
 
-const Player = require('src/GameTypes/gameSingletons/Player');
 
 
 
 
+/**
+ * @singleton gameLogic
+ * Rules for the actual game
+ */
 
 /**
  * @method handleFoeSpaceShipDamaged
@@ -61,16 +59,23 @@ const handleFoeSpaceShipDamaged = function(
 	// Avoid potential double deletion when collided twice in the same frame
 	// @ts-ignore healthPoints is inherited
 	if (damagedFoeSpaceShip.hasBeenDestroyed()
-		&& explodedFireball.objectType === 'Projectile') {	// Test the "name" prop : the mainSpaceShip may also collide a foe
+		&& explodedFireball.objectType === CoreTypes.typeNames.Projectile) {	// Test the "name" prop : the mainSpaceShip may also collide a foe
 		removeFireBallFromStage(explodedFireball);			// (then the mainSpaceShipSprite is positionned
 		return;
 	}
 	
-	if (damagedFoeSpaceShip.hasShield)
+	if (damagedFoeSpaceShip.objectType === CoreTypes.typeNames.BossSpaceShip)
+		GameObjectsFactory().newObject(
+			objectTypes.bigShield,
+			true,
+			[],
+			damagedFoeSpaceShip
+		);
+	else if (damagedFoeSpaceShip.hasShield)
 		GameObjectsFactory().newObject(
 			objectTypes.shield,
 			true,
-			[damagedFoeSpaceShip.objectType === 'BossSpaceShip' ? true : false],
+			[],
 			damagedFoeSpaceShip
 		);
 
@@ -85,7 +90,7 @@ const handleFoeSpaceShipDamaged = function(
 			scoreTextSprite
 		);
 	
-	if (explodedFireball.objectType === 'Projectile')		// the mainSpaceShip may also collide a foe
+	if (explodedFireball.objectType === CoreTypes.typeNames.Projectile)		// the mainSpaceShip may also collide a foe
 		removeFireBallFromStage(explodedFireball)			// (then the mainSpaceShipSprite is aliased as the "fireball")
 }
 
@@ -100,7 +105,10 @@ const handleFoeSpaceShipDestroyed = function(
 		scoreTextSprite
 	) {
 	
-	GameObjectsFactory().newObject(objectTypes.greenExplosion, true, [], damagedFoeSpaceShip);
+	if (damagedFoeSpaceShip.objectType === CoreTypes.typeNames.BossSpaceShip)
+		GameObjectsFactory().newObject(objectTypes.bigExplosion, true, [], damagedFoeSpaceShip);
+	else
+		GameObjectsFactory().newObject(objectTypes.greenExplosion, true, [], damagedFoeSpaceShip);
 	GameObjectsFactory().newObject(objectTypes.plasmaBlast, true, [damagedFoeSpaceShip.objectType === 'BossSpaceShip'], damagedFoeSpaceShip);
 	
 	// foeSpaceShipSprite removal from the gameLoop & scene
@@ -113,7 +121,7 @@ const handleFoeSpaceShipDestroyed = function(
 	Player().foeSpaceShipsCollisionTestsRegister.deleteItem(damagedFoeSpaceShip.UID);
 	
 	// Remove recurring fireball tween
-	if (damagedFoeSpaceShip.objectType === 'BossSpaceShip'
+	if (damagedFoeSpaceShip.objectType === CoreTypes.typeNames.BossSpaceShip
 		|| parseInt(damagedFoeSpaceShip.foeType) % 2 === 1
 		) {
 		// @ts-ignore UID is inherited
@@ -138,7 +146,7 @@ const handleFoeSpaceShipDestroyed = function(
 	GameState().incrementScore(foeDescriptors[damagedFoeSpaceShip.foeType].pointsPrize);
 	// @ts-ignore PIXI.Text is a mocked type
 	scoreTextSprite.text = GameState().getCurrentScoreAsFormattedString();
-	GameLoop().trigger('foeSpaceShipDestroyed');
+	GameLoop().trigger(eventNames.foeSpaceShipDestroyed);
 }
 
 
@@ -236,7 +244,7 @@ const handleMainSpaceShipDestroyed = function(
 	GameObjectsFactory().newObject(objectTypes.title, true, ['Game Over']);
 	
 	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
-	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);		// noError: seems we have a bug, unknown after a round of exploring the code
+	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);
 	GameLoop().removeSpriteFromScene(statusBar.gameStatusHealthSpriteObj);
 	GameLoop().removeSpriteFromScene(statusBar.gameStatusShieldSpriteObj);
 	GameLoop().stage.removeChild(statusBar.textForLevelSpriteObj);
@@ -271,7 +279,7 @@ const handleInvicibleMainSpaceShip = function() {
 			// We'll loop through all the tests, including those against projectiles.
 			// It's not efficient, but do we have a reference to the specific test in the scope ? Seems not...
 			Player().foeSpaceShipsTweensRegister.getItem(foeSpaceShipSpriteObj.UID).collisionTestsRegister.filter(function(/** @type {mainSpaceShipCollisionTester}*/test) {
-				if (test.type === 'hostile')
+				if (test.type === mainSpaceShipCollisionTypes.hostile)
 					return false;
 				return true;
 			});
@@ -303,20 +311,20 @@ const handlePowerUp = function(
 		statusBarSprite
 	) {
 	
-	// @ts-ignore
+	// @ts-ignore : indexOfObjectByValue is non-standard
 	const tweenIdx = CoreTypes.disposableTweensRegister.indexOfObjectByValue('lootSprite', lootSprite);
 	if (tweenIdx !== false) {		// let's assume that can fail...  for now...
 		GameLoop().removeTween(CoreTypes.disposableTweensRegister[tweenIdx].lootTween);
 		CoreTypes.disposableTweensRegister.splice(tweenIdx, 1);
 	}
-	
 	GameLoop().removeSpriteFromScene(lootSprite);
+	
 	switch(lootSprite.lootType) {
-		case 'medikit':
+		case lootSpritesTypes.medikit:
 				Player().mainSpaceShip.handleDamage(lootSprite);
 				statusBarSprite.updateHealth(Player().mainSpaceShip)
 			break;
-		case 'weapon':
+		case lootSpritesTypes.weapon:
 			// FIXME: don't like declaring Object props as {Number}
 			if (typeof weapons[++GameState().currentWeapon] === 'undefined')
 				--GameState().currentWeapon;
@@ -461,8 +469,15 @@ const handleLoot = function(
 		GameState().currentLootCount[lootSprite.lootType]++;
 	
 	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototypal inheritance...
-	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, lootSprite, 'powerUp');
-	Player().lootsCollisionTestsRegister.setItem(lootSprite.UID, mainSpaceShipCollisionTest);
+	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(
+		Player().mainSpaceShip,
+		lootSprite,
+		mainSpaceShipCollisionTypes.powerUp
+	);
+	Player().lootsCollisionTestsRegister.setItem(
+		lootSprite.UID,
+		mainSpaceShipCollisionTest
+	);
 	// Wait for the next frame : appending it synchronlously 
 	// would normally extend the list beyond the starting index, so we should not bother,
 	// but "peace of the mind has no price"
@@ -488,7 +503,7 @@ const handleDisposableSpriteAnimationEnded = function(tween) {
 	}
 	CoreTypes.disposableSpritesRegister.splice(spritePos, 1);
 	
-	GameLoop().removeSpriteFromScene(tween.target, true); // noError: we found a weird bug on destructing the mainSpaceShip
+	GameLoop().removeSpriteFromScene(tween.target);
 }
 
 
@@ -530,7 +545,7 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 	
 	const foesInGame = Object.values(Player().foeSpaceShipsRegister.cache);
 	if (foesInGame.length === 1
-		&& foesInGame[0].objectType !== 'BossSpaceShip'
+		&& foesInGame[0].objectType !== CoreTypes.typeNames.BossSpaceShip
 		&& GameState().getCurrentLevel() < 6) {
 		
 		if (GameState().getCurrentScore() >= levels[GameState().getCurrentLevelAsString()].requiredPointsToStepUp) {
@@ -553,6 +568,7 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 			// @ts-ignore levelTheme isn't typed
 			loadedAssets[4].bossTheme.stop();
 			GameState().incrementLevel();
+			GameObjectsFactory().newObject(objectTypes.title, true, ['Level ' + GameState().currentLevel.toString(), true]);
 			GameState().currentLootCount.medikit = 0;
 			GameState().currentLootCount.weapon = 0;
 			// @ts-ignore PIXI.Text is a mocked type

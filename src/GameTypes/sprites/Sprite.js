@@ -31,7 +31,6 @@ Sprite.prototype = Object.create(proto_proto);
  * @static objectType
  */
 Sprite.prototype.objectType = 'Sprite'
-Sprite.prototype.objectType = 'Sprite';
 
 
 /**

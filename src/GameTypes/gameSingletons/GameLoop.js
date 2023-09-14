@@ -10,6 +10,7 @@
 const {EventEmitter} = require('src/core/CoreTypes');
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const gridManager = require('src/GameTypes/grids/gridManager');
+const {eventNames} = require('src/GameTypes/gameSingletons/gameConstants');
 const ruleSet = require('src/GameTypes/gameSingletons/gameRules');
 
 /**
@@ -26,27 +27,27 @@ const GameLoop = function(windowSize) {
 	}
 	EventEmitter.call(this);
 	// @ts-ignore inherited method
-	this.createEvent('mainSpaceShipOutOfScreen');
+	this.createEvent(eventNames.mainSpaceShipOutOfScreen);
 	// @ts-ignore inherited method
-	this.createEvent('mainSpaceShipHit');
+	this.createEvent(eventNames.mainSpaceShipHit);
 	// @ts-ignore inherited method
-	this.createEvent('mainSpaceShipDamaged');
+	this.createEvent(eventNames.mainSpaceShipDamaged);
 	// @ts-ignore inherited method
-	this.createEvent('mainSpaceShipPowerUp');
+	this.createEvent(eventNames.mainSpaceShipPowerUp);
 	// @ts-ignore inherited method
-	this.createEvent('foeSpaceShipDamaged');
+	this.createEvent(eventNames.foeSpaceShipDamaged);
 	// @ts-ignore inherited method
-	this.createEvent('foeSpaceShipDestroyed');
+	this.createEvent(eventNames.foeSpaceShipDestroyed);
 	// @ts-ignore inherited method
-	this.createEvent('foeSpaceShipOutOfScreen');
+	this.createEvent(eventNames.foeSpaceShipOutOfScreen);
 	// @ts-ignore inherited method
-	this.createEvent('fireballOutOfScreen');
+	this.createEvent(eventNames.fireballOutOfScreen);
 	// @ts-ignore inherited method
-	this.createEvent('lootOutOfScreen');
+	this.createEvent(eventNames.lootOutOfScreen);
 	// @ts-ignore inherited method
-	this.createEvent('disposableSpriteAnimationEnded');
+	this.createEvent(eventNames.disposableSpriteAnimationEnded);
 	// @ts-ignore inherited method
-	this.createEvent('resize');
+	this.createEvent(eventNames.resize);
 	
 	this.gameOver = false;
 	this.loopStarted = false;
@@ -494,13 +495,13 @@ GameLoop.prototype.testAndCleanCollisions = function() {
  * We could have used sort of a "indexOf" function, but that may come in a further optimization :
  * It would impose us to change the shape of the CollisionTester type.
  * 
- * @param {PIXI.Sprite} collidingSprite
+ * @param {Sprite} collidingSprite
  * The collisionTesters are designed as following : we think of "collidingSprite" as being
  * the "automatically moving" sprite (fireball in case of a collision with a foe ship), 
  * but as being the mainSpaceShip in case of a collision between a loot and the main ship,
  * or a collision between foe ship and the main ship.
  * 
- * @param {PIXI.Sprite} targetedSprite
+ * @param {Sprite} targetedSprite
  * @param {Uint8Array} deletedTests
  * @param {Set<Number>} clearedTests
  */
@@ -518,13 +519,11 @@ GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprit
 		else if (test.referenceObj === targetedSprite && targetedSprite.hasShield) {
 			clearedTests.add(i);
 		}
-		// @ts-ignore healthPoints : implicit inheritance
 		else if (test.referenceObj === targetedSprite && targetedSprite.healthPoints === 0) {
 			clearedTests.add(i);
 		}
 		// This last condition works both on a collision between a foe ship and the main ship, and on a collision between the main ship and a loot
-		// @ts-ignore objectType : implicit inheritance
-		else if (test.referenceObj === targetedSprite && collidingSprite.objectType === this.spriteNamesConstants.mainSpaceShipSprite) {
+		else if (test.referenceObj === targetedSprite && collidingSprite.objectType === CoreTypes.typeNames.MainSpaceShip) {
 			clearedTests.add(i);
 		}
 	}
@@ -561,13 +560,7 @@ GameLoop.prototype.collisionTestNamesConstants = {
 	mainSpaceShipCollisionTest : 'mainSpaceShipCollisionTest'
 }
 
-/**
- * @static collisionTestNamesConstants
- */
-GameLoop.prototype.spriteNamesConstants = {
-	mainSpaceShipSprite : 'mainSpaceShipSprite',
-	foeSpaceShipSprite : 'foeSpaceShipSprite'
-}
+
 
 /**
  * @static @method sortingFunction

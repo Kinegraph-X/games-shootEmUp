@@ -10,8 +10,8 @@ const Sprite = require('src/GameTypes/sprites/Sprite');
  * @constructor TilingSprite
  * @param {CoreTypes.Dimension} dimensions
  * @param {PIXI.Texture} texture
- * @param {Number} zoom
- * @param {Number} rotation
+ * @param {Number} [zoom = 1] zoom
+ * @param {Number} [rotation = 0] rotation
  */
  const TilingSprite = function(dimensions, texture, zoom, rotation) {
 
