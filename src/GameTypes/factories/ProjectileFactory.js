@@ -87,20 +87,26 @@ const ProjectileFactory = function(windowSize, loadedAssets, startPosition, proj
  * @param {Number} len
  */
 ProjectileFactory.prototype.setHorizontalValues = function(len) {
+	const offset = 7;
 	// Fire in a brush shape if more than one projectile
-	const middle = Math.floor(len / 2),
-		offset = 7;
-	let horizontalTweenValue = 0;
-	
-	for (let i = middle - 1; i >=0; i--) {
-		horizontalTweenValue -= offset;
-		this.horizontalTweenValues[i] = horizontalTweenValue;
+	if (len === 2) {
+		this.horizontalTweenValues[0] = -offset;
+		this.horizontalTweenValues[1] = offset
 	}
-	horizontalTweenValue = 0;
-	this.horizontalTweenValues[middle] = horizontalTweenValue;
-	for (let i = middle + 1; i < len; i++) {
-		horizontalTweenValue += offset;
-		this.horizontalTweenValues[i] = horizontalTweenValue;
+	else {
+		const middle = Math.floor(len / 2);
+		let horizontalTweenValue = 0;
+		
+		for (let i = middle - 1; i >=0; i--) {
+			horizontalTweenValue -= offset;
+			this.horizontalTweenValues[i] = horizontalTweenValue;
+		}
+		horizontalTweenValue = 0;
+		this.horizontalTweenValues[middle] = horizontalTweenValue;
+		for (let i = middle + 1; i < len; i++) {
+			horizontalTweenValue += offset;
+			this.horizontalTweenValues[i] = horizontalTweenValue;
+		}
 	}
 }
 

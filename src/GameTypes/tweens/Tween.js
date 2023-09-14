@@ -70,8 +70,8 @@ Tween.prototype.testOutOfScreen = function() {
 		&& this.target.enteredScreen
 		&& (this.target.y + this.target.height / 2 < 0
 			|| this.target.y - this.target.height > this.windowSize.y.value		// HACK we want to be sure something is far before removing it
-			|| this.target.x - this.target.width / 2 < 0
-			|| this.target.x + this.target.width / 2 > this.windowSize.x.value)
+			|| this.target.x + this.target.width / 2 < 0
+			|| this.target.x - this.target.width / 2 > this.windowSize.x.value)
 		) {
 		return true;
 	}
