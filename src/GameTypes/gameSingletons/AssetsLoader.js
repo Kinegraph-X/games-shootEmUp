@@ -16,7 +16,8 @@ const manifest = {
 				{name : 'plasmaGreen01', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Green Plasma/Green_Plasma_01.png'},
 				{name : 'plasmaGreen02', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Green Plasma/Green_Plasma_02.png'},
 				{name : 'plasmaGreen03', srcs : 'plugins/ShootEmUp/assets/tileMaps/plasma/Green Plasma/Green_Plasma_03.png'},
-				{name : 'statusBarLeft', srcs : 'plugins/ShootEmUp/assets/Status_Bar_Left.png'}
+				{name : 'statusBarHealth', srcs : 'plugins/ShootEmUp/assets/Status_Bar_Health.png'},
+				{name : 'statusBarShield', srcs : 'plugins/ShootEmUp/assets/Status_Bar_Shield.png'}
 			]
 		},
 		{
@@ -27,7 +28,18 @@ const manifest = {
 				{name : 'foeSpaceShip01', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_PURPLE.png'},
 				{name : 'foeSpaceShip02', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_BLUE.png'},
 				{name : 'foeSpaceShip01Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/02/Spaceship_02_YELLOW.png'},
-				{name : 'foeSpaceShip02Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_YELLOW.png'}
+				{name : 'foeSpaceShip02Shielded', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/06/Spaceship_06_YELLOW.png'},
+			]
+		},
+		{
+			name : 'bosses',
+			assets : [
+				{name : 'bossSpaceShip01', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/Boss_01.png'},
+				{name : 'bossSpaceShip02', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/Boss_02.png'},
+				{name : 'bossSpaceShip03', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/Boss_03.png'},
+				{name : 'bossSpaceShip04', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/Boss_04.png'},
+				{name : 'bossSpaceShip05', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/Boss_05.png'},
+				{name : 'bossSpaceShip06', srcs : 'plugins/ShootEmUp/assets/ships/Spaceships/Boss_06.png'}
 			]
 		},
 		{
@@ -46,6 +58,13 @@ const manifest = {
 				{name : 'medikitTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Medikit_Sprite.png'},
 				{name : 'weaponTilemap', srcs : 'plugins/ShootEmUp/assets/loots/Weapon_Sprite.png'}
 			]
+		},
+		{
+			name : 'audio',
+			assets : [
+				{name : 'levelTheme', srcs : 'plugins/ShootEmUp/assets/audio/SpaceHarrierTheme_w_Blank.mp3', parser: 'sound'},
+				{name : 'bossTheme', srcs : 'plugins/ShootEmUp/assets/audio/Sanxion.mp3'}
+			]
 		}
 	]
 };
@@ -62,7 +81,11 @@ module.exports = new Promise(function(resolve, reject) {
 				// @ts-ignore
 				PIXI.Assets.loadBundle('spaceShips'),
 				// @ts-ignore
-				PIXI.Assets.loadBundle('flames')
+				PIXI.Assets.loadBundle('bosses'),
+				// @ts-ignore
+				PIXI.Assets.loadBundle('flames'),
+				// @ts-ignore
+				PIXI.Assets.loadBundle('audio')
 			]).then(function(loadedAssets) {
 				resolve(loadedAssets);
 			});

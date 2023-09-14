@@ -38,12 +38,12 @@ RecurringCallbackTween.prototype.nextStep = function(stepCount, frameDuration, t
 	
 	if (this.currentPartialStep >= this.interval) {
 		this.currentPartialStep = 0;
-		if (this.scope)
-			// @ts-ignore cause we can't explicitly declare the type of "scope"
-			return this.cb(this.scope[this.propName]);
-		else if (this.argsAsArray)
-			return this.cb.apply(null, this.argsAsArray);
-		else
+//		if (this.scope)
+//			// @ts-ignore cause we can't explicitly declare the type of "scope"
+//			return this.cb(this.scope[this.propName]);
+//		else if (this.argsAsArray)
+//			return this.cb.apply(null, this.argsAsArray);
+//		else
 			return this.cb();
 	}
 }

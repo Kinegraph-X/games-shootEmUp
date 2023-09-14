@@ -24,9 +24,9 @@ const BlastSprite = function(position, texture) {
 BlastSprite.prototype = Object.create(Sprite.prototype);
 
 /**
- * @static {String} name
+ * @static {String} objectType
  */
-BlastSprite.prototype.name = 'BlastSprite';
+BlastSprite.prototype.objectType = 'BlastSprite';
 
 /**
  * @method getSprite

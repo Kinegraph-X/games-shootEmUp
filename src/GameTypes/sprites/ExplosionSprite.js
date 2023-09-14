@@ -42,12 +42,12 @@ ExplosionSprite.prototype.getSprite = function(dimensions, texture) {
 }
 
 /**
- * @static {String} name
+ * @static {String} objectType
  */
-ExplosionSprite.prototype.name = 'explosionSprite';
+ExplosionSprite.prototype.objectType = 'explosionSprite';
 
 /**
- * @static {CoreTypes.Dimension} name
+ * @static {CoreTypes.Dimension} objectType
  */
 ExplosionSprite.prototype.defaultExplosionDimensions = new CoreTypes.Dimension(64, 64)
 

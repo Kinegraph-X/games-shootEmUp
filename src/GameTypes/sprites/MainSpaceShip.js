@@ -6,6 +6,8 @@
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
+
+const ShieldedDamageable = require('src/GameTypes/interfaces/ShieldedDamageable');
 const Sprite = require('src/GameTypes/sprites/Sprite');
 const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
 
@@ -15,21 +17,23 @@ const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
  * @param {CoreTypes.Point} position
  * @param {PIXI.Texture} texture
  * @param {PIXI.Texture} flameTexture
- * @param {Number} lifePoints
+ * @param {Number} healthPoints
  */
-const MainSpaceShip = function(position, texture, flameTexture, lifePoints) {
+const MainSpaceShip = function(position, texture, flameTexture, healthPoints) {
+	ShieldedDamageable.call(this);
 	this.UID = UIDGenerator.newUID();
 	this.spriteObj = this.getSprite(position, texture, flameTexture);
 	this._definePropsOnSelf();
 	
-	this.lifePoints = lifePoints;
+	this.healthPoints = healthPoints;
+	this.shieldCharge = healthPoints;
 }
-//MainSpaceShip.prototype = {};
+MainSpaceShip.prototype = Object.create(ShieldedDamageable.prototype);
+/**
+ * @static {String} objectType
+ */
+MainSpaceShip.prototype.objectType = 'MainSpaceShip';
 MainSpaceShip.prototype._definePropsOnSelf = Sprite.prototype._definePropsOnSelf;
-MainSpaceShip.prototype.getHealth = Sprite.prototype.getHealth;
-MainSpaceShip.prototype.incrementHealth = Sprite.prototype.incrementHealth;
-MainSpaceShip.prototype.decrementHealth = Sprite.prototype.decrementHealth;
-MainSpaceShip.prototype.hasBeenDestroyed = Sprite.prototype.hasBeenDestroyed;
 
 /**
  * @method getSprite
@@ -61,7 +65,7 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 	this.flameTileSprite.spriteObj.x = this.defaultSpaceShipDimensions.x.value / 2 - this.defaultFlameTileDimensions.x.value / 2;
 	this.flameTileSprite.spriteObj.y = this.defaultSpaceShipDimensions.y.value - this.defaultFlameTileDimensions.y.value / 2;
 	// @ts-ignore
-	this.flameTileSprite.name = 'flameSprite';
+	this.flameTileSprite.objectType = 'flameSprite';
 	
 	mainSpaceShipContainer.addChild(this.flameTileSprite.spriteObj);
 	
@@ -97,10 +101,6 @@ MainSpaceShip.prototype.rollWingsFlat = function() {
 
 
 
-/**
- * @static {String} name
- */
-MainSpaceShip.prototype.name = 'mainSpaceShipSprite';
 
 /**
  * @static {CoreTypes.Dimension} defaultSpaceShipDimensions

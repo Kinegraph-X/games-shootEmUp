@@ -42,6 +42,8 @@ const GameLoop = function(windowSize) {
 	// @ts-ignore inherited method
 	this.createEvent('fireballOutOfScreen');
 	// @ts-ignore inherited method
+	this.createEvent('lootOutOfScreen');
+	// @ts-ignore inherited method
 	this.createEvent('disposableSpriteAnimationEnded');
 	// @ts-ignore inherited method
 	this.createEvent('resize');
@@ -154,8 +156,17 @@ GameLoop.prototype.start = function() {
 				if (!stepCount)
 					continue;
 				
-				let linkedTween = tween.nextStep(stepCount, stdFrameDuration, self.currentTime);
+				tween.nextStep(stepCount, stdFrameDuration, self.currentTime);
 				
+				if (tween.ended) {
+					self.removeTween(tween);
+					// @ts-ignore inherited method
+					self.trigger('disposableSpriteAnimationEnded', tween);
+				}
+				
+				// FIXME: Is there a probability for a tween to be at the same time "ended" and "outOfScreen" ?
+				// => removeTween() would fail on the 2nd call.
+				// In the current implem, that should not happen...
 				if (tween.testOutOfScreen()) {
 					self.removeTween(tween);
 					
@@ -164,17 +175,11 @@ GameLoop.prototype.start = function() {
 					
 					// trigger an event for the app router to be able to clean the registers
 					ruleSet.testOutOfScreen.forEach(function(rule) {
-						if (rule.targetName === tween.target.name) {
+						if (rule.targetObjectType === tween.target.objectType) {
 							// @ts-ignore implicitly inherited method
 							self[rule.action](rule.params[0], tween[rule.params[1]]);
 						}
 					});
-				}
-				
-				if (tween.ended) {
-					self.removeTween(tween);
-					// @ts-ignore inherited method
-					self.trigger('disposableSpriteAnimationEnded', tween);
 				}
 			}
 		}
@@ -229,7 +234,7 @@ GameLoop.prototype.getFrameDuration = function(duration) {
 						found = true;
 						group.values.average(duration);
 					}
-					if (group.values.length === 5) {
+					if (group.values.length === 30) {
 						found = true;
 						this.firstFramesDuration.chosen = group.values.avg;
 					}
@@ -339,6 +344,10 @@ GameLoop.prototype.removeTween = function(tween) {
 	var tweenPos = this.tweens.indexOf(tween);
 	if (tweenPos !== -1)
 		this.tweens.splice(tweenPos, 1);
+	else {
+		console.log(tween);
+		throw new Error('Tween removal has failed, not found:');
+	}
 }
 
 /**
@@ -448,7 +457,7 @@ GameLoop.prototype.testAndCleanCollisions = function() {
 			// @ts-ignore objectType: implicit inheritance
 			if (collisionTest.objectType === this.collisionTestNamesConstants.fireballCollisionTest) {
 				ruleSet.foeSpaceShipTestCollision.forEach(function(rule) {
-					if (rule.targetName === collisionTest.referenceObj.name) {
+					if (rule.targetObjectType === collisionTest.referenceObj.objectType) {
 						// @ts-ignore implicit inheritance
 						this[rule.action](rule.params[0], [collisionTest[rule.params[1]], collisionTest[rule.params[2]]]);
 						// @ts-ignore implicit inheritance
@@ -509,13 +518,13 @@ GameLoop.prototype.cleanCollisionTests = function(collidingSprite, targetedSprit
 		else if (test.referenceObj === targetedSprite && targetedSprite.hasShield) {
 			clearedTests.add(i);
 		}
-		// @ts-ignore lifePoints : implicit inheritance
-		else if (test.referenceObj === targetedSprite && targetedSprite.lifePoints === 0) {
+		// @ts-ignore healthPoints : implicit inheritance
+		else if (test.referenceObj === targetedSprite && targetedSprite.healthPoints === 0) {
 			clearedTests.add(i);
 		}
 		// This last condition works both on a collision between a foe ship and the main ship, and on a collision between the main ship and a loot
-		// @ts-ignore name : implicit inheritance
-		else if (test.referenceObj === targetedSprite && collidingSprite.name === this.spriteNamesConstants.mainSpaceShipSprite) {
+		// @ts-ignore objectType : implicit inheritance
+		else if (test.referenceObj === targetedSprite && collidingSprite.objectType === this.spriteNamesConstants.mainSpaceShipSprite) {
 			clearedTests.add(i);
 		}
 	}
@@ -579,9 +588,9 @@ GameLoop.prototype.sortingFunction = function(a, b){
 var gameLoop;
 
 /**
- * @param {CoreTypes.Dimension} windowSize
+ * @param {CoreTypes.Dimension} [windowSize = null] windowSize
  */
-module.exports = function(windowSize = null) {
+module.exports = function(windowSize) {
 	// @ts-ignore singleton pattern
 	if (typeof gameLoop !== 'undefined')
 		// @ts-ignore singleton pattern

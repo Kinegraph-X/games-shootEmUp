@@ -4,12 +4,14 @@
  */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
+let GameState = require('src/GameTypes/gameSingletons/GameState');
+
 const Projectile = require('src/GameTypes/sprites/Projectile');
 const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
 const RecurringCallbackTween = require('src/GameTypes/tweens/RecurringCallbackTween');
 const fireBallCollisionTester = require('src/GameTypes/collisionTests/fireBallCollisionTester');
 const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
-const {weapons, foeWeapons} = require('src/GameTypes/gameSingletons/gameConstants');
+const {weapons, foeWeapons, bossWeapons} = require('src/GameTypes/gameSingletons/gameConstants');
 
 const GameLoop = require('src/GameTypes/gameSingletons/GameLoop');
 const Player = require('src/GameTypes/gameSingletons/Player');
@@ -21,21 +23,28 @@ const Player = require('src/GameTypes/gameSingletons/Player');
  * @param {Array<Object>} loadedAssets
  * @param {CoreTypes.Point} startPosition
  * @param {Number} projectileType
- * @param {Boolean} fromFoe
+ * @param {Boolean} [fromFoe = false] fromFoe
+ * @param {String} [foeUID = ''] foeUID
+ * @param {Boolean} [isBoss = false] isBoss
  */
-const ProjectileFactory = function(windowSize, loadedAssets, startPosition, projectileType, fromFoe = false, foeUID = '') {
-	this.weaponDescriptors = fromFoe ? foeWeapons : weapons;
+const ProjectileFactory = function(windowSize, loadedAssets, startPosition, projectileType, fromFoe, foeUID, isBoss) {
+	this.weaponDescriptors = fromFoe 
+		? isBoss
+			? bossWeapons
+			: foeWeapons
+		: weapons;
 	
-	this.projectileType = projectileType;
-	this.moveTiles = this.weaponDescriptors[projectileType].moveTiles;
+	this.projectileType = fromFoe && !isBoss ? 0 : projectileType;
+	this.moveTiles = this.weaponDescriptors[this.projectileType].moveTiles;
 	this.fromFoe = fromFoe;
 	this.foeUID = foeUID;
+	this.isBoss = isBoss;
 	/** @type {Array<Number>} */
 	this.horizontalTweenValues = [];
-	const projectileCount = this.weaponDescriptors[projectileType].spriteTexture.length;
+	const projectileCount = this.weaponDescriptors[this.projectileType].spriteTexture.length;
 	this.setHorizontalValues(projectileCount);
 	
-	this.weaponDescriptors[projectileType].spriteTexture.forEach(function(textureName, key) {
+	this.weaponDescriptors[this.projectileType].spriteTexture.forEach(function(textureName, key) {
 		if (!this.fromFoe) {
 			this.createSprite(
 				key,
@@ -44,7 +53,7 @@ const ProjectileFactory = function(windowSize, loadedAssets, startPosition, proj
 				loadedAssets,
 				startPosition,
 				textureName,
-				projectileType
+				this.projectileType
 			);
 		}
 		else {
@@ -58,15 +67,15 @@ const ProjectileFactory = function(windowSize, loadedAssets, startPosition, proj
 					loadedAssets,
 					startPosition,
 					textureName,
-					projectileType
+					this.projectileType
 				),
-				200
+				this.isBoss ? 100 - GameState().currentLevel * 10 : 200
 			);
 			
-			CoreTypes.fromFoesFireballRecurringTweensRegister.setItem(
-				this.foeUID,
-				recurringTween
-			);
+			if (!CoreTypes.fromFoesFireballRecurringTweensRegister.hasItem(this.foeUID))
+				CoreTypes.fromFoesFireballRecurringTweensRegister.setItem(this.foeUID, []);
+				
+			CoreTypes.fromFoesFireballRecurringTweensRegister.getItem(this.foeUID).push(recurringTween);
 			GameLoop().pushTween(recurringTween);
 		}
 	}, this)
@@ -109,6 +118,8 @@ ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loaded
 	// HACK to be able to launch projectiles automatically from the foe ships
 	//=> we get their position when creating the sprite, instead of getting it upfront,
 	// as we do usually, when we press the trigger on the mainSpaceShip
+	if (this.fromFoe && !Player().foeSpaceShipsRegister.hasItem(this.foeUID))
+		console.log(this.foeUID, Player().foeSpaceShipsRegister.cache);
 	let realStartPosition = this.fromFoe
 		? new CoreTypes.Point(
 			// @ts-ignore x is inherited
@@ -122,14 +133,14 @@ ProjectileFactory.prototype.createSprite = function(idx, len, windowSize, loaded
 		realStartPosition,
 		this.projectileDimensions,
 		// @ts-ignore loadedAssets.prop unknown
-		loadedAssets[2][textureName],
+		loadedAssets[3][textureName],
 		projectileType
 	)
 	if (this.fromFoe)
 		// @ts-ignore rotation is inherited
 		fireball.rotation = 180;
 		
-	CoreTypes.fireballsRegister.push(fireball.spriteObj);
+	CoreTypes.fireballsRegister.push(fireball);
 	
 	this.prepareAddToScene(
 		idx,

@@ -27,9 +27,9 @@ const Projectile = function(position, dimensions, texture, projectileType) {
 Projectile.prototype = Object.create(Sprite.prototype);
 
 /**
- * @static {String} name
+ * @static {String} objectType
  */
-Projectile.prototype.name = 'fireballSprite';
+Projectile.prototype.objectType = 'Projectile';
 
 /**
  * @method getSprite

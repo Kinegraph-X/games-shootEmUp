@@ -3,13 +3,13 @@
 
 /**
  * @constructor GameRule
- * @param {String} targetName
+ * @param {String} targetObjectType
  * @param {String} action
  * @param {Array<String>} params
  * @param {String} type
  */
-const GameRule = function(targetName, action, params, type) {
-	this.targetName = targetName;
+const GameRule = function(targetObjectType, action, params, type) {
+	this.targetObjectType = targetObjectType;
 	this.action = action;
 	this.params = params;
 	this.type = type;
@@ -17,16 +17,20 @@ const GameRule = function(targetName, action, params, type) {
  
 const ruleSet = {
 	testOutOfScreen : [
-		new GameRule('foeSpaceShipSprite', 'trigger', ['foeSpaceShipOutOfScreen', 'target'], null),
-		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipOutOfScreen', 'target'], null),
-		new GameRule('fireballSprite', 'trigger', ['fireballOutOfScreen', 'target'], null)
+		new GameRule('FoeSpaceShip', 'trigger', ['foeSpaceShipOutOfScreen', 'target'], null),
+		new GameRule('MainSpaceShip', 'trigger', ['mainSpaceShipOutOfScreen', 'target'], null),
+		new GameRule('Projectile', 'trigger', ['fireballOutOfScreen', 'target'], null),
+		new GameRule('LootSprite', 'trigger', ['lootOutOfScreen', 'target'], null)
 	],
 	mainSpaceShipTestCollision : [
-		new GameRule('lootSprite', 'trigger', ['mainSpaceShipPowerUp',  'mainSpaceShipSprite', 'referenceObj'], 'powerUp'),
-		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipDamaged', 'mainSpaceShipSprite', 'referenceObj'], 'hostile'),
-		new GameRule('mainSpaceShipSprite', 'trigger', ['mainSpaceShipHit', 'mainSpaceShipSprite', 'referenceObj'], 'hostileHit')
+		new GameRule('LootSprite', 'trigger', ['mainSpaceShipPowerUp',  'mainSpaceShipSprite', 'referenceObj'], 'powerUp'),
+		new GameRule('MainSpaceShip', 'trigger', ['mainSpaceShipDamaged', 'mainSpaceShipSprite', 'referenceObj'], 'hostile'),
+		new GameRule('MainSpaceShip', 'trigger', ['mainSpaceShipHit', 'mainSpaceShipSprite', 'referenceObj'], 'hostileHit')
 	],
-	foeSpaceShipTestCollision : [new GameRule('foeSpaceShipSprite', 'trigger', ['foeSpaceShipDamaged', 'fireballSprite', 'referenceObj'], null)],
+	foeSpaceShipTestCollision : [
+		new GameRule('FoeSpaceShip', 'trigger', ['foeSpaceShipDamaged', 'fireballSprite', 'referenceObj'], null),
+		new GameRule('BossSpaceShip', 'trigger', ['foeSpaceShipDamaged', 'fireballSprite', 'referenceObj'], null)
+	]
 }
 
 

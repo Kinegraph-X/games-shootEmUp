@@ -5,6 +5,7 @@
 /**
  * @typedef {import('@pixi/core/lib/index')} PIXI					<= not usable
  * @typedef {import('@pixi/text/lib/index')} PIXI.Text
+ * @typedef {import('src/GameTypes/sprites/MainSpaceShip')} MainSpaceShip
  */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
@@ -16,26 +17,27 @@ const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
 /**
  * @constructor StatusBarSprite
  * @param {CoreTypes.Dimension} windowSize
- * @param {PIXI.Texture} textureLeft
- * @param {PIXI.Texture} textureRight
+ * @param {PIXI.Texture} textureHealth
+ * @param {PIXI.Texture} textureShield
  */
-const StatusBarSprite = function(windowSize, textureLeft, textureRight) {
+const StatusBarSprite = function(windowSize, textureHealth, textureShield) {
 	this.UID = UIDGenerator.newUID();
 	this.margin = 15;
 	this.textColor = 0xffd338;
 	
-	this.gameStatusSpriteObj = this.getGameStatusSprite(windowSize, textureLeft);
+	this.gameStatusHealthSpriteObj = this.getGameStatusHealthSprite(windowSize, textureHealth);
+	this.gameStatusShieldSpriteObj = this.getGameStatusShieldSprite(windowSize, textureShield);
 	this.textForLevelSpriteObj = this.getTextForLevelSprite(windowSize);
 	this.textForScoreSpriteObj = this.getTextForScoreSprite(windowSize);
 }
 //StatusBarSprite.prototype = {};
 
 /**
- * @method getGameStatusSprite
+ * @method getGameStatusHealthSprite
  * @param {CoreTypes.Dimension} windowSize
  * @param {PIXI.Texture} texture
  */
-StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture) {
+StatusBarSprite.prototype.getGameStatusHealthSprite = function(windowSize, texture) {
 	// @ts-ignore
 	const statusBar = new TilingSprite(
 		new CoreTypes.Dimension(235, 74),
@@ -47,9 +49,33 @@ StatusBarSprite.prototype.getGameStatusSprite = function(windowSize, texture) {
 	// @ts-ignore
 	statusBar.y = windowSize.y.value - (74 + this.margin);
 	// @ts-ignore
-	statusBar.tilePositionX = 942;
+	statusBar.tilePositionX = -705;
 	// @ts-ignore
-	statusBar.name = 'statusBar';
+	statusBar.objectType = 'statusBar';
+	
+	return statusBar;
+}
+
+/**
+ * @method getGameStatusShieldSprite
+ * @param {CoreTypes.Dimension} windowSize
+ * @param {PIXI.Texture} texture
+ */
+StatusBarSprite.prototype.getGameStatusShieldSprite = function(windowSize, texture) {
+	// @ts-ignore
+	const statusBar = new TilingSprite(
+		new CoreTypes.Dimension(235, 74),
+		texture,
+		.5
+	);
+	// @ts-ignore
+	statusBar.x = this.margin + 10;
+	// @ts-ignore
+	statusBar.y = windowSize.y.value - (74 + this.margin);
+	// @ts-ignore
+	statusBar.tilePositionX = -705;
+	// @ts-ignore
+	statusBar.objectType = 'statusBar';
 	
 	return statusBar;
 }
@@ -133,20 +159,14 @@ StatusBarSprite.prototype.onResize = function(windowSize) {
 
 /**
  * @method decrementHealth
+ * @param {MainSpaceShip} sprite
  * @return Void
  */
-StatusBarSprite.prototype.decrementHealth = function() {
+StatusBarSprite.prototype.updateHealth = function(sprite) {
 	// @ts-ignore tilePositionX is inherited
-	this.gameStatusSpriteObj.tilePositionX = this.gameStatusSpriteObj.tilePositionX - 470; 
-}
-
-/**
- * @method incrementHealth
- * @return Void
- */
-StatusBarSprite.prototype.incrementHealth = function() {
+	this.gameStatusHealthSpriteObj.tilePositionX = -705 + 235 * (3 - sprite.healthPoints);
 	// @ts-ignore tilePositionX is inherited
-	this.gameStatusSpriteObj.tilePositionX = this.gameStatusSpriteObj.tilePositionX + 470;
+	this.gameStatusShieldSpriteObj.tilePositionX = -705 + 235* (3 - sprite.shieldCharge); 
 }
  
  

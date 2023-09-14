@@ -28,9 +28,9 @@ const Sprite = require('src/GameTypes/sprites/Sprite');
 TilingSprite.prototype = Object.create(Sprite.prototype);
 
 /**
- * @virtual name
+ * @virtual objectType
  */
-TilingSprite.prototype.name = 'TilingSprite'					// VIRTUAL
+TilingSprite.prototype.objectType = 'TilingSprite'					// VIRTUAL
  
  
  

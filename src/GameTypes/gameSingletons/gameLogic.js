@@ -9,28 +9,33 @@
  * @typedef {import('src/GameTypes/sprites/StatusBarSprite')} StatusBarSprite
  */
 
+
+const AssetsLoader = require('src/GameTypes/gameSingletons/AssetsLoader');
+/** @type {Array<Object>} */
+let loadedAssets = null;
+AssetsLoader.then(function(loadedBundles) {
+	loadedAssets = loadedBundles;
+});
+
 /**
  * @singleton
  * Rules for the actual game
  */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
-const {levels, foeDescriptors, mainSpaceShipLifePoints, lootSpritesTextures, maxLootsByType, weapons, objectTypes} = require('src/GameTypes/gameSingletons/gameConstants');
+// lootSpritesTextures, maxLootsByType, 
+const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons, objectTypes} = require('src/GameTypes/gameSingletons/gameConstants');
 const {windowSize, occupiedCells} = require('src/GameTypes/grids/gridManager');
-const ruleSet = require('src/GameTypes/gameSingletons/gameRules');
 const GameState = require('src/GameTypes/gameSingletons/GameState');
 const GameLoop = require('src/GameTypes/gameSingletons/GameLoop');
 
-const ExplosionSprite = require('src/GameTypes/sprites/ExplosionSprite');
 const LootSprite = require('src/GameTypes/sprites/LootSprite');
 
 const GameObjectsFactory = require('src/GameTypes/factories/GameObjectsFactory');
 
 const Tween = require('src/GameTypes/tweens/Tween');
-const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
 const CoolDownTween = require('src/GameTypes/tweens/CoolDownTween'); 
 const CooledDownPropFadeToggleTween = require('src/GameTypes/tweens/CooledDownPropFadeToggleTween');
-const DelayedCooledDownPropFadeToggleTween = require('src/GameTypes/tweens/DelayedCooledDownPropFadeToggleTween');
 
 const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
 
@@ -54,31 +59,34 @@ const handleFoeSpaceShipDamaged = function(
 	) {
 		
 	// Avoid potential double deletion when collided twice in the same frame
-	// @ts-ignore lifePoints is inherited
+	// @ts-ignore healthPoints is inherited
 	if (damagedFoeSpaceShip.hasBeenDestroyed()
-		&& explodedFireball.name === 'fireballSprite') {	// Test the "name" prop : the mainSpaceShip may also collide a foe
+		&& explodedFireball.objectType === 'Projectile') {	// Test the "name" prop : the mainSpaceShip may also collide a foe
 		removeFireBallFromStage(explodedFireball);			// (then the mainSpaceShipSprite is positionned
 		return;
 	}
 	
 	if (damagedFoeSpaceShip.hasShield)
-		GameObjectsFactory().newObject(objectTypes.shield, true, [], damagedFoeSpaceShip);
+		GameObjectsFactory().newObject(
+			objectTypes.shield,
+			true,
+			[damagedFoeSpaceShip.objectType === 'BossSpaceShip' ? true : false],
+			damagedFoeSpaceShip
+		);
 
 	damagedFoeSpaceShip.handleDamage(explodedFireball);
 	
 	GameObjectsFactory().newObject(objectTypes.smallExplosion, true, [], damagedFoeSpaceShip);
 	
-	// @ts-ignore lifePoints is inherited
+	// @ts-ignore healthPoints is inherited
 	if (damagedFoeSpaceShip.hasBeenDestroyed())
 		 handleFoeSpaceShipDestroyed(
 			damagedFoeSpaceShip,
 			scoreTextSprite
 		);
 	
-	if (explodedFireball.name === 'fireballSprite')		// the mainSpaceShip may also collide a foe
-		removeFireBallFromStage(						// (then the mainSpaceShipSprite is aliased as the "fireball")
-			explodedFireball
-		)
+	if (explodedFireball.objectType === 'Projectile')		// the mainSpaceShip may also collide a foe
+		removeFireBallFromStage(explodedFireball)			// (then the mainSpaceShipSprite is aliased as the "fireball")
 }
 
 /**
@@ -93,7 +101,7 @@ const handleFoeSpaceShipDestroyed = function(
 	) {
 	
 	GameObjectsFactory().newObject(objectTypes.greenExplosion, true, [], damagedFoeSpaceShip);
-	GameObjectsFactory().newObject(objectTypes.plasmaBlast, true, [], damagedFoeSpaceShip);
+	GameObjectsFactory().newObject(objectTypes.plasmaBlast, true, [damagedFoeSpaceShip.objectType === 'BossSpaceShip'], damagedFoeSpaceShip);
 	
 	// foeSpaceShipSprite removal from the gameLoop & scene
 	// @ts-ignore UID is inherited
@@ -101,20 +109,25 @@ const handleFoeSpaceShipDestroyed = function(
 	
 	// @ts-ignore UID is inherited
 	GameLoop().markCollisionTestsForRemoval(Player().foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip.UID).collisionTestsRegister);
-	
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsCollisionTestsRegister.deleteItem(damagedFoeSpaceShip.UID);
-	// @ts-ignore UID is inherited
-	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
 	
 	// Remove recurring fireball tween
-	if (parseInt(damagedFoeSpaceShip.foeType) > 0) {
+	if (damagedFoeSpaceShip.objectType === 'BossSpaceShip'
+		|| parseInt(damagedFoeSpaceShip.foeType) % 2 === 1
+		) {
 		// @ts-ignore UID is inherited
-		GameLoop().removeTween(CoreTypes.fromFoesFireballRecurringTweensRegister.getItem(damagedFoeSpaceShip.UID))
+		CoreTypes.fromFoesFireballRecurringTweensRegister.getItem(damagedFoeSpaceShip.UID).forEach(function(tween) {
+			GameLoop().removeTween(tween);
+		})
 		// @ts-ignore UID is inherited
 		CoreTypes.fromFoesFireballRecurringTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
 	}
 	
+	// @ts-ignore UID is inherited
+	GameLoop().removeTween(Player().foeSpaceShipsTweensRegister.getItem(damagedFoeSpaceShip.UID));
+	// @ts-ignore UID is inherited
+	Player().foeSpaceShipsTweensRegister.deleteItem(damagedFoeSpaceShip.UID);
 	GameLoop().removeSpriteFromScene(damagedFoeSpaceShip);
 	
 	if (Math.random() <= damagedFoeSpaceShip.lootChance)
@@ -145,7 +158,9 @@ const handleMainSpaceShipHit = function(
 		statusBar
 	) {
 	removeFireBallFromStage(foeFireball);
-	Player().mainSpaceShip.decrementHealth();
+	
+	Player().mainSpaceShip.handleDamage(foeFireball);
+	
 	GameObjectsFactory().newObject(objectTypes.shield, true, [], Player().mainSpaceShip);
 	handleInvicibleMainSpaceShip();
 	
@@ -155,7 +170,7 @@ const handleMainSpaceShipHit = function(
 	else {
 		// only if we're NOT dead, visually decrement the life-bar (else we hide it, for now)
 		// @ts-ignore tilePositionX is inherited
-		statusBar.decrementHealth();
+		statusBar.updateHealth(Player().mainSpaceShip);
 		createBlinkingSpaceShip(Player().mainSpaceShip);
 	}
 }
@@ -170,7 +185,7 @@ const handleMainSpaceShipDamaged = function(
 		damagedFoeSpaceShip,
 		statusBar
 	) {
-	Player().mainSpaceShip.decrementHealth();
+	Player().mainSpaceShip.handleDamage(damagedFoeSpaceShip);
 	
 	GameObjectsFactory().newObject(objectTypes.shield, true, [], Player().mainSpaceShip);
 	GameObjectsFactory().newObject(
@@ -202,7 +217,7 @@ const handleMainSpaceShipDamaged = function(
 	else {
 		// only if we're NOT dead, visually decrement the life-bar (else we hide it, for now)
 		// @ts-ignore tilePositionX is inherited
-		statusBar.decrementHealth();
+		statusBar.updateHealth(Player().mainSpaceShip)
 		createBlinkingSpaceShip(Player().mainSpaceShip);
 	}
 }
@@ -222,7 +237,8 @@ const handleMainSpaceShipDestroyed = function(
 	
 	GameLoop().markCollisionTestsForRemoval(Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache));
 	GameLoop().removeSpriteFromScene(Player().mainSpaceShip);		// noError: seems we have a bug, unknown after a round of exploring the code
-	GameLoop().removeSpriteFromScene(statusBar.gameStatusSpriteObj);
+	GameLoop().removeSpriteFromScene(statusBar.gameStatusHealthSpriteObj);
+	GameLoop().removeSpriteFromScene(statusBar.gameStatusShieldSpriteObj);
 	GameLoop().stage.removeChild(statusBar.textForLevelSpriteObj);
 	
 	// Temporary hack to shw the animation before stopping
@@ -249,6 +265,8 @@ const handleInvicibleMainSpaceShip = function() {
 	CoreTypes.fromFoesFireballsCollisionTestsRegister.reset();
 	
 	for (let foeSpaceShipSpriteObj of Object.values(Player().foeSpaceShipsRegister.cache)) {
+		if (!Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister)
+			console.log('found UID is ', foeSpaceShipSpriteObj.UID, Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID]);
 		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister = 
 			// We'll loop through all the tests, including those against projectiles.
 			// It's not efficient, but do we have a reference to the specific test in the scope ? Seems not...
@@ -286,18 +304,17 @@ const handlePowerUp = function(
 	) {
 	
 	// @ts-ignore
-	const tween = CoreTypes.disposableTweensRegister.findObjectByValue('lootSprite', lootSprite).lootTween;
-	if (tween)		// let's assume that can fail...  for now...
-		GameLoop().removeTween(tween);
+	const tweenIdx = CoreTypes.disposableTweensRegister.indexOfObjectByValue('lootSprite', lootSprite);
+	if (tweenIdx !== false) {		// let's assume that can fail...  for now...
+		GameLoop().removeTween(CoreTypes.disposableTweensRegister[tweenIdx].lootTween);
+		CoreTypes.disposableTweensRegister.splice(tweenIdx, 1);
+	}
 	
 	GameLoop().removeSpriteFromScene(lootSprite);
 	switch(lootSprite.lootType) {
 		case 'medikit':
-			if (Player().mainSpaceShip.getHealth() < mainSpaceShipLifePoints[GameState().currentLevel]) {
-				Player().mainSpaceShip.incrementHealth();
-				// @ts-ignore tilePositionX is inherited
-				statusBarSprite.incrementHealth();
-			}
+				Player().mainSpaceShip.handleDamage(lootSprite);
+				statusBarSprite.updateHealth(Player().mainSpaceShip)
 			break;
 		case 'weapon':
 			// FIXME: don't like declaring Object props as {Number}
@@ -321,25 +338,20 @@ const handleFoeSpaceShipOutOfScreen = function(
 	Player().foeSpaceShipsRegister.deleteItem(spaceShipSprite.UID);
 	// @ts-ignore UID is inherited
 	Player().foeSpaceShipsTweensRegister.deleteItem(spaceShipSprite.UID);
-	// @ts-ignore UID is inherited
-	GameLoop().removeTween(Player().foeSpaceShipsTweensRegister.getItem(spaceShipSprite.UID));
 	
-	GameLoop().removeSpriteFromScene(spaceShipSprite, true);		// might fail if already destroyed => noError
+	GameLoop().removeSpriteFromScene(spaceShipSprite);		// might fail if already destroyed => noError
+	
+	// Remove recurring fireball tween
+	if (parseInt(spaceShipSprite.foeType) % 2 === 1) {
+		// @ts-ignore UID is inherited
+		CoreTypes.fromFoesFireballRecurringTweensRegister.getItem(spaceShipSprite.UID).forEach(function(tween) {
+			GameLoop().removeTween(tween);
+		})
+		// @ts-ignore UID is inherited
+		CoreTypes.fromFoesFireballRecurringTweensRegister.deleteItem(spaceShipSprite.UID);
+	}
 }
 
-
-/**
- * @method handleFireballOutOfScreen
- * @param {Projectile} fireballSprite
- * @return Void
- */
-const handleFireballOutOfScreen = function(
-		fireballSprite
-	) {
-	removeFireBallFromStage(
-		fireballSprite
-	);
-}
 
 
 /**
@@ -358,18 +370,45 @@ const handleMainSpaceShipOutOfScreen = function() {
 }
 
 
+
+/**
+ * @method handleFireballOutOfScreen
+ * @param {Projectile} fireballSprite
+ * @return Void
+ */
+const handleFireballOutOfScreen = function(
+		fireballSprite
+	) {
+	removeFireBallFromStage(
+		fireballSprite,
+		true
+	);
+}
+
+
+
 /**
  * @method handleFoeSpaceShipDestroyed
  * @param {Projectile} explodedFireball
+ * @param {Boolean} [outOfScreen = false] outOfScreen
  * @return Void
  */
 const removeFireBallFromStage = function(
-		explodedFireball
+		explodedFireball,
+		outOfScreen
 	) {
+
 	let spritePos = CoreTypes.fireballsRegister.indexOf(explodedFireball);
+	
+//	console.log(spritePos, explodedFireball, CoreTypes.fireballsRegister, CoreTypes.fireballsTweensRegister);
+	
+	// tweens for out of screen fireballs have already been cleaned
+	if (!outOfScreen)
+		GameLoop().removeTween(CoreTypes.fireballsTweensRegister[spritePos]);
+	
 	CoreTypes.fireballsRegister.splice(spritePos, 1);
-	GameLoop().removeTween(CoreTypes.fireballsTweensRegister[spritePos]);
 	CoreTypes.fireballsTweensRegister.splice(spritePos, 1);
+
 	
 	// @ts-ignore UID is inherited
 	if (CoreTypes.fromFoesFireballsCollisionTestsRegister.hasItem(explodedFireball.UID))
@@ -378,6 +417,30 @@ const removeFireBallFromStage = function(
 	
 	GameLoop().removeSpriteFromScene(explodedFireball, true);		// might fail if already collided => noError
 }
+
+
+
+/**
+ * @method handleFireballOutOfScreen
+ * @param {LootSprite} lootSprite
+ * @return Void
+ */
+const handleLootOutOfScreen = function(
+		lootSprite
+	) {
+		
+	// @ts-ignore UID is inherited
+	GameLoop().markCollisionTestsForRemoval([Player().lootsCollisionTestsRegister.getItem(lootSprite.UID)]);
+	// @ts-ignore UID is inherited
+	Player().lootsCollisionTestsRegister.deleteItem(lootSprite.UID);
+	GameLoop().removeSpriteFromScene(lootSprite);
+}
+
+
+
+
+
+
 
 /**
  * @method handleFoeSpaceShipDestroyed
@@ -397,10 +460,12 @@ const handleLoot = function(
 		// @ts-ignore FIXME: lootType should be Union {'madikit' | 'powerUp'}
 		GameState().currentLootCount[lootSprite.lootType]++;
 	
-	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototype inheritance...
+	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototypal inheritance...
 	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(Player().mainSpaceShip, lootSprite, 'powerUp');
-	// we chose to wait for the next frame : appending it synchronlously 
-	// has caused us a lot of false tracks when debugging
+	Player().lootsCollisionTestsRegister.setItem(lootSprite.UID, mainSpaceShipCollisionTest);
+	// Wait for the next frame : appending it synchronlously 
+	// would normally extend the list beyond the starting index, so we should not bother,
+	// but "peace of the mind has no price"
 	CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
 }
 
@@ -417,7 +482,6 @@ const handleDisposableSpriteAnimationEnded = function(tween) {
 		return;
 	
 	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(tween.target);
-	
 	if (spritePos === -1) {
 		console.warn('a disposable FX wasn\'t found in the register for deletion', spritePos, tween.target);
 		return;
@@ -463,10 +527,31 @@ const createBlinkingSpaceShip = function(
  * @return Void
  */
 const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
-	if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 1
+	
+	const foesInGame = Object.values(Player().foeSpaceShipsRegister.cache);
+	if (foesInGame.length === 1
+		&& foesInGame[0].objectType !== 'BossSpaceShip'
 		&& GameState().getCurrentLevel() < 6) {
 		
 		if (GameState().getCurrentScore() >= levels[GameState().getCurrentLevelAsString()].requiredPointsToStepUp) {
+			// @ts-ignore levelTheme isn't typed
+			loadedAssets[4].levelTheme.stop();
+			// @ts-ignore levelTheme isn't typed
+			loadedAssets[4].bossTheme.play({volume : .5, loop : true});
+			GameObjectsFactory().newObject(objectTypes.bossSpaceShip);
+		}
+		else
+			addFoeSpaceShips();
+	}
+	else if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 0) {
+		if (GameState().getCurrentLevel() === 6)
+			// YOU WIN TITLE
+			GameObjectsFactory().newObject(objectTypes.title, true, ['YOU WIN']);
+		else {
+			// @ts-ignore levelTheme isn't typed
+			loadedAssets[4].levelTheme.play({volume : .5, loop : true});
+			// @ts-ignore levelTheme isn't typed
+			loadedAssets[4].bossTheme.stop();
 			GameState().incrementLevel();
 			GameState().currentLootCount.medikit = 0;
 			GameState().currentLootCount.weapon = 0;
@@ -474,13 +559,7 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 			currentLevelText.text = GameState().getCurrentLevelAsString();
 			addFoeSpaceShips();
 		}
-		else
-			addFoeSpaceShips();
 	}
-	else if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 0
-		&& GameState().getCurrentLevel() === 6)
-		// YOU WIN TITLE
-		GameObjectsFactory().newObject(objectTypes.title, true, ['YOU WIN']);
 }
 
 
@@ -543,6 +622,7 @@ module.exports = {
 	handleMainSpaceShipDamaged,
 	handleFireballOutOfScreen,
 	handleMainSpaceShipOutOfScreen,
+	handleLootOutOfScreen,
 	handleDisposableSpriteAnimationEnded,
 	shouldChangeLevel,
 	handlePowerUp

@@ -6,13 +6,14 @@ const FontFaceObserver = require('src/utilities/fontfaceobserver');
 const KeyboardEvents = require('src/events/JSKeyboardMap');
 const KeyboardListener = require('src/events/GameKeyboardListener');
 const {throttle} = require('src/core/commonUtilities');
-const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 const PropertyCache = require('src/core/PropertyCache').ObjectCache;
 
 const AssetsLoader = require('src/GameTypes/gameSingletons/AssetsLoader');
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
-const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell} = require('src/GameTypes/grids/gridManager');
-const {levels, foeDescriptors, mainSpaceShipLifePoints, weapons, objectTypes} = require('src/GameTypes/gameSingletons/gameConstants');
+// cellSize, gridCoords, occupiedCells, getFoeCell
+const {windowSize} = require('src/GameTypes/grids/gridManager');
+// foeDescriptors, mainSpaceShipLifePoints, weapons, 
+const {levels, objectTypes} = require('src/GameTypes/gameSingletons/gameConstants');
 
 const Player = require('src/GameTypes/gameSingletons/Player');
 let GameState = require('src/GameTypes/gameSingletons/GameState');
@@ -25,22 +26,22 @@ const GameObjectsFactory = require('src/GameTypes/factories/GameObjectsFactory')
 // Singleton init
 GameObjectsFactory();
 
-const Sprite = require('src/GameTypes/sprites/Sprite');
-const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
+//const Sprite = require('src/GameTypes/sprites/Sprite');
+//const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
 
 const Tween = require('src/GameTypes/tweens/Tween');
-const TileTween = require('src/GameTypes/tweens/TileTween');
-const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
-const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
+//const TileTween = require('src/GameTypes/tweens/TileTween');
+//const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
+//const TileToggleMovingTween = require('src/GameTypes/tweens/TileToggleMovingTween');
 const RecurringCallbackTween = require('src/GameTypes/tweens/RecurringCallbackTween');
-
-const MainSpaceShip = require('src/GameTypes/sprites/MainSpaceShip');
-const FoeSpaceShip = require('src/GameTypes/sprites/FoeSpaceShip');
-const StatusBarSprite = require('src/GameTypes/sprites/StatusBarSprite');
-const ProjectileFactory = require('src/GameTypes/factories/ProjectileFactory');
-
-const spaceShipCollisionTester = require('src/GameTypes/collisionTests/spaceShipCollisionTester');
-const fireBallCollisionTester = require('src/GameTypes/collisionTests/fireBallCollisionTester');
+//
+//const MainSpaceShip = require('src/GameTypes/sprites/MainSpaceShip');
+//const FoeSpaceShip = require('src/GameTypes/sprites/FoeSpaceShip');
+//const StatusBarSprite = require('src/GameTypes/sprites/StatusBarSprite');
+//const ProjectileFactory = require('src/GameTypes/factories/ProjectileFactory');
+//
+//const spaceShipCollisionTester = require('src/GameTypes/collisionTests/spaceShipCollisionTester');
+//const fireBallCollisionTester = require('src/GameTypes/collisionTests/fireBallCollisionTester');
 const mainSpaceShipCollisionTester = require('src/GameTypes/collisionTests/mainSpaceShipCollisionTester');
 
 
@@ -53,7 +54,30 @@ var classConstructor = function() {
 		
 		AssetsLoader.then(function(loadedAssets) {
 			(new FontFaceObserver('Showcard Gothic'))
-				.load().then(onLoaded.bind(null, loadedAssets))
+				.load().then(function() {
+					
+					// FIRST INTERACT FOR WEB AUDIO
+					let firstInteract = false;
+					// @ts-ignore callback
+					keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
+						if (!firstInteract && keyCode === KeyboardEvents.indexOf('ENTER')) {
+							firstInteract = true;
+							onLoaded(loadedAssets);
+						}
+						else if (keyCode === KeyboardEvents.indexOf('Q') && ctrlKey) {
+							GameLoop().stop();
+							loadedAssets[4].levelTheme.stop();
+							loadedAssets[4].bossTheme.stop();
+						}
+					});
+					
+					// INTRO TITLE
+					GameObjectsFactory().newObject(objectTypes.title, true, ['Press Enter', true]);
+					
+					// GAME LAUNCH
+					document.querySelector(rootNodeSelector).appendChild(GameLoop().renderer.view);
+					GameLoop().start();
+				})
 		})
 		
 		
@@ -65,6 +89,8 @@ var classConstructor = function() {
 		function onLoaded(loadedAssets) {
 			console.log('Ctrl + Q to stop the game loop');
 			
+			// @ts-ignore levelTheme isn't typed
+			loadedAssets[4].levelTheme.play({volume : .5, loop : true});
 			
 			// BACKGROUND
 			GameObjectsFactory().newObject(objectTypes.background);
@@ -80,6 +106,7 @@ var classConstructor = function() {
 				foeSpaceShipsRegister : new PropertyCache('foeSpaceShipsRegister'),
 				foeSpaceShipsTweensRegister : new PropertyCache('foeSpaceShipsTweensRegister'),
 				foeSpaceShipsCollisionTestsRegister : new PropertyCache('foeSpaceShipsCollisionTestsRegister'),
+				lootsCollisionTestsRegister : new PropertyCache('lootsCollisionTestsRegister'),
 				mainSpaceShip : mainSpaceShipSprite
 			});
 			
@@ -95,17 +122,15 @@ var classConstructor = function() {
 						shieldedFoeCount++;
 				}
 				let mainSpaceShipCollisionTest;
-				partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSpriteObj) {
+				partialFoeSpaceShipsRegister.forEach(function(foeSpaceShipSprite) {
 					// @ts-ignore inherited props on mainSpaceShipSprite
-					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, foeSpaceShipSpriteObj, 'hostile');
+					mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(mainSpaceShipSprite, foeSpaceShipSprite, 'hostile');
 					// @ts-ignore UID is inherited
-					Player().foeSpaceShipsCollisionTestsRegister.setItem(foeSpaceShipSpriteObj.UID, mainSpaceShipCollisionTest)
+					Player().foeSpaceShipsCollisionTestsRegister.setItem(foeSpaceShipSprite.UID, mainSpaceShipCollisionTest)
 					
-					// FIXME: we don't ensure that we add collision-tests at a time where the game loop isn't looping on them
-					// It may break (encoutered only once until now)
 					CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
 					// @ts-ignore UID is inherited
-					Player().foeSpaceShipsTweensRegister.getItem(foeSpaceShipSpriteObj.UID).collisionTestsRegister.push(mainSpaceShipCollisionTest);
+					Player().foeSpaceShipsTweensRegister.getItem(foeSpaceShipSprite.UID).collisionTestsRegister.push(mainSpaceShipCollisionTest);
 				});
 			}
 			addFoeSpaceShips();
@@ -122,16 +147,15 @@ var classConstructor = function() {
 			
 			
 			
-			
 			// KEYBOARD HANDLING
 			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
-			const mainSpaceShipeLeftTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(-10, 0), 1, false);
+			const mainSpaceShipeLeftTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(-15, 0), 1, false);
 			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
-			const mainSpaceShipeRightTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(10, 0), 1, false);
+			const mainSpaceShipeRightTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(15, 0), 1, false);
 			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
-			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -10), 1, false);
+			const mainSpaceShipeUpTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, -15), 1, false);
 			// @ts-ignore : TS doesn't understand anything to prototypal inheritance (mainSpaceShipSprite IS an instance of a Sprite)
-			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 10), 1, false);
+			const mainSpaceShipeDownTween = new Tween(windowSize, mainSpaceShipSprite, CoreTypes.TweenTypes.add, new CoreTypes.Point(0, 15), 1, false);
 			
 			const fireTween = new RecurringCallbackTween(launchFireball, fireballThrottling, null, null, '');
 
@@ -179,9 +203,6 @@ var classConstructor = function() {
 				else if (keyCode === KeyboardEvents.indexOf('SPACE')) {
 					GameLoop().removeTween(fireTween);
 				}
-				else if (keyCode === KeyboardEvents.indexOf('Q') && ctrlKey) {
-					GameLoop().stop()
-				}
 			});
 			
 			
@@ -218,16 +239,6 @@ var classConstructor = function() {
 				);
 			});
 			// @ts-ignore don't want to type callbacks
-			GameLoop().addEventListener('fireballOutOfScreen', function(e) {
-				gameLogic.handleFireballOutOfScreen(
-					e.data
-				);
-			});
-			// @ts-ignore don't want to type callbacks
-			GameLoop().addEventListener('mainSpaceShipOutOfScreen', function(e) {
-				gameLogic.handleMainSpaceShipOutOfScreen();
-			});
-			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('mainSpaceShipHit', function(e) {
 				gameLogic.handleMainSpaceShipHit(
 					e.data[1],
@@ -240,6 +251,22 @@ var classConstructor = function() {
 					e.data[1],
 					statusBar
 				);
+			});
+			// @ts-ignore don't want to type callbacks
+			GameLoop().addEventListener('fireballOutOfScreen', function(e) {
+				gameLogic.handleFireballOutOfScreen(
+					e.data
+				);
+			});
+			// @ts-ignore don't want to type callbacks
+			GameLoop().addEventListener('lootOutOfScreen', function(e) {
+				gameLogic.handleLootOutOfScreen(
+					e.data
+				);
+			});
+			// @ts-ignore don't want to type callbacks
+			GameLoop().addEventListener('mainSpaceShipOutOfScreen', function(e) {
+				gameLogic.handleMainSpaceShipOutOfScreen();
 			});
 			// @ts-ignore don't want to type callbacks
 			GameLoop().addEventListener('disposableSpriteAnimationEnded', function(e) {
@@ -255,9 +282,7 @@ var classConstructor = function() {
 			
 			
 			
-			// GAME LAUNCH
-			document.querySelector(rootNodeSelector).appendChild(GameLoop().renderer.view);
-			GameLoop().start();
+			
 		}
 		
 		

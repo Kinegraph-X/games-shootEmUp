@@ -118,7 +118,7 @@ TileToggleMovingTween.prototype.nextStepForSprite = function(stepCount) {
 	this.target.x = (new CoreTypes.Coord(this.target.x))[this.type](this.transform.x.value * stepCount * this.speed);
 	
 	// @ts-ignore target is inherited
-	if (this.target.name === "fireballSprite" && this.transform.x.value !== 0 && !this.hasReachedClimax) {
+	if (this.target.objectType === "Projectile" && this.transform.x.value !== 0 && !this.hasReachedClimax) {
 		// @ts-ignore target is inherit
 		const offset = Math.abs((this.target.x - this.startX) / 200);
 		if (Math.round(offset * 5) === 5)
@@ -133,7 +133,7 @@ TileToggleMovingTween.prototype.nextStepForSprite = function(stepCount) {
 		// @ts-ignore target is inherited
 		this.target.y = (new CoreTypes.Coord(this.target.y))[this.type](this.transform.y.value * stepCount * this.speed);
 		// @ts-ignore target is inherited
-		if (this.target.name === "fireballSprite") {
+		if (this.target.objectType === "Projectile") {
 			// @ts-ignore transform is inherited
 			this.transform.x.value = 0;
 			// @ts-ignore target is inherited

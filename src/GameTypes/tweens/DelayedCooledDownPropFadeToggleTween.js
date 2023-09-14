@@ -24,8 +24,14 @@ const DelayedCooledDownPropFadeToggleTween = function(target, type, affectedProp
 	this.initialDelay = initialDelay;
 	this.initialDelayEnded = false;
 	
-	// @ts-ignore target is inherited
-	this.target[this.affectedProp] = (new CoreTypes.Coord(this.target[this.affectedProp]))[this.type](this.offset);
+	// HACK for the movements of the Boss : it also fires projectiles
+	this.collisionTestsRegister = [];
+	
+	// HACK: we set the prop at its final value for the time of the delay (only works for fadeout)
+	// FIXME: find something efficient
+	if (this.initialDelay !== 0)
+		// @ts-ignore target is inherited
+		this.target[this.affectedProp] = (new CoreTypes.Coord(this.target[this.affectedProp]))[this.type](this.offset);
 }
 DelayedCooledDownPropFadeToggleTween.prototype = Object.create(CooledDownPropFadeToggleTween.prototype);
 DelayedCooledDownPropFadeToggleTween.prototype.objectType = 'DelayedCooledDownPropFadeToggleTween';

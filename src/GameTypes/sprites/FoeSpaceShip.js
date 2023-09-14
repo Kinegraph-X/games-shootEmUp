@@ -27,7 +27,7 @@ const FoeSpaceShip = function(position, foeCell, texture, foeType) {
 	this.lootChance = foeDescriptors[foeType].lootChance;
 	this.hasShield = false;
 	
-	Sprite.call(this, foeDescriptors[foeType].lifePoints);
+	Sprite.call(this, foeDescriptors[foeType].healthPoints);
 	this.spriteObj = this.getSprite(texture);
 	
 	this.x = position.x.value;
@@ -35,8 +35,14 @@ const FoeSpaceShip = function(position, foeCell, texture, foeType) {
 	this.width = this.defaultSpaceShipDimensions.x.value;
 	this.height = this.defaultSpaceShipDimensions.y.value;
 	this.rotation = 180;
+	
+	this.damage = 1;
 }
 FoeSpaceShip.prototype = Object.create(Sprite.prototype);
+/**
+ * @static {String} objectType
+ */
+FoeSpaceShip.prototype.objectType = 'FoeSpaceShip';
 
 /**
  * @method getSprite
@@ -57,7 +63,7 @@ FoeSpaceShip.prototype.getSprite = function(texture) {
  */
 FoeSpaceShip.prototype.handleDamage = function(sprite) {
 	// @ts-ignore
-	this.lifePoints -= sprite.damage;
+	this.healthPoints -= sprite.damage;
 }
 
 /**
@@ -66,13 +72,8 @@ FoeSpaceShip.prototype.handleDamage = function(sprite) {
  */
 FoeSpaceShip.prototype.hasBeenDestroyed = function() {
 	// @ts-ignore
-	return this.lifePoints <= 0;
+	return this.healthPoints <= 0;
 }
-
-/**
- * @static {String} name
- */
-FoeSpaceShip.prototype.name = 'foeSpaceShipSprite';
 
 /**
  * @static {CoreTypes.Dimension} defaultSpaceShipDimensions

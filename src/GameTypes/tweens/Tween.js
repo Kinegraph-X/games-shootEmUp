@@ -57,23 +57,28 @@ Tween.prototype.nextStep = function(stepCount, frameDuration, timestamp) {
  * @method testOutOfScreen
  */
 Tween.prototype.testOutOfScreen = function() {
-	if (this.target.name.match(/bgLayer/) || this.target.name.match(/flame/))
+	if (this.target.objectType.match(/bgLayer/) || this.target.objectType.match(/flame/))
 		return false;
 	
 	if (!this.target.enteredScreen && this.target.y - this.target.height / 2 > 0) {
 		this.target.enteredScreen = true;
 	}
+	else if (!this.target.enteredScreen)
+		return;
 	
-	if (this.target.name === 'fireballSprite') {		// fireballSprite must test the upper bound of the window
-		if (this.target.y - this.target.height / 2 < -30
+	if (this.target.objectType !== 'MainSpaceShip'
+		&& this.target.enteredScreen
+		&& (this.target.y + this.target.height / 2 < 0
+			|| this.target.y - this.target.height > this.windowSize.y.value		// HACK we want to be sure something is far before removing it
 			|| this.target.x - this.target.width / 2 < 0
-			|| this.target.x + this.target.width / 2 > this.windowSize.x.value) {
-			return true;
-		}
+			|| this.target.x + this.target.width / 2 > this.windowSize.x.value)
+		) {
+		return true;
 	}
-	else if (this.target.y - this.target.height / 2 > this.windowSize.y.value		// other sprites go downwards through the window
-			|| this.target.x > this.windowSize.x.value
+	else if (this.target.y + this.target.height < 0
+			|| this.target.y > this.windowSize.y.value
 			|| this.target.x + this.target.width < 0
+			|| this.target.x > this.windowSize.x.value
 		) {
 		return true;
 	}

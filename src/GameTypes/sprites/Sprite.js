@@ -1,83 +1,44 @@
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 
-// like if it "implements" the Damageable interface
+// It "implements" the Wounder interface
 const Wounder = require('src/GameTypes/interfaces/Wounder');
+const Damageable = require('src/GameTypes/interfaces/Damageable');
  
 
 /**
  * @namespace Sprite
  * @constructor Sprite
- * @param {Number} lifePoints
+ * @param {Number} healthPoints
  */
-const Sprite = function(lifePoints) {
+const Sprite = function(healthPoints) {
 	// @ts-ignore
 	if (typeof PIXI === 'undefined') {
 		console.warn('The PIXI lib must be present in the global scope of the page');
 		return;
 	}
 	Wounder.call(this);
+	Damageable.call(this);
 	
 	this.UID = UIDGenerator.newUID();
 	this.enteredScreen = false;
-	this.lifePoints = lifePoints || 0;
+	this.healthPoints = healthPoints || 0;
 	this.spriteObj = null;
 }
-Sprite.prototype = Object.create(Wounder.prototype);
+const proto_proto = Object.create(Wounder.prototype);
+Object.assign(proto_proto, Damageable.prototype); 
+Sprite.prototype = Object.create(proto_proto);
+/**
+ * @static objectType
+ */
+Sprite.prototype.objectType = 'Sprite'
+Sprite.prototype.objectType = 'Sprite';
+
 
 /**
  * @method getSprite
  * @virtual 
  */
 Sprite.prototype.getSprite = function() {}
-
-/**
- * @static name
- * @virtual
- */
-Sprite.prototype.name = 'Sprite'
-
-/**
- * @method getHealth
- * @return {Number}
- */
-Sprite.prototype.getHealth = function() {
-	// @ts-ignore lifePoints is inherited
-	return this.lifePoints;
-}
-
-/**
- * @method incrementHealth
- */
-Sprite.prototype.incrementHealth = function() {
-	// @ts-ignore lifePoints is inherited
-	this.lifePoints++
-}
-
-/**
- * @method decrementHealth
- */
-Sprite.prototype.decrementHealth = function() {
-	// @ts-ignore lifePoints is inherited
-	this.lifePoints--
-}
-
-/**
- * @method handleDamage
- * @param {Wounder} sprite
- * @return Void
- */
-Sprite.prototype.handleDamage = function(sprite) {
-	// @ts-ignore
-	this.lifePoints -= sprite.damage;
-}
-
-/**
- * @method hasBeenDestroyed
- * @return {boolean}
- */
-Sprite.prototype.hasBeenDestroyed = function() {
-	return this.lifePoints <= 0;
-}
 
 
 Object.defineProperty(Sprite.prototype, 'x', {

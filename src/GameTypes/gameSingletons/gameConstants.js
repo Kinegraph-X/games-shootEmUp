@@ -19,27 +19,27 @@ const levels = {
 	2 : {
 		foeCount : 8,
 		shieldedFoeCount : 0,
-		requiredPointsToStepUp : 2000
+		requiredPointsToStepUp : 2500
 	},
 	3 : {
 		foeCount : 10,
 		shieldedFoeCount : 3,
-		requiredPointsToStepUp : 3500
+		requiredPointsToStepUp : 5000
 	},
 	4 : {
 		foeCount : 14,
 		shieldedFoeCount : 4,
-		requiredPointsToStepUp : 5000
+		requiredPointsToStepUp : 7500
 	},
 	5 : {
 		foeCount : 20,
 		shieldedFoeCount : 7,
-		requiredPointsToStepUp : 8000
+		requiredPointsToStepUp : 12000
 	},
 	6 : {
 		foeCount : 28,
 		shieldedFoeCount : 12,
-		requiredPointsToStepUp : 10000
+		requiredPointsToStepUp : 15000
 	}
 }
 
@@ -47,7 +47,7 @@ const levels = {
 
 /**
  * @type {{[key:String] : {
- * 		lifePoints : Number,
+ * 		healthPoints : Number,
  * 		lootChance : Number,
  * 		pointsPrize : Number}
  * }} foeDescriptors
@@ -55,34 +55,75 @@ const levels = {
  */
 const foeDescriptors = {
 	'0' : {
-		lifePoints : 1,
+		healthPoints : 1,
 		lootChance : 0,
 		pointsPrize : 20
 	},
 	'1' : {
-		lifePoints : 2,
+		healthPoints : 2,
 		lootChance : .1,
 		pointsPrize : 45
 	},
 	'2' : {
-		lifePoints : 3,
+		healthPoints : 3,
 		lootChance : .2,
 		pointsPrize : 75
 	},
 	'3' : {
-		lifePoints : 5,
+		healthPoints : 5,
 		lootChance : 0,
 		pointsPrize : 120
 	},
 	'4' : {
-		lifePoints : 6,
+		healthPoints : 6,
 		lootChance : 0,
 		pointsPrize : 175
 	},
 	'5' : {
-		lifePoints : 7,
+		healthPoints : 7,
 		lootChance : 0,
 		pointsPrize : 600
+	}
+}
+
+/**
+ * @type {{[key:String] : {
+ * 		healthPoints : Number,
+ * 		lootChance : Number,
+ * 		pointsPrize : Number}
+ * }} foeDescriptors
+ * ennemies descriptors
+ */
+const bossDescriptors = {
+	'0' : {
+		healthPoints : 10,
+		lootChance : 0,
+		pointsPrize : 2000
+	},
+	'1' : {
+		healthPoints : 20,
+		lootChance : .1,
+		pointsPrize : 4500
+	},
+	'2' : {
+		healthPoints : 25,
+		lootChance : .2,
+		pointsPrize : 7500
+	},
+	'3' : {
+		healthPoints : 30,
+		lootChance : 0.3,
+		pointsPrize : 12000
+	},
+	'4' : {
+		healthPoints : 40,
+		lootChance : 0.4,
+		pointsPrize : 17500
+	},
+	'5' : {
+		healthPoints : 50,
+		lootChance : 0.5,
+		pointsPrize : 30000
 	}
 }
 
@@ -223,6 +264,79 @@ const foeWeapons = {
 	)
 }
 
+/**
+ * @type {{[key:Number] : WeaponDescriptor}} foeWeapons
+ * weapon types for foes in relation to damage
+ */
+const bossWeapons = {
+	0 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
+			'foeFireballTilemap'
+		],
+		6,
+		false
+	),
+	1 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
+			'foeFireballTilemap',
+			'foeFireballTilemap'
+		],
+		6,
+		false
+	),
+	2 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
+			'foeFireballTilemap',
+			'foeFireballTilemap'
+		],
+		6,
+		false
+	),
+	3 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
+			'foeFireballTilemap',
+			'foeFireballTilemap'
+		],
+		6,
+		false
+	),
+	4 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
+			'foeFireballTilemap',
+			'foeFireballTilemap'
+		],
+		6,
+		false
+	),
+	5 : new WeaponDescriptor(
+		'fireball',
+		1,
+		1,
+		[
+			'foeFireballTilemap',
+			'foeFireballTilemap',
+			'foeFireballTilemap'
+		],
+		6,
+		false
+	)
+}
+
 
 /**
  * Plasma colors
@@ -259,6 +373,7 @@ const objectTypes = {
 	statusBar : 'statusBar',
 	mainSpaceShip : 'mainSpaceShip',
 	foeSpaceShip : 'foeSpaceShip',
+	bossSpaceShip : 'bossSpaceShip',
 	projectile : 'projectile',
 	projectiles : 'projectiles',
 	shield : 'shield',
@@ -273,10 +388,12 @@ const objectTypes = {
 const gameConstants = {
 	levels,
 	foeDescriptors,
+	bossDescriptors,
 	mainSpaceShipLifePoints,
 	maxLootsByType,
 	weapons,
 	foeWeapons,
+	bossWeapons,
 	lootSpritesTextures,
 	objectTypes,
 	plasmaColors,

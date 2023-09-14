@@ -1,6 +1,14 @@
 /**
  * CoreTypes
  */
+
+/**
+ * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
+ * @typedef {import('src/GameTypes/tweens/Tween')} Tween
+ * @typedef {import('src/GameTypes/collisionTests/mainSpaceShipCollisionTester')} mainSpaceShipCollisionTester
+ * @typedef {import('src/GameTypes/collisionTests/fireBallCollisionTester')} fireBallCollisionTester
+ */
+
 var PropertyCache = require('src/core/PropertyCache').ObjectCache;
 
 /**
@@ -90,9 +98,6 @@ const TweenTypes = {
 
 
 
-//let foeSpaceShipsRegister = new PropertyCache('foeSpaceShipsRegister');
-//let foeSpaceShipsTweensRegister = new PropertyCache('foeSpaceShipsTweensRegister');
-
 
 
 
@@ -101,15 +106,11 @@ const TweenTypes = {
  * @namespace CoreTypes
  */
 /**
- * @typedef {Object} Sprite
- * @typedef {Object} Tween
- * @typedef {Object} CollisionTest
- * 
  * @typedef {Array<Sprite>} CoreTypes.fireballsRegister
  * @typedef {Array<Tween>} CoreTypes.fireballsTweensRegister
  * @typedef {Array<Sprite>} CoreTypes.disposableSpritesRegister
  * @typedef {Array<Tween>} CoreTypes.disposableTweensRegister
- * @typedef {Array<CollisionTest>} CoreTypes.tempAsyncCollisionsTests
+ * @typedef {Array<mainSpaceShipCollisionTester|fireBallCollisionTester>} CoreTypes.tempAsyncCollisionsTests
  * 
  * @typedef {Coord} CoreTypes.Coord
  * @typedef {Point} CoreTypes.Point

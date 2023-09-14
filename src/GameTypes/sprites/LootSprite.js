@@ -3,6 +3,7 @@
  */
 
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
+const Healer = require('src/GameTypes/interfaces/Healer');
 const Sprite = require('src/GameTypes/sprites/Sprite');
 
 
@@ -17,6 +18,7 @@ const LootSprite = function(position, texture, lootType) {
 	 this.lootType = lootType;
 	 
 	 Sprite.call(this);
+	 Healer.call(this);
 	 
 	 this.spriteObj = this.getSprite(texture);
 	 this.x = position.x.value;
@@ -27,9 +29,9 @@ const LootSprite = function(position, texture, lootType) {
 LootSprite.prototype = Object.create(Sprite.prototype);
 
 /**
- * @static {String} name
+ * @static {String} objectType
  */
-LootSprite.prototype.name = 'LootSprite';
+LootSprite.prototype.objectType = 'LootSprite';
 
 /**
  * @method getSprite
