@@ -1,5 +1,5 @@
 
-
+let {mainSpaceShipCollisionTypes} = require('src/GameTypes/gameSingletons/gameConstants');
 
 /**
  * @constructor GameRule
@@ -23,9 +23,9 @@ const ruleSet = {
 		new GameRule('LootSprite', 'trigger', ['lootOutOfScreen', 'target'], null)
 	],
 	mainSpaceShipTestCollision : [
-		new GameRule('LootSprite', 'trigger', ['mainSpaceShipPowerUp',  'mainSpaceShipSprite', 'referenceObj'], 'powerUp'),
-		new GameRule('MainSpaceShip', 'trigger', ['mainSpaceShipDamaged', 'mainSpaceShipSprite', 'referenceObj'], 'hostile'),
-		new GameRule('MainSpaceShip', 'trigger', ['mainSpaceShipHit', 'mainSpaceShipSprite', 'referenceObj'], 'hostileHit')
+		new GameRule('LootSprite', 'trigger', ['mainSpaceShipPowerUp',  'mainSpaceShipSprite', 'referenceObj'], mainSpaceShipCollisionTypes.powerUp),
+		new GameRule('MainSpaceShip', 'trigger', ['mainSpaceShipDamaged', 'mainSpaceShipSprite', 'referenceObj'], mainSpaceShipCollisionTypes.hostile),
+		new GameRule('MainSpaceShip', 'trigger', ['mainSpaceShipHit', 'mainSpaceShipSprite', 'referenceObj'], mainSpaceShipCollisionTypes.hostileHit)
 	],
 	foeSpaceShipTestCollision : [
 		new GameRule('FoeSpaceShip', 'trigger', ['foeSpaceShipDamaged', 'fireballSprite', 'referenceObj'], null),

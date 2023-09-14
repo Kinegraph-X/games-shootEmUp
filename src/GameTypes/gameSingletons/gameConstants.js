@@ -32,32 +32,32 @@ const levels = {
 	1 : {
 		foeCount : 6,
 		shieldedFoeCount : 0,
-		requiredPointsToStepUp : 1000
+		requiredPointsToStepUp : 1500
 	},
 	2 : {
 		foeCount : 8,
 		shieldedFoeCount : 0,
-		requiredPointsToStepUp : 2500
+		requiredPointsToStepUp : 4500
 	},
 	3 : {
 		foeCount : 10,
 		shieldedFoeCount : 3,
-		requiredPointsToStepUp : 5000
+		requiredPointsToStepUp : 9000
 	},
 	4 : {
 		foeCount : 14,
 		shieldedFoeCount : 4,
-		requiredPointsToStepUp : 7500
+		requiredPointsToStepUp : 14000
 	},
 	5 : {
 		foeCount : 20,
 		shieldedFoeCount : 7,
-		requiredPointsToStepUp : 12000
+		requiredPointsToStepUp : 19000
 	},
 	6 : {
 		foeCount : 28,
 		shieldedFoeCount : 12,
-		requiredPointsToStepUp : 15000
+		requiredPointsToStepUp : 25000
 	}
 }
 
@@ -114,32 +114,32 @@ const foeDescriptors = {
  */
 const bossDescriptors = {
 	'0' : {
-		healthPoints : 10,
+		healthPoints : 30,
 		lootChance : 0,
 		pointsPrize : 2000
 	},
 	'1' : {
-		healthPoints : 20,
+		healthPoints : 45,
 		lootChance : .1,
 		pointsPrize : 4500
 	},
 	'2' : {
-		healthPoints : 25,
+		healthPoints : 60,
 		lootChance : .2,
 		pointsPrize : 7500
 	},
 	'3' : {
-		healthPoints : 30,
+		healthPoints : 80,
 		lootChance : 0.3,
 		pointsPrize : 12000
 	},
 	'4' : {
-		healthPoints : 40,
+		healthPoints : 90,
 		lootChance : 0.4,
 		pointsPrize : 17500
 	},
 	'5' : {
-		healthPoints : 50,
+		healthPoints : 120,
 		lootChance : 0.5,
 		pointsPrize : 30000
 	}
@@ -164,6 +164,7 @@ const mainSpaceShipLifePoints = {
 */
 const mainSpaceShipCollisionTypes = {
 	hostile : 'hostile',
+	hostileHit : 'hostileHit',
 	powerUp : 'powerUp'
 }
 

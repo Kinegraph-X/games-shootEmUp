@@ -300,6 +300,46 @@ const handleDamageableMainSpaceShip = function() {
 	}
 }
 
+
+
+
+
+/**
+ * @method handleFoeSpaceShipDestroyed
+ * @param {FoeSpaceShip} damagedFoeSpaceShip
+ * @return Void
+ */
+const handleLoot = function(
+		damagedFoeSpaceShip
+	) {
+	
+	let lootSprite = GameObjectsFactory().newObject(objectTypes.loot, true, [], damagedFoeSpaceShip);
+	
+	// There has already been enough loots of a certain type
+	if (typeof lootSprite === 'undefined')
+		return;
+	else
+		// @ts-ignore FIXME: lootType should be Union {'madikit' | 'powerUp'}
+		GameState().currentLootCount[lootSprite.lootType]++;
+		
+	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototypal inheritance...
+	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(
+		Player().mainSpaceShip,
+		lootSprite,
+		mainSpaceShipCollisionTypes.powerUp
+	);
+	Player().lootsCollisionTestsRegister.setItem(
+		lootSprite.UID,
+		mainSpaceShipCollisionTest
+	);
+	// Wait for the next frame : appending it synchronlously 
+	// would normally extend the list beyond the starting index, so we should not bother,
+	// but "peace of the mind has no price"
+	CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
+}
+
+
+
 /**
  * @method handlePowerUp
  * @param {LootSprite} lootSprite
@@ -436,7 +476,7 @@ const removeFireBallFromStage = function(
 const handleLootOutOfScreen = function(
 		lootSprite
 	) {
-		
+	
 	// @ts-ignore UID is inherited
 	GameLoop().markCollisionTestsForRemoval([Player().lootsCollisionTestsRegister.getItem(lootSprite.UID)]);
 	// @ts-ignore UID is inherited
@@ -445,44 +485,6 @@ const handleLootOutOfScreen = function(
 }
 
 
-
-
-
-
-
-/**
- * @method handleFoeSpaceShipDestroyed
- * @param {FoeSpaceShip} damagedFoeSpaceShip
- * @return Void
- */
-const handleLoot = function(
-		damagedFoeSpaceShip
-	) {
-	
-	let lootSprite = GameObjectsFactory().newObject(objectTypes.loot, true, [], damagedFoeSpaceShip);
-	
-	// There has already been enough loots of a certain type
-	if (typeof lootSprite === 'undefined')
-		return;
-	else
-		// @ts-ignore FIXME: lootType should be Union {'madikit' | 'powerUp'}
-		GameState().currentLootCount[lootSprite.lootType]++;
-	
-	// @ts-ignore :expected {Sprite}, given {LootSprite} => TS doesn't understand anything to prototypal inheritance...
-	const mainSpaceShipCollisionTest = new mainSpaceShipCollisionTester(
-		Player().mainSpaceShip,
-		lootSprite,
-		mainSpaceShipCollisionTypes.powerUp
-	);
-	Player().lootsCollisionTestsRegister.setItem(
-		lootSprite.UID,
-		mainSpaceShipCollisionTest
-	);
-	// Wait for the next frame : appending it synchronlously 
-	// would normally extend the list beyond the starting index, so we should not bother,
-	// but "peace of the mind has no price"
-	CoreTypes.tempAsyncCollisionsTests.push(mainSpaceShipCollisionTest);
-}
 
 
 /**

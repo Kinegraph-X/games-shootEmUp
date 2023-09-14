@@ -445,7 +445,6 @@ GameLoop.prototype.testAndCleanCollisions = function() {
 	let collisionTest,
 		deletedTests = new Uint8Array(this.collisionTests.length),
 		clearedTests = CoreTypes.clearedCollisionTests;
-		clearedTests.clear();
 	
 	for (let i = this.collisionTests.length - 1; i >= 0; i--) {
 				
@@ -484,6 +483,8 @@ GameLoop.prototype.testAndCleanCollisions = function() {
 	
 	if (deletedTests.byteLength)		// weird case where we have no colisionTests in the loop yet, but already marked tests in clearedTests => wait for the next call
 		this.effectivelySpliceDeletedTests(clearedTests);
+	
+	clearedTests.clear();
 }
 
 /**
