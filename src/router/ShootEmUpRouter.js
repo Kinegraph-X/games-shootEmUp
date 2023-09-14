@@ -90,7 +90,7 @@ var classConstructor = function() {
 			console.log('Ctrl + Q to stop the game loop');
 			
 			// @ts-ignore levelTheme isn't typed
-			loadedAssets[4].levelTheme.play({volume : .5, loop : true});
+			loadedAssets[4].levelTheme.play({volume : .2, loop : true});
 			
 			// BACKGROUND
 			GameObjectsFactory().newObject(objectTypes.background);
