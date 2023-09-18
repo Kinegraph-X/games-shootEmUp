@@ -7,8 +7,8 @@ AssetsLoader.then(function(loadedBundles) {
 	loadedAssets = loadedBundles;
 });
 
-const {levels, foeDescriptors, mainSpaceShipLifePoints, lootSpritesTextures, maxLootsByType, weapons, objectTypes, plasmaColors, plasmaBlastDescriptors} = require('src/GameTypes/gameSingletons/gameConstants');
-const {windowSize, cellSize, gridCoords, occupiedCells, getFoeCell} = require('src/GameTypes/grids/gridManager');
+const {levels, mainSpaceShipLifePoints, lootSpritesTextures, maxLootsByType, objectTypes, plasmaBlastDescriptors} = require('src/GameTypes/gameSingletons/gameConstants');
+const {windowSize, cellSize, gridCoords, getFoeCell} = require('src/GameTypes/grids/gridManager');
 
 const Player = require('src/GameTypes/gameSingletons/Player');
 let GameState = require('src/GameTypes/gameSingletons/GameState');
@@ -59,6 +59,9 @@ GameObjectFactory.prototype.newObject = function(objectType, addToScene, metadat
 		case objectTypes.title:
 			// @ts-ignore: metadata[0] is {String}, not Union type 		// HACK: FIXME
 			return this.createTitle(metadata[0], metadata[1]);
+		case objectTypes.infiniteTitle:
+			// @ts-ignore: metadata[0] is {String}, not Union type 		// HACK: FIXME
+			return this.createInfiniteTitle(metadata[0]);
 		case objectTypes.statusBar:
 			return this.createStatusBar();
 		case objectTypes.mainSpaceShip:
@@ -134,6 +137,33 @@ GameObjectFactory.prototype.createTitle = function(text, fadeOut) {
 }
 
 /**
+ * @method createInfiniteTitle
+ * @param {String} text	
+ * @return {Array<GameTitleSprite|DelayedCooledDownPropFadeToggleTween>}
+ */
+GameObjectFactory.prototype.createInfiniteTitle = function(text) {
+	const title = new GameTitleSprite(
+		GameLoop().windowSize,
+		text
+	);
+	
+	const titleTween = new DelayedCooledDownPropFadeToggleTween(
+		// @ts-ignore TS doesn't know a thing to prototypal inheritance
+		title.spriteObj,
+		CoreTypes.TweenTypes.add,
+		'alpha',
+		-1,
+		+Infinity,
+		function() {},
+		120,
+		0
+	);
+	GameLoop().addAnimatedSpriteToScene(title, titleTween);
+	
+	return [title, titleTween];
+}
+
+/**
  * @method createStatusBar
  * @return {StatusBarSprite}
  */
@@ -142,6 +172,7 @@ GameObjectFactory.prototype.createStatusBar = function() {
 		GameLoop().windowSize,
 		// @ts-ignore loadedAssets.prop unknown
 		loadedAssets[0].statusBarHealth,
+		// @ts-ignore type is unknown
 		loadedAssets[0].statusBarShield
 	);
 	
@@ -199,6 +230,7 @@ GameObjectFactory.prototype.createFoeSpaceShip = function(metadata) {
 	const foeSpaceShip = new FoeSpaceShip(
 		foePosition,
 		foeCell,
+		// @ts-ignore type is unknown
 		loadedAssets[1]['foeSpaceShip0' + randomFoe + (hasShield ? 'Shielded' : '')],
 		randomFoe
 	);

@@ -1,3 +1,7 @@
+ /**
+ * @typedef {import('src/GameTypes/sprites/Sprite')} Sprite
+ */
+
 /**
  * @router DevToolsStructRouter 
  */
@@ -66,7 +70,8 @@ var classConstructor = function() {
 		AssetsLoader.then(function(loadedAssets) {
 			(new FontFaceObserver('Showcard Gothic'))
 				.load().then(function() {
-					
+					/** @type {Array<Sprite|Tween>} */
+					let titleSprite;
 					// @ts-ignore
 					document.querySelector('#ready').style.visibility = 'hidden';
 					
@@ -76,6 +81,8 @@ var classConstructor = function() {
 					keyboardListener.addOnReleasedListener(function(originalEvent, ctrlKey, shiftKey, altKey, keyCode) {
 						if (!firstInteract && keyCode === KeyboardEvents.indexOf('ENTER')) {
 							firstInteract = true;
+							GameLoop().removeTween(titleSprite[1]);
+							GameLoop().removeSpriteFromScene(titleSprite[0]);
 							onLoaded(loadedAssets);
 						}
 						else if (keyCode === KeyboardEvents.indexOf('Q') && ctrlKey) {
@@ -86,7 +93,7 @@ var classConstructor = function() {
 					});
 					
 					// INTRO TITLE
-					GameObjectsFactory().newObject(objectTypes.title, true, ['Press Enter', true]);
+					titleSprite = GameObjectsFactory().newObject(objectTypes.infiniteTitle, true, ['Press Enter', true]);
 					
 					// GAME LAUNCH
 					document.querySelector(rootNodeSelector).appendChild(GameLoop().renderer.view);
@@ -104,7 +111,7 @@ var classConstructor = function() {
 			console.log('Ctrl + Q to stop the game loop');
 			
 			// @ts-ignore levelTheme isn't typed
-			loadedAssets[4].levelTheme.play({volume : .2, loop : true});
+			loadedAssets[4].levelTheme.play({volume : 0.02, loop : true});
 			
 			// BACKGROUND
 			GameObjectsFactory().newObject(objectTypes.background);

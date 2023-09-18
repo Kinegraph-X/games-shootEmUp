@@ -265,6 +265,7 @@ const handleMainSpaceShipDestroyed = function(
  * @mthod handleInvicibleSpaceShip
  */
 const handleInvicibleMainSpaceShip = function() {
+	// We blindly remove all collision tests from the loop, including those with foe-projectiles
 	const testsToRemove = Object.values(Player().foeSpaceShipsCollisionTestsRegister.cache);
 	Array.prototype.push.apply(testsToRemove, Object.values(CoreTypes.fromFoesFireballsCollisionTestsRegister.cache));
 	GameLoop().markCollisionTestsForRemoval(testsToRemove);
@@ -272,12 +273,10 @@ const handleInvicibleMainSpaceShip = function() {
 	Player().foeSpaceShipsCollisionTestsRegister.reset();
 	CoreTypes.fromFoesFireballsCollisionTestsRegister.reset();
 	
+	// And we must also clean the references for tests in the registers on the tweens (used for fast cleaning on "outOfScreen"):
+	// so we loop through all the "hostile" tests with foes (the tweens also reference tests with projectiles)
 	for (let foeSpaceShipSpriteObj of Object.values(Player().foeSpaceShipsRegister.cache)) {
-		if (!Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister)
-			console.log('found UID is ', foeSpaceShipSpriteObj.UID, Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID]);
 		Player().foeSpaceShipsTweensRegister.cache[foeSpaceShipSpriteObj.UID].collisionTestsRegister = 
-			// We'll loop through all the tests, including those against projectiles.
-			// It's not efficient, but do we have a reference to the specific test in the scope ? Seems not...
 			Player().foeSpaceShipsTweensRegister.getItem(foeSpaceShipSpriteObj.UID).collisionTestsRegister.filter(function(/** @type {mainSpaceShipCollisionTester}*/test) {
 				if (test.type === mainSpaceShipCollisionTypes.hostile)
 					return false;
@@ -495,7 +494,7 @@ const handleLootOutOfScreen = function(
 const handleDisposableSpriteAnimationEnded = function(tween) {
 	// CooldownTweens don't imply removing the sprite from the scene
 	// @ts-ignore objectType: implicit inheritance
-	if (tween instanceof CoolDownTween)
+	if (tween instanceof CoolDownTween || tween.target.objectType === 'MainSpaceShipSpriteObj')
 		return;
 	
 	let spritePos = CoreTypes.disposableSpritesRegister.indexOf(tween.target);
@@ -554,19 +553,19 @@ const shouldChangeLevel = function (currentLevelText, addFoeSpaceShips) {
 			// @ts-ignore levelTheme isn't typed
 			loadedAssets[4].levelTheme.stop();
 			// @ts-ignore levelTheme isn't typed
-			loadedAssets[4].bossTheme.play({volume : .2, loop : true});
+			loadedAssets[4].bossTheme.play({volume : 0.02, loop : true});
 			GameObjectsFactory().newObject(objectTypes.bossSpaceShip);
 		}
 		else
 			addFoeSpaceShips();
 	}
-	else if (Object.keys(Player().foeSpaceShipsRegister.cache).length === 0) {
+	else if (foesInGame.length === 0) {
 		if (GameState().getCurrentLevel() === 6)
 			// YOU WIN TITLE
 			GameObjectsFactory().newObject(objectTypes.title, true, ['YOU WIN']);
 		else {
 			// @ts-ignore levelTheme isn't typed
-			loadedAssets[4].levelTheme.play({volume : .2, loop : true});
+			loadedAssets[4].levelTheme.play({volume : 0.02, loop : true});
 			// @ts-ignore levelTheme isn't typed
 			loadedAssets[4].bossTheme.stop();
 			GameState().incrementLevel();

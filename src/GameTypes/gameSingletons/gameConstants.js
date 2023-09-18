@@ -197,7 +197,7 @@ const lootSpritesTextures = {
  * @type {{[key:String] : Number}}
  */
 const maxLootsByType = {
-	'medikit' : 2,
+	'medikit' : 3,
 	'weapon' : 1
 }
 
@@ -409,6 +409,7 @@ const plasmaBlastDescriptors = {
 const objectTypes = {
 	background : 'background',
 	title : 'title',
+	infiniteTitle : 'infiniteTitle',
 	statusBar : 'statusBar',
 	mainSpaceShip : 'mainSpaceShip',
 	foeSpaceShip : 'foeSpaceShip',

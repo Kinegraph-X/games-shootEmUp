@@ -47,10 +47,15 @@ const TileToggleTween = function(
 	this.currentOffsetPos = 0;
 	
 	this.initialTilePosition = new CoreTypes.Point(1, 1);
+	
+	// Hack for the FlameSprite's mis-alignment bug
 	// @ts-ignore target is inherited
-	this.target.tilePositionX = 1;
-	// @ts-ignore target is inherited
-	this.target.tilePositionY = 1;
+	if (this.target.tilePositionX === 0 && this.target.tilePositionY === 0) {
+		// @ts-ignore target is inherited
+		this.target.tilePositionX = 1;
+		// @ts-ignore target is inherited
+		this.target.tilePositionY = 1;
+	}
 	
 	this.currentPartialStep = 0;
 	

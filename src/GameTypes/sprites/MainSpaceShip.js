@@ -7,9 +7,13 @@
 const CoreTypes = require('src/GameTypes/gameSingletons/CoreTypes');
 const UIDGenerator = require('src/core/UIDGenerator').UIDGenerator;
 
+const GameLoop = require('src/GameTypes/gameSingletons/GameLoop');
+
 const ShieldedDamageable = require('src/GameTypes/interfaces/ShieldedDamageable');
 const Sprite = require('src/GameTypes/sprites/Sprite');
 const TilingSprite = require('src/GameTypes/sprites/TilingSprite');
+
+const TileToggleTween = require('src/GameTypes/tweens/TileToggleTween');
 
 
 /**
@@ -27,6 +31,9 @@ const MainSpaceShip = function(position, texture, flameTexture, healthPoints) {
 	
 	this.healthPoints = healthPoints;
 	this.shieldCharge = healthPoints;
+	
+	/**@type {TileToggleTween} */
+	this.wingsTween;
 }
 MainSpaceShip.prototype = Object.create(ShieldedDamageable.prototype);
 /**
@@ -50,10 +57,11 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 		this.defaultSpaceShipDimensions,
 		texture
 	);
+	this.mainSpaceShipSprite.objectType = 'MainSpaceShipSpriteObj';
 	this.mainSpaceShipSprite.spriteObj.tileTransform.scale.x = .4;
 	this.mainSpaceShipSprite.spriteObj.tileTransform.scale.y = .4;
 	// @ts-ignore
-	this.mainSpaceShipSprite.tilePositionY = 400;
+	this.mainSpaceShipSprite.tilePositionY = -400;
 	mainSpaceShipContainer.addChild(this.mainSpaceShipSprite.spriteObj);
 	
 	// @ts-ignore
@@ -62,7 +70,7 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
 		flameTexture
 	);
 	
-	this.flameTileSprite.spriteObj.x = this.defaultSpaceShipDimensions.x.value / 2 - this.defaultFlameTileDimensions.x.value / 2;
+	this.flameTileSprite.spriteObj.x = this.defaultSpaceShipDimensions.x.value / 2 - this.defaultFlameTileDimensions.x.value / 2 - 2; // MAGIC NUMBER: don't kwnow why the flame isn't aligned with the ship
 	this.flameTileSprite.spriteObj.y = this.defaultSpaceShipDimensions.y.value - this.defaultFlameTileDimensions.y.value / 2;
 	// @ts-ignore
 	this.flameTileSprite.objectType = 'flameSprite';
@@ -80,7 +88,22 @@ MainSpaceShip.prototype.getSprite = function(position, texture, flameTexture) {
  */
 MainSpaceShip.prototype.rollWingsLeft = function() {
 	// @ts-ignore
-	this.mainSpaceShipSprite.tilePositionY = 200;
+//	this.mainSpaceShipSprite.tilePositionY = 200;
+	
+	this.wingsTween = new TileToggleTween(
+		GameLoop().windowSize,
+		this.mainSpaceShipSprite,
+		CoreTypes.TweenTypes.add,
+		new CoreTypes.Point(0, -200),
+		1,
+		false,
+		3,
+		7,
+		'',
+		true
+	);
+	
+	GameLoop().pushTween(this.wingsTween);
 }
 
 /**
@@ -88,15 +111,31 @@ MainSpaceShip.prototype.rollWingsLeft = function() {
  */
 MainSpaceShip.prototype.rollWingsRight = function() {
 	// @ts-ignore
-	this.mainSpaceShipSprite.tilePositionY = 0;
+//	this.mainSpaceShipSprite.tilePositionY = 0;
+
+	this.wingsTween = new TileToggleTween(
+		GameLoop().windowSize,
+		this.mainSpaceShipSprite,
+		CoreTypes.TweenTypes.add,
+		new CoreTypes.Point(0, 200),
+		1,
+		false,
+		3,
+		7,
+		'',
+		true
+	);
+	
+	GameLoop().pushTween(this.wingsTween);
 }
 
 /**
  * @method rollWingsFlat
  */
 MainSpaceShip.prototype.rollWingsFlat = function() {
+	this.wingsTween.ended = true;
 	// @ts-ignore
-	this.mainSpaceShipSprite.tilePositionY = 400;
+	this.mainSpaceShipSprite.tilePositionY = -400;
 }
 
 
